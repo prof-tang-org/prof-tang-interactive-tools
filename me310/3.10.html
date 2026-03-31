@@ -13,7 +13,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <style>
-    :root{ --Y_TITLE_PAD: 15px; --plot-min-h: 270px; }
+    :root{ --Y_TITLE_PAD: 15px; --plot-min-h: 280px; }
 
     .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
     .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
@@ -40,14 +40,26 @@
       text-align:center;
       padding:12px;
     }
+    .schem-img{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius:10px;
+      background:#fff;
+    }
     .schem-ph .t{font-weight:800;color:#334155;margin-bottom:6px}
     .schem-cap{margin:8px 2px 0;font-size:13px;color:#64748b;line-height:1.35}
 
-    .io-grid{display:grid;gap:12px;align-items:stretch;margin-top:12px}
-    @media(min-width:1024px){ .io-grid{ grid-template-columns: 0.95fr 1.55fr; } }
+    .io-bar{
+      display:grid;
+      gap:12px;
+      align-items:end;
+      margin-top:12px;
+    }
+    @media(min-width:980px){
+      .io-bar{ grid-template-columns: 1.15fr 0.9fr 1fr; }
+    }
 
-    .inputs-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-    .ctl>label{display:block;font-size:13px;color:#4b5563;margin-bottom:6px}
     .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .pair input[type="number"]{
       width:100%;
@@ -57,45 +69,57 @@
       background:#fff;
     }
     .pair input[type="range"]{width:100%}
+    input[type="number"], select { font:inherit; }
 
-    input:disabled{
-      background:#f3f4f6 !important;
-      color:#6b7280 !important;
-      cursor:not-allowed;
-      opacity:1;
-    }
-
-    .kpis{
-      display:grid;
-      gap:10px;
-      margin-top:10px;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    }
     .kpi{
       background:#fcfcff;
       border:1px solid var(--line);
       border-radius:12px;
       padding:10px 12px;
+      min-height: 72px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
     }
     .kpi .lab{font-size:12px;color:#6b7280}
     .kpi .val{font-size:16px;font-weight:700;color:#111;margin-top:2px}
 
-    .plot-wrap{display:flex;flex-direction:column;height:100%}
-    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px}
-    .plot-wrap .viz{
+    .bar-note{
+      font-size:13px;
+      color:#64748b;
+      line-height:1.35;
+      padding:0 2px 2px;
+    }
+
+    .plots-grid{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+      align-items:stretch;
+    }
+    @media(min-width:1100px){
+      .plots-grid{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .plot-card{
+      display:flex;
+      flex-direction:column;
+      height:100%;
+    }
+    .plot-card h3{margin:6px 0 10px}
+    .viz{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:8px;
       flex:1 1 auto;
       display:flex;
-      padding:8px;
-      border-radius:12px;
     }
-    .plot-wrap .viz svg{
+    .viz svg{
       width:100%;
       display:block;
       min-height:var(--plot-min-h);
     }
-
-    .plot-stack{display:grid;gap:10px}
-    .plot-card-title{margin:6px 0 10px}
 
     .axis text{font-size:14px;fill:#111}
     .axis-title{font-size:16px;fill:#111}
@@ -106,23 +130,14 @@
     .gridline{stroke:#0001}
     .zeroline{stroke:#000;stroke-opacity:.18;stroke-dasharray:6 6}
     .lbl{font-size:14px;fill:#111;stroke:none}
-    .mini-note{font-size:13px;color:#64748b;line-height:1.3;margin:4px 2px 0}
-
+    .mini-note{font-size:13px;color:#64748b;line-height:1.3;margin:8px 2px 0}
     .hit{fill:transparent;cursor:ew-resize}
-  
-    /* consistency polish */
+
     .header-row h1{font-size:clamp(1.75rem,2.1vw,2.2rem);line-height:1.12}
     .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
     .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
-    .ctl>label,.inputs-grid label{font-size:13px;color:#4b5563}
-    .kpi .lab{font-size:12px;color:#6b7280}
-    .kpi .val{font-size:16px;font-weight:700;color:#111}
-    .schem-cap,.note-tight,.mini-note,.mini{font-size:13px;color:#64748b;line-height:1.35}
-    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
-    .axis text,svg .axis text{font-size:14px;fill:#111}
-    .axis-title,svg .axis-title{font-size:16px;fill:#111}
-    input[type="number"],select{font:inherit}
-
+    .ctl>label{display:block;font-size:13px;color:#4b5563;margin-bottom:6px}
+    .schem-cap,.mini-note,.bar-note{font-size:13px;color:#64748b;line-height:1.35}
   </style>
 </head>
 
@@ -148,22 +163,26 @@
         <div class="eqwrap">
           <h4 style="margin:0 0 6px">Known</h4>
           <p style="margin:0 0 10px">
-            Water at \(60^\circ\mathrm{F}\) is siphoned from a large tank through a constant-diameter hose. The outlet (point 3) is below the tank bottom, and the hose rises over a hill crest (point 2) at elevation \(H\).
+            Water at \(60^\circ\mathrm{F}\) flows through a constant-diameter siphon from a large tank, over a hill crest (point 2), and out to atmosphere at point 3.
           </p>
           <p style="margin:0 0 10px">
-            At incipient cavitation, the crest absolute pressure is
-            \[
-              p_{2,\mathrm{abs}} = 0.256~\mathrm{psia}.
-            \]
+            Cavitation begins when the local <em>absolute</em> pressure drops to the saturation pressure of the liquid. The saturation pressure is the pressure at which liquid water at a given temperature starts to vaporize and form vapor bubbles.
           </p>
           <p style="margin:0 0 10px">
-            Using atmospheric pressure,
+            For water at \(60^\circ\mathrm{F}\),
             \[
-              p_2 = p_{2,\mathrm{abs}} - p_{\mathrm{atm}} = 0.256 - 14.7 = -14.44~\mathrm{psig}.
+              p_{\mathrm{sat}} = 0.256~\mathrm{psia}.
             \]
+            In this example, point 2 is the most likely location for the minimum pressure, so the cavitation condition is taken as
+            \[
+              p_{2,\mathrm{abs}} = p_{\mathrm{sat}} = 0.256~\mathrm{psia}.
+            \]
+          </p>
+          <p style="margin:0">
+            Point 1 is taken inside the hose rather than at the tank free surface, so for steady, inviscid flow in a uniform-diameter hose the Energy Grade Line (EGL) and Hydraulic Grade Line (HGL) can be shown consistently along the hose.
           </p>
 
-          <h4 style="margin:0 0 6px">Find</h4>
+          <h4 style="margin:12px 0 6px">Find</h4>
           <p style="margin:0">
             Determine the maximum hill elevation \(H\) such that cavitation does not occur at the crest.
           </p>
@@ -174,7 +193,7 @@
         <h3 style="margin:6px 0 8px">Analysis</h3>
 
         <div class="eqwrap" style="margin-top:8px">
-          <p style="margin:0 0 8px"><b>Apply Bernoulli between point (2) and point (3):</b></p>
+          <p style="margin:0 0 8px">Apply Bernoulli along a streamline from point (2) to point (3):</p>
           \[
             p_2 + \rho g z_2 + \frac{1}{2}\rho V_2^2
             \;=\;
@@ -193,17 +212,17 @@
             H = -h_2 - \frac{p_2}{\rho g}
           \]
           <p style="margin:10px 0 0">
-            For water at \(60^\circ\mathrm{F}\), the pressure corresponding to cavitation is the saturation pressure,
-            \(p_{2,\mathrm{abs}} = p_{\mathrm{sat}} = 0.256~\mathrm{psia}\). Converting to gage pressure gives
+            Convert the given cavitation pressure to gage pressure:
           </p>
           \[
-            p_2 = p_{2,\mathrm{abs}} - p_{\mathrm{atm}} = 0.256 - 14.7 = -14.44~\mathrm{psig}
+            p_2 = p_{2,\mathrm{abs}} - p_{\mathrm{atm}}
+            = 0.256 - 14.7 = -14.44~\mathrm{psig}
           \]
           <p style="margin:10px 0 0">
-            so the maximum allowable crest height becomes
+            Substituting this into the hill-height relation gives the maximum allowable crest elevation.
           </p>
           \[
-            H = -h_2 - \frac{p_2}{\rho g}.
+            H_{\max} = -h_2 - \frac{p_2}{\rho g}
           \]
         </div>
       </section>
@@ -213,73 +232,58 @@
       <div class="card">
         <h3 style="margin:6px 0 10px">Schematic</h3>
         <div class="schem-box">
-          <div class="schem-ph">
-            <div>
-              <div class="t">Schematic placeholder</div>
-              <div>
-                Tank bottom datum.<br/>
-                Crest (2) at \(H\). Outlet (3) at \(z_3=-h_2\).<br/>
-                Constant-diameter hose so \(V_2=V_3\). At cavitation, \(p_{2,\mathrm{abs}}=0.256~\mathrm{psia}\).
-              </div>
-            </div>
-          </div>
-          <div class="schem-cap">Add your schematic image later (e.g., <code>../assets/thumbs/3.10.png</code>).</div>
+          <img src="../assets/thumbs/3.10.png" alt="Siphon schematic showing points 1, 2, and 3 with crest elevation H and outlet drop h2" class="schem-img" />
+          <div class="schem-cap">Siphon schematic with point 1 in the hose, point 2 at the crest, and point 3 at the outlet.</div>
         </div>
       </div>
     </aside>
   </section>
 
-  <section class="io-grid" id="io">
-    <section class="card">
-      <h3 style="margin:6px 0 10px">Inputs &amp; Outputs</h3>
-
-      <div class="inputs-grid">
-        <div class="ctl">
-          <label>Outlet drop below tank bottom, \(h_2\) (ft)</label>
-          <div class="pair">
-            <input id="h2" type="number" step="0.1" value="5.0">
-            <input id="h2_s" type="range" step="0.1">
-          </div>
-        </div>
-
-        <div class="ctl">
-          <label>Given cavitation pressure, \(p_{2,\mathrm{abs}}\) (psia)</label>
-          <div class="pair">
-            <input id="p2abs_given" type="number" step="0.001" value="0.256" disabled>
-            <input type="range" value="0.256" disabled>
-          </div>
+  <section class="card" id="io">
+    <div class="io-bar">
+      <div class="ctl">
+        <label>Outlet drop below tank bottom, \(h_2\) (ft)</label>
+        <div class="pair">
+          <input id="h2" type="number" step="0.1" value="5.0">
+          <input id="h2_s" type="range" step="0.1">
         </div>
       </div>
 
-      <div class="kpis">
-        <div class="kpi">
-          <div class="lab">Maximum hill elevation, \(H\) (ft)</div>
-          <div class="val" id="Hmax">—</div>
-        </div>
-        <div class="kpi">
-          <div class="lab">Converted gage pressure, \(p_2\) (psig)</div>
-          <div class="val" id="p2_out">—</div>
-        </div>
+      <div class="kpi">
+        <div class="lab">Maximum hill elevation, \(H\) (ft)</div>
+        <div class="val" id="Hmax">—</div>
+      </div>
+
+      <div class="bar-note">
+        The crest pressure is fixed by the cavitation condition for water at \(60^\circ\mathrm{F}\), so only \(h_2\) is varied here.
+      </div>
+    </div>
+  </section>
+
+  <section class="plots-grid">
+    <section class="card plot-card">
+      <h3>Maximum Hill Elevation</h3>
+      <div class="viz">
+        <svg id="plotHvsH2" viewBox="0 0 760 300" aria-label="Maximum hill elevation versus outlet drop"></svg>
+      </div>
+      <div class="mini-note">
+        Maximum hill elevation \(H\) versus outlet drop \(h_2\) for water at \(60^\circ\mathrm{F}\). Drag the red point left/right to change \(h_2\).
       </div>
     </section>
 
-    <section class="card plot-wrap" id="plot-card">
-      <h3 class="plot-card-title">Plots</h3>
-
-      <div class="plot-stack">
-        <div class="viz">
-          <svg id="plotELHGL" viewBox="0 0 760 290" aria-label="Energy line and hydraulic grade line"></svg>
-        </div>
-        <div class="mini-note">
-          Energy Grade Line (EGL) and Hydraulic Grade Line (HGL) for the siphon at the maximum allowable crest height.
-        </div>
-
-        <div class="viz">
-          <svg id="plotHvsH2" viewBox="0 0 760 290" aria-label="Maximum hill elevation versus outlet drop"></svg>
-        </div>
-        <div class="mini-note">
-          Maximum hill elevation \(H\) versus outlet drop \(h_2\) for water at \(60^\circ\mathrm{F}\). Drag the red point left/right to change \(h_2\).
-        </div>
+    <section class="card plot-card">
+      <h3>Energy Grade Line and Hydraulic Grade Line</h3>
+      <div class="viz">
+        <svg id="plotELHGL" viewBox="0 0 760 300" aria-label="Energy grade line and hydraulic grade line"></svg>
+      </div>
+      <div class="mini-note">
+        With point 1 chosen inside the hose and diameter held constant, the HGL is constant from point 1 to point 3 and the EGL is a constant distance above it.
+        \[
+          \mathrm{HGL} = z + \frac{p}{\rho g}
+        \]
+        \[
+          \mathrm{EGL} = z + \frac{p}{\rho g} + \frac{V^2}{2g}
+        \]
       </div>
     </section>
   </section>
@@ -297,7 +301,6 @@
   const fmt = (x, d=2) => (Number.isFinite(x) ? (+x).toFixed(d) : "—");
 
   const FT_HEAD_PER_PSI_WATER = 144 / 62.37; // ft of water head per psi
-
   const P2_ABS_PSIA = 0.256;
   const PATM_PSIA = 14.7;
   const P2_GAGE_PSIG = P2_ABS_PSIA - PATM_PSIA;
@@ -330,39 +333,42 @@
 
   function updateOutputs(){
     $("Hmax").textContent = `${fmt(H_max(), 2)} ft`;
-    $("p2_out").textContent = `${fmt(P2_GAGE_PSIG, 2)} psig`;
   }
 
-  const svg1 = d3.select("#plotELHGL");
-  const W1 = 760, H1 = 290;
-  const M1 = {l: 108, r: 20, t: 14, b: 50};
+  /* Plot 1: H versus h2 */
+  const svg1 = d3.select("#plotHvsH2");
+  const W1 = 760, H1 = 300;
+  const M1 = {l: 110, r: 20, t: 16, b: 52};
   const PW1 = W1 - M1.l - M1.r;
   const PH1 = H1 - M1.t - M1.b;
   const gPlot1 = svg1.append("g").attr("transform", `translate(${M1.l},${M1.t})`);
   gPlot1.append("rect").attr("x",0).attr("y",0).attr("width",PW1).attr("height",PH1).attr("fill","#fff");
 
-  const x1 = d3.scaleLinear().domain([0,2]).range([0,PW1]);
-  const y1 = d3.scaleLinear().domain([-30, 30]).range([PH1,0]);
+  const x1 = d3.scaleLinear().domain([0, 25]).range([0,PW1]);
+  const y1 = d3.scaleLinear().domain([-10, 40]).range([PH1,0]);
 
-  const ax1 = gPlot1.append("g").attr("class","axis").attr("transform",`translate(0,${PH1})`);
-  const ay1 = gPlot1.append("g").attr("class","axis");
+  gPlot1.append("g")
+    .attr("class","axis")
+    .attr("transform",`translate(0,${PH1})`)
+    .call(d3.axisBottom(x1).ticks(6));
 
-  ax1.call(d3.axisBottom(x1).tickValues([0,1,2]).tickFormat(d => d===0?"(1)":d===1?"(2)":"(3)"));
-  ay1.call(d3.axisLeft(y1).ticks(6));
+  gPlot1.append("g")
+    .attr("class","axis")
+    .call(d3.axisLeft(y1).ticks(6));
 
   gPlot1.append("text")
     .attr("class","axis-title")
-    .attr("x", PW1/2).attr("y", PH1 + 40)
+    .attr("x", PW1/2).attr("y", PH1 + 42)
     .attr("text-anchor","middle")
-    .text("Point along siphon");
+    .text("Outlet drop below tank bottom, h₂ (ft)");
 
   gPlot1.append("text")
     .attr("class","axis-title")
     .attr("transform","rotate(-90)")
     .attr("x", -PH1/2)
-    .attr("y", -(15 + 56))
+    .attr("y", -(15 + 58))
     .attr("text-anchor","middle")
-    .text("Head (ft)");
+    .text("Maximum hill elevation, H (ft)");
 
   y1.ticks(10).forEach(t => {
     gPlot1.append("line")
@@ -371,99 +377,21 @@
       .attr("y1",y1(t)).attr("y2",y1(t));
   });
 
-  const pathEGL = gPlot1.append("path").attr("class","curve");
-  const pathHGL = gPlot1.append("path").attr("class","curve2");
-  const lblG = gPlot1.append("g");
-
-  function renderELHGL(){
-    const z1ref = 15.0;
-    const z2v = H_max();
-    const z3v = -state.h2;
-
-    const pHead2 = P2_GAGE_PSIG * FT_HEAD_PER_PSI_WATER;
-    const vHead = z1ref - z3v;
-
-    const HGL = [
-      {s:0, h: z1ref},
-      {s:1, h: z2v + pHead2},
-      {s:2, h: z3v}
-    ];
-    const EGL = [
-      {s:0, h: z1ref},
-      {s:1, h: z2v + pHead2 + vHead},
-      {s:2, h: z3v + vHead}
-    ];
-
-    const L = d3.line().x(d => x1(d.s)).y(d => y1(d.h));
-    pathEGL.attr("d", L(EGL));
-    pathHGL.attr("d", L(HGL));
-
-    lblG.selectAll("*").remove();
-    lblG.append("text")
-      .attr("x", x1(1.52))
-      .attr("y", y1(EGL[2].h) - 10)
-      .attr("class","lbl")
-      .text("EGL");
-
-    lblG.append("text")
-      .attr("x", x1(1.52))
-      .attr("y", y1(HGL[2].h) + 18)
-      .attr("class","lbl")
-      .text("HGL");
-  }
-
-  const svg2 = d3.select("#plotHvsH2");
-  const W2 = 760, H2 = 290;
-  const M2 = {l: 108, r: 20, t: 14, b: 50};
-  const PW2 = W2 - M2.l - M2.r;
-  const PH2 = H2 - M2.t - M2.b;
-  const gPlot2 = svg2.append("g").attr("transform", `translate(${M2.l},${M2.t})`);
-  gPlot2.append("rect").attr("x",0).attr("y",0).attr("width",PW2).attr("height",PH2).attr("fill","#fff");
-
-  const x2 = d3.scaleLinear().domain([0, 25]).range([0,PW2]);
-  const y2 = d3.scaleLinear().domain([-10, 40]).range([PH2,0]);
-
-  const ax2 = gPlot2.append("g").attr("class","axis").attr("transform",`translate(0,${PH2})`);
-  const ay2 = gPlot2.append("g").attr("class","axis");
-  ax2.call(d3.axisBottom(x2).ticks(6));
-  ay2.call(d3.axisLeft(y2).ticks(6));
-
-  gPlot2.append("text")
-    .attr("class","axis-title")
-    .attr("x", PW2/2).attr("y", PH2 + 40)
-    .attr("text-anchor","middle")
-    .text("Outlet drop below tank bottom, h₂ (ft)");
-
-  gPlot2.append("text")
-    .attr("class","axis-title")
-    .attr("transform","rotate(-90)")
-    .attr("x", -PH2/2)
-    .attr("y", -(15 + 56))
-    .attr("text-anchor","middle")
-    .text("Maximum hill elevation, H (ft)");
-
-  y2.ticks(10).forEach(t => {
-    gPlot2.append("line")
-      .attr("class","gridline")
-      .attr("x1",0).attr("x2",PW2)
-      .attr("y1",y2(t)).attr("y2",y2(t));
-  });
-
-  gPlot2.append("line")
+  gPlot1.append("line")
     .attr("class","zeroline")
-    .attr("x1",0).attr("x2",PW2)
-    .attr("y1",y2(0)).attr("y2",y2(0));
+    .attr("x1",0).attr("x2",PW1)
+    .attr("y1",y1(0)).attr("y2",y1(0));
 
-  const Hline = gPlot2.append("path").attr("class","curve");
-  const dot = gPlot2.append("circle").attr("class","pt").attr("r",6);
+  const Hline = gPlot1.append("path").attr("class","curve");
+  const dot = gPlot1.append("circle").attr("class","pt").attr("r",6);
 
-  const hit = gPlot2.append("rect")
+  const hit = gPlot1.append("rect")
     .attr("class","hit")
-    .attr("x",0).attr("y",0).attr("width",PW2).attr("height",PH2);
+    .attr("x",0).attr("y",0).attr("width",PW1).attr("height",PH1);
 
   hit.call(
     d3.drag().on("drag", (event) => {
-      const hh = clamp(x2.invert(event.x), 0, 25);
+      const hh = clamp(x1.invert(event.x), 0, 25);
       state.h2 = Math.round(hh / R.h2.step) * R.h2.step;
       syncUIFromState();
       renderAll();
@@ -475,18 +403,96 @@
     for(let hh = 0; hh <= 25 + 1e-9; hh += 0.2){
       pts.push({hh, Hm: -hh - P2_GAGE_PSIG * FT_HEAD_PER_PSI_WATER});
     }
-    const L = d3.line().x(d => x2(d.hh)).y(d => y2(d.Hm));
+    const L = d3.line().x(d => x1(d.hh)).y(d => y1(d.Hm));
     Hline.attr("d", L(pts));
 
     dot
-      .attr("cx", x2(clamp(state.h2, 0, 25)))
-      .attr("cy", y2(clamp(H_max(), -10, 40)));
+      .attr("cx", x1(clamp(state.h2, 0, 25)))
+      .attr("cy", y1(clamp(H_max(), -10, 40)));
   }
 
-  function renderAll(){
-    updateOutputs();
-    renderELHGL();
-    renderHvsH2();
+  /* Plot 2: EGL / HGL */
+  const svg2 = d3.select("#plotELHGL");
+  const W2 = 760, H2 = 300;
+  const M2 = {l: 96, r: 20, t: 16, b: 52};
+  const PW2 = W2 - M2.l - M2.r;
+  const PH2 = H2 - M2.t - M2.b;
+  const gPlot2 = svg2.append("g").attr("transform", `translate(${M2.l},${M2.t})`);
+  gPlot2.append("rect").attr("x",0).attr("y",0).attr("width",PW2).attr("height",PH2).attr("fill","#fff");
+
+  const xPos = { p1: 0.0, p2: 0.78, p3: 2.0 };
+  const x2 = d3.scaleLinear().domain([0, 2.1]).range([0,PW2]);
+  const y2 = d3.scaleLinear().domain([-40, 40]).range([PH2,0]);
+
+  gPlot2.append("g")
+    .attr("class","axis")
+    .attr("transform",`translate(0,${PH2})`)
+    .call(
+      d3.axisBottom(x2)
+        .tickValues([xPos.p1, xPos.p2, xPos.p3])
+        .tickFormat((d) => d === xPos.p1 ? "(1)" : d === xPos.p2 ? "(2)" : "(3)")
+    );
+
+  gPlot2.append("g")
+    .attr("class","axis")
+    .call(d3.axisLeft(y2).ticks(8));
+
+  gPlot2.append("text")
+    .attr("class","axis-title")
+    .attr("x", PW2/2).attr("y", PH2 + 42)
+    .attr("text-anchor","middle")
+    .text("Point along siphon");
+
+  gPlot2.append("text")
+    .attr("class","axis-title")
+    .attr("transform","rotate(-90)")
+    .attr("x", -PH2/2)
+    .attr("y", -(15 + 46))
+    .attr("text-anchor","middle")
+    .text("Head (ft)");
+
+  y2.ticks(10).forEach(t => {
+    gPlot2.append("line")
+      .attr("class","gridline")
+      .attr("x1",0).attr("x2",PW2)
+      .attr("y1",y2(t)).attr("y2",y2(t));
+  });
+
+  const pathEGL = gPlot2.append("path").attr("class","curve");
+  const pathHGL = gPlot2.append("path").attr("class","curve2");
+  const lblG = gPlot2.append("g");
+
+  function renderELHGL(){
+    const HGL_const = -state.h2;
+    const vHead = H_max() + state.h2;
+
+    const HGL = [
+      {s:xPos.p1, h:HGL_const},
+      {s:xPos.p2, h:HGL_const},
+      {s:xPos.p3, h:HGL_const}
+    ];
+    const EGL = [
+      {s:xPos.p1, h:HGL_const + vHead},
+      {s:xPos.p2, h:HGL_const + vHead},
+      {s:xPos.p3, h:HGL_const + vHead}
+    ];
+
+    const L = d3.line().x(d => x2(d.s)).y(d => y2(d.h));
+    pathEGL.attr("d", L(EGL));
+    pathHGL.attr("d", L(HGL));
+
+    lblG.selectAll("*").remove();
+    lblG.append("text")
+      .attr("x", x2(1.55))
+      .attr("y", y2(EGL[2].h) - 10)
+      .attr("class","lbl")
+      .text("EGL");
+
+    lblG.append("text")
+      .attr("x", x2(1.55))
+      .attr("y", y2(HGL[2].h) + 18)
+      .attr("class","lbl")
+      .text("HGL");
   }
 
   function bindPair(numId, rangeId, key){
@@ -497,6 +503,12 @@
       syncUIFromState();
       renderAll();
     });
+  }
+
+  function renderAll(){
+    updateOutputs();
+    renderHvsH2();
+    renderELHGL();
   }
 
   (function(){

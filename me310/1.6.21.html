@@ -201,11 +201,12 @@
 
         <div class="eqwrap" style="margin-top:8px">
           <p style="margin:0 0 6px"><b>FBD for the middle plate in the \(x\) direction</b></p>
-          <div class="fbd-ph">
-            <div>
-              <div class="t">FBD placeholder</div>
-              <div>Replace this box with the actual free-body diagram.</div>
-            </div>
+          <div class="fbd-ph" style="padding:8px;background:#fff">
+            <img
+              src="../assets/thumbs/1.6.21-fbd.png"
+              alt="Free-body diagram for the middle plate"
+              style="display:block;max-width:100%;max-height:240px;width:auto;height:auto;border-radius:10px"
+            />
           </div>
           <p style="margin:10px 0 0">
             To keep the middle plate at rest, the force balance in the \(x\) direction is
@@ -243,17 +244,12 @@
         <h3 style="margin:6px 0 10px">Schematic</h3>
 
         <div class="schem-box">
-          <div class="schem-ph">
-            <div>
-              <div class="t">Schematic placeholder</div>
-              <div>
-                Three parallel plates with two fluid layers:<br/>
-                Fluid 1 thickness \(a\) (top–middle), Fluid 2 thickness \(b\) (middle–bottom).<br/>
-                Top plate \(V_t\) to the right, bottom plate \(V_b\) to the left, middle plate at rest.
-              </div>
-            </div>
-          </div>
-          <div class="schem-cap">Replace with your diagram image later.</div>
+          <img
+            src="../assets/thumbs/1.6.21.png"
+            alt="Schematic for flow of two fluids between three plates"
+            style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#fff"
+          />
+          <div class="schem-cap">Schematic for the three-plate, two-fluid system.</div>
         </div>
       </div>
     </aside>
@@ -274,14 +270,8 @@
 
         <div class="ctl">
           <label>Fluid 1</label>
-          <div class="input-row">
-            <select id="fluid1" disabled>
-              <option value="water" selected>Water</option>
-            </select>
-            <div class="num-unit">
-              <input id="mu1" type="number" step="0.00001" value="0.00100" disabled>
-              <span class="unit">Pa · s</span>
-            </div>
+          <div class="mini" style="margin:0">
+            Fluid 1 is water, with \(\mu_1 = 0.00100~\mathrm{Pa\cdot s}\).
           </div>
         </div>
 
@@ -289,10 +279,10 @@
           <label>Fluid 2</label>
           <div class="input-row">
             <select id="fluid2">
+              <option value="custom">Custom…</option>
               <option value="octane" selected>Octane</option>
               <option value="mercury">Mercury</option>
               <option value="water">Water</option>
-              <option value="custom">Custom…</option>
             </select>
             <div class="num-unit">
               <input id="mu2" type="number" step="0.00001" value="0.00051">
@@ -359,7 +349,6 @@
     $("ba_s").min = R.ba.min; $("ba_s").max = R.ba.max; $("ba_s").step = R.ba.step;
 
     $("mu2").min = R.mu2.min; $("mu2").max = R.mu2.max; $("mu2").step = R.mu2.step;
-    $("mu1").value = mu1.toFixed(5);
   }
 
   function syncUIFromState(){
