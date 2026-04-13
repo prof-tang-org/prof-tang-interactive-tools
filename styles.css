@@ -10,7 +10,7 @@
   --shadow-sm:0 6px 16px rgba(0,0,0,.04);
   --shadow-md:0 10px 22px rgba(0,0,0,.08);
 
-  /* thumbs / cards */
+  /* me310 / cards */
   --thumb-ratio: 16/9;     /* fixed media box ratio */
 }
 
@@ -64,7 +64,7 @@ html{scroll-behavior:smooth}
 .card h3{margin:6px 0 6px}
 .card p{margin:0;color:#4b5563}
 
-/* ---------- thumbs (restored original behavior) ---------- */
+/* ---------- me310 (restored original behavior) ---------- */
 /* A fixed aspect-ratio box that NEVER resizes the card height to fit the image.
    The image fits INSIDE the box. */
 .thumb{
