@@ -28,8 +28,14 @@ input[type="number"],select{font:inherit}
 .kpi .val{font-size:16px;font-weight:700;color:#111;margin-top:2px}
 
 .schem-box{border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px}
-.schem-ph{min-height:340px;display:grid;place-items:center;border:2px dashed var(--line);border-radius:12px;background:#fafcff;color:#64748b;text-align:center;padding:18px}
-.schem-ph .t{font-weight:800;color:#334155;margin-bottom:6px}
+.schem-ph{min-height:340px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#f8fbff,#fff);padding:10px}
+.schem-ph svg{width:100%;max-width:380px;height:auto;display:block}
+.schem-svg text{font-size:13px;fill:#334155;stroke:none;font-weight:700}
+.schem-svg .label{font-size:12px;fill:#475569}
+.schem-svg .pipe{fill:none;stroke:#334155;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+.schem-svg .water{fill:none;stroke:#0ea5e9;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.schem-svg .motion{fill:none;stroke:#f59e0b;stroke-width:4;stroke-linecap:round}
+.schem-svg .force{fill:none;stroke:#ef4444;stroke-width:4;stroke-linecap:round}
 .schem-cap,.mini-note,.note-tight{font-size:13px;color:#64748b;line-height:1.35}
 .schem-cap{margin:8px 2px 0}
 
@@ -55,7 +61,8 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
-          async src="//gc.zgo.at/count.js"></script>
+          async src="https://gc.zgo.at/count.js"></script>
+  <script defer src="../analytics.js"></script>
 </head>
 
 <body data-example="5.7">
@@ -123,12 +130,33 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
         <h3 style="margin:6px 0 10px">Schematic</h3>
         <div class="schem-box">
           <div class="schem-ph">
-            <div>
-              <div class="t">Schematic placeholder</div>
-              <div>Draw the rotating sprinkler head, inlet stem, two nozzle exits, relative exit velocities, and radius.</div>
-            </div>
+            <svg class="schem-svg" viewBox="0 0 360 300" role="img" aria-label="Rotating sprinkler with inlet, exits, radius, and velocity directions">
+              <defs>
+                <marker id="arrow-blue" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M0,-5L10,0L0,5" fill="#0ea5e9"></path>
+                </marker>
+                <marker id="arrow-gold" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M0,-5L10,0L0,5" fill="#f59e0b"></path>
+                </marker>
+              </defs>
+              <circle cx="180" cy="150" r="34" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"></circle>
+              <path class="pipe" d="M180 150H82M180 150H278"></path>
+              <path class="water" marker-end="url(#arrow-blue)" d="M180 270V186"></path>
+              <path class="water" marker-end="url(#arrow-blue)" d="M112 150H58"></path>
+              <path class="water" marker-end="url(#arrow-blue)" d="M248 150H302"></path>
+              <path class="motion" marker-end="url(#arrow-gold)" d="M106 90A104 104 0 0 1 254 91"></path>
+              <line x1="180" y1="150" x2="278" y2="150" stroke="#64748b" stroke-width="2" stroke-dasharray="6 5"></line>
+              <circle cx="82" cy="150" r="10" fill="#fff" stroke="#334155" stroke-width="3"></circle>
+              <circle cx="278" cy="150" r="10" fill="#fff" stroke="#334155" stroke-width="3"></circle>
+              <text x="188" y="142">r</text>
+              <text class="label" x="152" y="276">inlet Q</text>
+              <text class="label" x="36" y="135">W2</text>
+              <text class="label" x="285" y="135">W2</text>
+              <text class="label" x="162" y="45">rotation</text>
+              <text class="label" x="212" y="116">U = omega r</text>
+            </svg>
           </div>
-          <div class="schem-cap">Placeholder only. A custom schematic can be dropped in later.</div>
+          <div class="schem-cap">The arm speed \(U=\omega r\) subtracts from the relative exit speed \(W_2\) to set the fixed-frame tangential velocity.</div>
         </div>
       </div>
     </aside>

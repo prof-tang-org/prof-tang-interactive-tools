@@ -11,14 +11,31 @@
       .slice(0, 80);
   }
 
-  function track(path, title) {
-    if (!window.goatcounter || typeof window.goatcounter.count !== "function") return;
+  function pageSlug() {
+    return slug(window.location.pathname || "home") || "home";
+  }
 
-    window.goatcounter.count({
-      path: path,
-      title: title,
-      event: true
-    });
+  function pageEvent(name) {
+    return name + "-from-" + pageSlug();
+  }
+
+  function track(path, title, attempts) {
+    attempts = attempts || 0;
+
+    if (window.goatcounter && typeof window.goatcounter.count === "function") {
+      window.goatcounter.count({
+        path: path,
+        title: title,
+        event: true
+      });
+      return;
+    }
+
+    if (attempts < 10) {
+      window.setTimeout(function () {
+        track(path, title, attempts + 1);
+      }, 150);
+    }
   }
 
   document.addEventListener("click", function (event) {
@@ -41,13 +58,19 @@
 
     var feedbackLink = target.closest("a.feedback-link");
     if (feedbackLink) {
-      track("feedback-click", "Feedback click");
+      track(pageEvent("feedback-click"), "Feedback click");
       return;
     }
 
     var howLink = target.closest('a[href="#how"]');
     if (howLink) {
       track("how-to-use-click", "How to use click");
+      return;
+    }
+
+    var directFeedbackLink = target.closest("a#directLink");
+    if (directFeedbackLink) {
+      track("feedback-form-direct-link-click", "Feedback form direct link click");
     }
   });
 })();

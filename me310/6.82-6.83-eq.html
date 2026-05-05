@@ -55,7 +55,8 @@
     input[type="number"],select{font:inherit}
   </style>
   <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
-          async src="//gc.zgo.at/count.js"></script>
+          async src="https://gc.zgo.at/count.js"></script>
+  <script defer src="../analytics.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -150,6 +151,13 @@
     const fmt = (v, d=3) => Number.isFinite(v) ? v.toFixed(d) : '—';
     const RMAX = 4;
 
+    function d3Ready(){
+      if (window.d3) return true;
+      const plot = $('plot');
+      if (plot) plot.innerHTML = '<text x="20" y="32" fill="#64748b">Plot library did not load. Refresh to try again.</text>';
+      return false;
+    }
+
     [['m','m_s'], ['rp','rp_s'], ['theta','theta_s']].forEach(([n, r]) => {
       $(n).addEventListener('input', () => { $(r).value = $(n).value; update(); });
       $(r).addEventListener('input', () => { $(n).value = $(r).value; update(); });
@@ -169,6 +177,8 @@
       $('kpi_vr').textContent = `${fmt(vr,3)} m/s`;
       $('kpi_phi').textContent = fmt(phi,3);
       $('kpi_psi').textContent = fmt(psi,3);
+
+      if (!d3Ready()) return;
 
       const svg = d3.select('#plot');
       svg.selectAll('*').remove();

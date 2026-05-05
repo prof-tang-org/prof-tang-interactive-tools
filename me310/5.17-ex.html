@@ -28,8 +28,14 @@ input[type="number"],select{font:inherit}
 .kpi .val{font-size:16px;font-weight:700;color:#111;margin-top:2px}
 
 .schem-box{border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px}
-.schem-ph{min-height:340px;display:grid;place-items:center;border:2px dashed var(--line);border-radius:12px;background:#fafcff;color:#64748b;text-align:center;padding:18px}
-.schem-ph .t{font-weight:800;color:#334155;margin-bottom:6px}
+.schem-ph{min-height:340px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#f8fbff,#fff);padding:10px}
+.schem-ph svg{width:100%;max-width:380px;height:auto;display:block}
+.schem-svg text{font-size:13px;fill:#334155;stroke:none;font-weight:700}
+.schem-svg .label{font-size:12px;fill:#475569}
+.schem-svg .pipe{fill:none;stroke:#334155;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+.schem-svg .water{fill:none;stroke:#0ea5e9;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.schem-svg .motion{fill:none;stroke:#f59e0b;stroke-width:4;stroke-linecap:round}
+.schem-svg .force{fill:none;stroke:#ef4444;stroke-width:4;stroke-linecap:round}
 .schem-cap,.mini-note,.note-tight{font-size:13px;color:#64748b;line-height:1.35}
 .schem-cap{margin:8px 2px 0}
 
@@ -55,7 +61,8 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
-          async src="//gc.zgo.at/count.js"></script>
+          async src="https://gc.zgo.at/count.js"></script>
+  <script defer src="../analytics.js"></script>
 </head>
 
 <body data-example="5.17">
@@ -124,12 +131,35 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
         <h3 style="margin:6px 0 10px">Schematic</h3>
         <div class="schem-box">
           <div class="schem-ph">
-            <div>
-              <div class="t">Schematic placeholder</div>
-              <div>Draw the wheeled vane, moving control volume, incoming jet, outlet angle, and force components.</div>
-            </div>
+            <svg class="schem-svg" viewBox="0 0 360 300" role="img" aria-label="Moving vane control volume with relative jet speed and force components">
+              <defs>
+                <marker id="arrow-blue" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M0,-5L10,0L0,5" fill="#0ea5e9"></path>
+                </marker>
+                <marker id="arrow-red" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M0,-5L10,0L0,5" fill="#ef4444"></path>
+                </marker>
+                <marker id="arrow-gold" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M0,-5L10,0L0,5" fill="#f59e0b"></path>
+                </marker>
+              </defs>
+              <rect x="112" y="215" width="136" height="16" rx="5" fill="#e5e7eb" stroke="#64748b"></rect>
+              <circle cx="142" cy="240" r="12" fill="#fff" stroke="#334155" stroke-width="3"></circle>
+              <circle cx="218" cy="240" r="12" fill="#fff" stroke="#334155" stroke-width="3"></circle>
+              <path class="pipe" d="M118 198C160 198 214 159 232 104"></path>
+              <path class="water" marker-end="url(#arrow-blue)" d="M28 198H126"></path>
+              <path class="water" marker-end="url(#arrow-blue)" d="M136 195C172 188 213 151 226 108"></path>
+              <path class="motion" marker-end="url(#arrow-gold)" d="M128 258H238"></path>
+              <path class="force" marker-end="url(#arrow-red)" d="M150 178H224"></path>
+              <path class="force" marker-end="url(#arrow-red)" d="M150 178V112"></path>
+              <text class="label" x="38" y="181">W1 = V1 - Vv</text>
+              <text class="label" x="232" y="91">W2</text>
+              <text class="label" x="155" y="276">vane speed</text>
+              <text class="label" x="205" y="165">Rx</text>
+              <text class="label" x="158" y="118">Rz</text>
+            </svg>
           </div>
-          <div class="schem-cap">Placeholder only. The final drawing can replace this box later.</div>
+          <div class="schem-cap">The moving control volume uses the relative inlet speed \(W_1=V_1-V_\mathrm{vane}\) for the momentum balance.</div>
         </div>
       </div>
     </aside>
