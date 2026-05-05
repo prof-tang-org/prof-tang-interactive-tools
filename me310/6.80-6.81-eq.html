@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Uniform Flow: Velocity Potential and Stream Function</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
+    .btn.primary{background:var(--accent);border-color:transparent}
+
+    .top-grid{display:grid;gap:12px}
+    @media (min-width:1024px){ .top-grid{grid-template-columns:1.5fr .9fr} }
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
+
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff;overflow-x:hidden}
+    .eqbig{font-size:1.02em;margin-top:2px}
+    .eq-lines{display:grid;row-gap:6px}
+    .eq-lines .mjx-container{display:block}
+    .note.title-xl,.title-xl{font-size:18px;line-height:1.22;color:#111}
+
+    .controls{display:grid;gap:12px}
+    .controls label,.ctl>label{font-size:13px;color:#4b5563}
+    .rowflex{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .num-sm{width:170px}
+    .controls input.num-sm[type="number"]{width:170px !important}
+    .hint,.mini{font-size:13px;color:#64748b;line-height:1.35}
+
+    .kpi{display:grid;gap:10px;margin-top:4px;grid-template-columns:repeat(2,minmax(120px,1fr))}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;margin-top:12px}
+    .axis text,svg .axis text{font-size:14px;fill:#111}
+    .axis-title,svg .axis-title{font-size:16px;fill:#111}
+    svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+    .streamline{fill:none;stroke:#0ea5e9;stroke-width:2}
+    .equipotential{fill:none;stroke:#ef4444;stroke-width:1.6;stroke-dasharray:7 5}
+    .gridline{stroke:#e5e7eb;stroke-width:1}
+    .axisline{stroke:#111827;stroke-width:1.2;opacity:.75}
+    .flow-arrow{stroke:#111827;stroke-width:2.6;fill:none}
+    .probe{fill:#111827;stroke:#fff;stroke-width:2}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:8px}
+    .legend span{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#475569}
+    .swatch{width:22px;height:0;border-top:3px solid #0ea5e9;display:inline-block}
+    .swatch.phi{border-top-color:#ef4444;border-top-style:dashed}
+    input[type="number"],select{font:inherit}
+  </style>
+  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-row">
+        <h1 style="margin:0">Uniform Flow: Velocity Potential and Stream Function</h1>
+        <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="back-row">
+      <a href="../index.html" class="back-home" aria-label="Back to home"><span class="chev">←</span> Home</a>
+    </nav>
+
+    <section class="top-grid">
+      <div class="ctl">
+        <div class="eqwrap">
+          <div class="note title-xl" style="margin-bottom:10px"><b>Eqs. 6.80 and 6.81: uniform flow at angle \(\alpha\)</b></div>
+          <div class="eqbig eq-lines">
+            \( \phi = U(x\cos\alpha + y\sin\alpha) \qquad \text{(Eq. 6.80)} \)
+            \( \psi = U(y\cos\alpha - x\sin\alpha) \qquad \text{(Eq. 6.81)} \)
+          </div>
+          <div class="note" style="margin-top:10px">
+            The velocity vector has constant magnitude everywhere. Lines of constant \(\psi\) are streamlines, while lines of constant \(\phi\) are perpendicular equipotential lines.
+          </div>
+        </div>
+
+        <div class="viz">
+          <svg id="plot" viewBox="0 0 760 460" aria-label="Uniform flow streamlines and equipotential lines"></svg>
+          <div class="legend" aria-label="plot legend">
+            <span><i class="swatch"></i> \(\psi=\) constant</span>
+            <span><i class="swatch phi"></i> \(\phi=\) constant</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="controls">
+          <div>
+            <label>Speed, \(U\) (m/s)</label>
+            <input id="U" class="num-sm" type="number" min="0.1" max="30" step="0.1" value="8" />
+            <input id="U_s" type="range" min="0.1" max="30" step="0.1" value="8" />
+          </div>
+
+          <div>
+            <label>Flow direction, \(\alpha\) (deg)</label>
+            <input id="alpha" class="num-sm" type="number" min="-180" max="180" step="1" value="25" />
+            <input id="alpha_s" type="range" min="-180" max="180" step="1" value="25" />
+          </div>
+
+          <div>
+            <label>Flow-net spacing</label>
+            <input id="spacing" class="num-sm" type="number" min="0.5" max="2.5" step="0.1" value="1" />
+            <input id="spacing_s" type="range" min="0.5" max="2.5" step="0.1" value="1" />
+            <div class="hint">The plot domain is fixed so the pattern rotates smoothly as \(\alpha\) changes.</div>
+          </div>
+
+          <div class="rowflex">
+            <div>
+              <label>Probe \(x\)</label>
+              <input id="xp" class="num-sm" type="number" min="-4" max="4" step="0.1" value="1.5" />
+            </div>
+            <div>
+              <label>Probe \(y\)</label>
+              <input id="yp" class="num-sm" type="number" min="-4" max="4" step="0.1" value="1.0" />
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div><div class="lab">u = U cos α</div><div id="kpi_u" class="val">—</div></div>
+            <div><div class="lab">v = U sin α</div><div id="kpi_v" class="val">—</div></div>
+            <div><div class="lab">φ at probe</div><div id="kpi_phi" class="val">—</div></div>
+            <div><div class="lab">ψ at probe</div><div id="kpi_psi" class="val">—</div></div>
+          </div>
+
+          <div class="eqwrap" style="margin:0">
+            <div class="eqbig eq-lines">
+              \( u=\dfrac{\partial\phi}{\partial x}=\dfrac{\partial\psi}{\partial y}=U\cos\alpha \)
+              \( v=\dfrac{\partial\phi}{\partial y}=-\dfrac{\partial\psi}{\partial x}=U\sin\alpha \)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <div class="note">
+        This page treats a two-dimensional, inviscid, irrotational flow whose speed and direction are spatially uniform. Rotating the flow changes the orientation of the flow net, not the speed at any point.
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+    </div>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    const fmt = (v, d=3) => Number.isFinite(v) ? v.toFixed(d) : '—';
+    const L = 4;
+
+    [['U','U_s'], ['alpha','alpha_s'], ['spacing','spacing_s']].forEach(([n, r]) => {
+      $(n).addEventListener('input', () => { $(r).value = $(n).value; update(); });
+      $(r).addEventListener('input', () => { $(n).value = $(r).value; update(); });
+    });
+    ['xp','yp'].forEach(id => $(id).addEventListener('input', update));
+
+    function linePath(x, y, c, s, fixed, mode, xScale, yScale){
+      const pts = [];
+      const diag = L * 2.2;
+      const samples = 220;
+      for (let i = 0; i <= samples; i++){
+        const t = -diag + 2 * diag * i / samples;
+        let xp, yp;
+        if (mode === 'stream'){
+          xp = t * c - fixed * s;
+          yp = t * s + fixed * c;
+        } else {
+          xp = fixed * c - t * s;
+          yp = fixed * s + t * c;
+        }
+        if (xp >= -L && xp <= L && yp >= -L && yp <= L){
+          pts.push([xScale(xp), yScale(yp)]);
+        }
+      }
+      return pts.length > 1 ? d3.line()(pts) : null;
+    }
+
+    function drawGrid(svg, x, y, W, H, m){
+      d3.range(-L, L + 0.001, 1).forEach(t => {
+        svg.append('line').attr('class','gridline').attr('x1',x(-L)).attr('x2',x(L)).attr('y1',y(t)).attr('y2',y(t));
+        svg.append('line').attr('class','gridline').attr('x1',x(t)).attr('x2',x(t)).attr('y1',y(-L)).attr('y2',y(L));
+      });
+      svg.append('line').attr('class','axisline').attr('x1',x(-L)).attr('x2',x(L)).attr('y1',y(0)).attr('y2',y(0));
+      svg.append('line').attr('class','axisline').attr('x1',x(0)).attr('x2',x(0)).attr('y1',y(-L)).attr('y2',y(L));
+      svg.append('text').attr('class','axis-title').attr('x',W/2).attr('y',H-10).attr('text-anchor','middle').text('x');
+      svg.append('text').attr('class','axis-title').attr('x',18).attr('y',H/2).attr('text-anchor','middle').attr('transform',`rotate(-90 18 ${H/2})`).text('y');
+    }
+
+    function update(){
+      const U = Math.max(0.1, parseFloat($('U').value) || 0.1);
+      const alphaDeg = clamp(parseFloat($('alpha').value) || 0, -180, 180);
+      const a = alphaDeg * Math.PI / 180;
+      const c = Math.cos(a), s = Math.sin(a);
+      const spacing = clamp(parseFloat($('spacing').value) || 1, 0.5, 2.5);
+      const xp = clamp(parseFloat($('xp').value) || 0, -L, L);
+      const yp = clamp(parseFloat($('yp').value) || 0, -L, L);
+
+      const u = U * c;
+      const v = U * s;
+      const phi = U * (xp * c + yp * s);
+      const psi = U * (yp * c - xp * s);
+      $('kpi_u').textContent = `${fmt(u,2)} m/s`;
+      $('kpi_v').textContent = `${fmt(v,2)} m/s`;
+      $('kpi_phi').textContent = fmt(phi,2);
+      $('kpi_psi').textContent = fmt(psi,2);
+
+      const svg = d3.select('#plot');
+      svg.selectAll('*').remove();
+      const W = 760, H = 460, mrg = {l:54,r:22,t:22,b:54};
+      const iw = W - mrg.l - mrg.r, ih = H - mrg.t - mrg.b;
+      const x = d3.scaleLinear().domain([-L, L]).range([mrg.l, mrg.l + iw]);
+      const y = d3.scaleLinear().domain([-L, L]).range([mrg.t + ih, mrg.t]);
+
+      svg.append('defs').append('marker')
+        .attr('id','arrow').attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+        .attr('markerWidth',7).attr('markerHeight',7).attr('orient','auto')
+        .append('path').attr('d','M0,-5L10,0L0,5').attr('fill','#111827');
+
+      drawGrid(svg, x, y, W, H, mrg);
+
+      const constants = d3.range(-L * 1.5, L * 1.5 + 0.001, spacing);
+      constants.forEach(n => {
+        const d = linePath(x, y, c, s, n, 'stream', x, y);
+        if (d) svg.append('path').attr('class','streamline').attr('d', d);
+      });
+      constants.forEach(q => {
+        const d = linePath(x, y, c, s, q, 'equipotential', x, y);
+        if (d) svg.append('path').attr('class','equipotential').attr('d', d);
+      });
+
+      const start = [-2.9 * c, -2.9 * s];
+      const end = [2.9 * c, 2.9 * s];
+      svg.append('line').attr('class','flow-arrow')
+        .attr('x1',x(start[0])).attr('y1',y(start[1]))
+        .attr('x2',x(end[0])).attr('y2',y(end[1]))
+        .attr('marker-end','url(#arrow)');
+      svg.append('text').attr('x',x(end[0]) + 10).attr('y',y(end[1]) - 8).attr('font-weight',700).text('U');
+
+      svg.append('circle').attr('class','probe').attr('r',6).attr('cx',x(xp)).attr('cy',y(yp));
+      svg.append('text').attr('x',x(xp)+10).attr('y',y(yp)-10).attr('font-size',14).text('probe');
+    }
+
+    update();
+  </script>
+</body>
+</html>

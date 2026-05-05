@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Source and Sink: Plane Potential Flow</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
+    .btn.primary{background:var(--accent);border-color:transparent}
+
+    .top-grid{display:grid;gap:12px}
+    @media (min-width:1024px){ .top-grid{grid-template-columns:1.5fr .9fr} }
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
+
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff;overflow-x:hidden}
+    .eqbig{font-size:1.02em;margin-top:2px}
+    .eq-lines{display:grid;row-gap:6px}
+    .eq-lines .mjx-container{display:block}
+    .note.title-xl,.title-xl{font-size:18px;line-height:1.22;color:#111}
+
+    .controls{display:grid;gap:12px}
+    .controls label,.ctl>label{font-size:13px;color:#4b5563}
+    .rowflex{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .num-sm{width:170px}
+    .controls input.num-sm[type="number"]{width:170px !important}
+    .hint,.mini{font-size:13px;color:#64748b;line-height:1.35}
+
+    .kpi{display:grid;gap:10px;margin-top:4px;grid-template-columns:repeat(2,minmax(120px,1fr))}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;margin-top:12px}
+    .axis text,svg .axis text{font-size:14px;fill:#111}
+    .axis-title,svg .axis-title{font-size:16px;fill:#111}
+    svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+    .equipotential{fill:none;stroke:#ef4444;stroke-width:1.6;stroke-dasharray:7 5}
+    .streamline{stroke:#0ea5e9;stroke-width:2;fill:none}
+    .gridline{stroke:#e5e7eb;stroke-width:1}
+    .axisline{stroke:#111827;stroke-width:1.2;opacity:.75}
+    .source-core{fill:#111827;stroke:#fff;stroke-width:2}
+    .probe{fill:#f59e0b;stroke:#111827;stroke-width:1.5}
+    .arrow{stroke:#0ea5e9;stroke-width:2.4;fill:none}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:8px}
+    .legend span{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#475569}
+    .swatch{width:22px;height:0;border-top:3px solid #0ea5e9;display:inline-block}
+    .swatch.phi{border-top-color:#ef4444;border-top-style:dashed}
+    input[type="number"],select{font:inherit}
+  </style>
+  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-row">
+        <h1 style="margin:0">Source and Sink: Plane Potential Flow</h1>
+        <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="back-row">
+      <a href="../index.html" class="back-home" aria-label="Back to home"><span class="chev">←</span> Home</a>
+    </nav>
+
+    <section class="top-grid">
+      <div class="ctl">
+        <div class="eqwrap">
+          <div class="note title-xl" style="margin-bottom:10px"><b>Eqs. 6.82 and 6.83: source or sink at the origin</b></div>
+          <div class="eqbig eq-lines">
+            \( \phi = \dfrac{m}{2\pi}\ln r \qquad \text{(Eq. 6.82)} \)
+            \( \psi = \dfrac{m}{2\pi}\theta \qquad \text{(Eq. 6.83)} \)
+          </div>
+          <div class="note" style="margin-top:10px">
+            Positive \(m\) gives outward radial flow. Negative \(m\) gives inward radial flow. The ideal model has a mathematical singularity at \(r=0\), so the small center disk marks a region where the model is not physical.
+          </div>
+        </div>
+
+        <div class="viz">
+          <svg id="plot" viewBox="0 0 760 460" aria-label="Source and sink streamlines and equipotential lines"></svg>
+          <div class="legend" aria-label="plot legend">
+            <span><i class="swatch"></i> \(\psi=\) constant</span>
+            <span><i class="swatch phi"></i> \(\phi=\) constant</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="controls">
+          <div>
+            <label>Strength, \(m\) (m²/s per unit depth)</label>
+            <input id="m" class="num-sm" type="number" min="-30" max="30" step="0.1" value="12" />
+            <input id="m_s" type="range" min="-30" max="30" step="0.1" value="12" />
+          </div>
+
+          <div>
+            <label>Probe radius, \(r\)</label>
+            <input id="rp" class="num-sm" type="number" min="0.25" max="4" step="0.05" value="1.5" />
+            <input id="rp_s" type="range" min="0.25" max="4" step="0.05" value="1.5" />
+          </div>
+
+          <div>
+            <label>Probe angle, \(\theta\) (deg)</label>
+            <input id="theta" class="num-sm" type="number" min="-180" max="180" step="1" value="35" />
+            <input id="theta_s" type="range" min="-180" max="180" step="1" value="35" />
+          </div>
+
+          <div class="kpi">
+            <div><div class="lab">Flow type</div><div id="kpi_type" class="val">—</div></div>
+            <div><div class="lab">\(v_r=m/(2\pi r)\)</div><div id="kpi_vr" class="val">—</div></div>
+            <div><div class="lab">φ at probe</div><div id="kpi_phi" class="val">—</div></div>
+            <div><div class="lab">ψ at probe</div><div id="kpi_psi" class="val">—</div></div>
+          </div>
+
+          <div class="eqwrap" style="margin:0">
+            <div class="eqbig eq-lines">
+              \( v_r=\dfrac{\partial\phi}{\partial r}=\dfrac{1}{r}\dfrac{\partial\psi}{\partial\theta}=\dfrac{m}{2\pi r} \)
+              \( v_\theta=\dfrac{1}{r}\dfrac{\partial\phi}{\partial\theta}=-\dfrac{\partial\psi}{\partial r}=0 \)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <div class="note">
+        The streamline family is radial because \(\psi\) changes with angle only. The equipotential family is circular because \(\phi\) changes with distance from the origin only.
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+    </div>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    const fmt = (v, d=3) => Number.isFinite(v) ? v.toFixed(d) : '—';
+    const RMAX = 4;
+
+    [['m','m_s'], ['rp','rp_s'], ['theta','theta_s']].forEach(([n, r]) => {
+      $(n).addEventListener('input', () => { $(r).value = $(n).value; update(); });
+      $(r).addEventListener('input', () => { $(n).value = $(r).value; update(); });
+    });
+
+    function update(){
+      const strength = parseFloat($('m').value) || 0;
+      const rp = clamp(parseFloat($('rp').value) || 1, 0.25, RMAX);
+      const thetaDeg = clamp(parseFloat($('theta').value) || 0, -180, 180);
+      const theta = thetaDeg * Math.PI / 180;
+      const vr = strength / (2 * Math.PI * rp);
+      const phi = strength / (2 * Math.PI) * Math.log(rp);
+      const psi = strength / (2 * Math.PI) * theta;
+
+      const flowLabel = strength > 0.05 ? 'source' : strength < -0.05 ? 'sink' : 'nearly still';
+      $('kpi_type').textContent = flowLabel;
+      $('kpi_vr').textContent = `${fmt(vr,3)} m/s`;
+      $('kpi_phi').textContent = fmt(phi,3);
+      $('kpi_psi').textContent = fmt(psi,3);
+
+      const svg = d3.select('#plot');
+      svg.selectAll('*').remove();
+      const W = 760, H = 460, mrg = {l:54,r:22,t:22,b:54};
+      const iw = W - mrg.l - mrg.r, ih = H - mrg.t - mrg.b;
+      const x = d3.scaleLinear().domain([-RMAX, RMAX]).range([mrg.l, mrg.l + iw]);
+      const y = d3.scaleLinear().domain([-RMAX, RMAX]).range([mrg.t + ih, mrg.t]);
+
+      svg.append('defs').append('marker')
+        .attr('id','sourceArrow').attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+        .attr('markerWidth',7).attr('markerHeight',7).attr('orient','auto')
+        .append('path').attr('d','M0,-5L10,0L0,5').attr('fill','#0ea5e9');
+
+      d3.range(-RMAX, RMAX + 0.001, 1).forEach(t => {
+        svg.append('line').attr('class','gridline').attr('x1',x(-RMAX)).attr('x2',x(RMAX)).attr('y1',y(t)).attr('y2',y(t));
+        svg.append('line').attr('class','gridline').attr('x1',x(t)).attr('x2',x(t)).attr('y1',y(-RMAX)).attr('y2',y(RMAX));
+      });
+      svg.append('line').attr('class','axisline').attr('x1',x(-RMAX)).attr('x2',x(RMAX)).attr('y1',y(0)).attr('y2',y(0));
+      svg.append('line').attr('class','axisline').attr('x1',x(0)).attr('x2',x(0)).attr('y1',y(-RMAX)).attr('y2',y(RMAX));
+      svg.append('text').attr('class','axis-title').attr('x',W/2).attr('y',H-10).attr('text-anchor','middle').text('x');
+      svg.append('text').attr('class','axis-title').attr('x',18).attr('y',H/2).attr('text-anchor','middle').attr('transform',`rotate(-90 18 ${H/2})`).text('y');
+
+      [0.75, 1.35, 2.0, 2.75, 3.45].forEach(r => {
+        svg.append('circle')
+          .attr('class','equipotential')
+          .attr('cx',x(0)).attr('cy',y(0))
+          .attr('r',Math.abs(x(r) - x(0)));
+      });
+
+      const rayAngles = d3.range(0, 360, 22.5);
+      rayAngles.forEach(aDeg => {
+        const a = aDeg * Math.PI / 180;
+        const r0 = 0.28;
+        const r1 = 3.65;
+        svg.append('line')
+          .attr('class','streamline')
+          .attr('x1',x(r0*Math.cos(a))).attr('y1',y(r0*Math.sin(a)))
+          .attr('x2',x(r1*Math.cos(a))).attr('y2',y(r1*Math.sin(a)));
+
+        if (Math.abs(strength) > 0.05){
+          const inward = strength < 0;
+          const a0 = inward ? 3.25 : 1.25;
+          const a1 = inward ? 2.05 : 2.45;
+          svg.append('line')
+            .attr('class','arrow')
+            .attr('x1',x(a0*Math.cos(a))).attr('y1',y(a0*Math.sin(a)))
+            .attr('x2',x(a1*Math.cos(a))).attr('y2',y(a1*Math.sin(a)))
+            .attr('marker-end','url(#sourceArrow)');
+        }
+      });
+
+      svg.append('circle').attr('class','source-core').attr('r',7).attr('cx',x(0)).attr('cy',y(0));
+      svg.append('text').attr('x',x(0)+12).attr('y',y(0)-12).attr('font-weight',700).text(flowLabel === 'nearly still' ? 'origin' : flowLabel);
+
+      const px = rp * Math.cos(theta);
+      const py = rp * Math.sin(theta);
+      svg.append('circle').attr('class','probe').attr('r',6).attr('cx',x(px)).attr('cy',y(py));
+      svg.append('text').attr('x',x(px)+10).attr('y',y(py)-10).attr('font-size',14).text('probe');
+    }
+
+    update();
+  </script>
+</body>
+</html>

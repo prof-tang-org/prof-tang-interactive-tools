@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Source in a Uniform Stream: Half-Body</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
+    .btn.primary{background:var(--accent);border-color:transparent}
+
+    .top-grid{display:grid;gap:12px}
+    @media (min-width:1024px){ .top-grid{grid-template-columns:1.5fr .9fr} }
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
+
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff;overflow-x:hidden}
+    .eqbig{font-size:1.02em;margin-top:2px}
+    .eq-lines{display:grid;row-gap:6px}
+    .eq-lines .mjx-container{display:block}
+    .note.title-xl,.title-xl{font-size:18px;line-height:1.22;color:#111}
+
+    .controls{display:grid;gap:12px}
+    .controls label,.ctl>label{font-size:13px;color:#4b5563}
+    .num-sm{width:170px}
+    .controls input.num-sm[type="number"]{width:170px !important}
+    .hint,.mini{font-size:13px;color:#64748b;line-height:1.35}
+
+    .kpi{display:grid;gap:10px;margin-top:4px;grid-template-columns:repeat(2,minmax(120px,1fr))}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;margin-top:12px}
+    .axis text,svg .axis text{font-size:14px;fill:#111}
+    .axis-title,svg .axis-title{font-size:16px;fill:#111}
+    svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+    .gridline{stroke:#e5e7eb;stroke-width:1}
+    .axisline{stroke:#111827;stroke-width:1.2;opacity:.75}
+    .streamline{fill:none;stroke:#0ea5e9;stroke-width:1.7;opacity:.85}
+    .body-fill{fill:#e0f2fe;stroke:#0284c7;stroke-width:2.4}
+    .body-edge{fill:none;stroke:#0284c7;stroke-width:2.8}
+    .stag{fill:#ef4444;stroke:#fff;stroke-width:2}
+    .source{fill:#111827;stroke:#fff;stroke-width:2}
+    .flow-arrow{stroke:#111827;stroke-width:2.4;fill:none}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:8px}
+    .legend span{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#475569}
+    .swatch{width:22px;height:0;border-top:3px solid #0ea5e9;display:inline-block}
+    .swatch.body{border-top-color:#0284c7}
+    input[type="number"],select{font:inherit}
+  </style>
+  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-row">
+        <h1 style="margin:0">Source in a Uniform Stream: Half-Body</h1>
+        <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="back-row">
+      <a href="../index.html" class="back-home" aria-label="Back to home"><span class="chev">←</span> Home</a>
+    </nav>
+
+    <section class="top-grid">
+      <div class="ctl">
+        <div class="eqwrap">
+          <div class="note title-xl" style="margin-bottom:10px"><b>Eqs. 6.97 and 6.98: source added to a uniform stream</b></div>
+          <div class="eqbig eq-lines">
+            \( \psi = Ur\sin\theta + \dfrac{m}{2\pi}\theta \qquad \text{(Eq. 6.97)} \)
+            \( \phi = Ur\cos\theta + \dfrac{m}{2\pi}\ln r \qquad \text{(Eq. 6.98)} \)
+          </div>
+          <div class="note" style="margin-top:10px">
+            A source placed in a uniform stream creates a stagnation point upstream of the source. The streamline through that point can be interpreted as an inviscid solid boundary, forming a Rankine half-body.
+          </div>
+        </div>
+
+        <div class="viz">
+          <svg id="plot" viewBox="0 0 820 460" aria-label="Half-body streamlines"></svg>
+          <div class="legend" aria-label="plot legend">
+            <span><i class="swatch"></i> \(\psi=\) constant</span>
+            <span><i class="swatch body"></i> stagnation streamline / body boundary</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="controls">
+          <div>
+            <label>Uniform speed, \(U\) (m/s)</label>
+            <input id="U" class="num-sm" type="number" min="0.1" max="30" step="0.1" value="8" />
+            <input id="U_s" type="range" min="0.1" max="30" step="0.1" value="8" />
+          </div>
+
+          <div>
+            <label>Source strength, \(m\) (m²/s per unit depth)</label>
+            <input id="m" class="num-sm" type="number" min="0.2" max="80" step="0.1" value="25" />
+            <input id="m_s" type="range" min="0.2" max="80" step="0.1" value="25" />
+          </div>
+
+          <div>
+            <label>Streamline density</label>
+            <input id="density" class="num-sm" type="number" min="5" max="17" step="1" value="11" />
+            <input id="density_s" type="range" min="5" max="17" step="1" value="11" />
+            <div class="hint">The plot uses normalized axes, \(x/b\) and \(y/b\), so the half-body shape stays readable as \(m/U\) changes.</div>
+          </div>
+
+          <div class="kpi">
+            <div><div class="lab">\(b=m/(2\pi U)\)</div><div id="kpi_b" class="val">—</div></div>
+            <div><div class="lab">Stagnation point</div><div id="kpi_stag" class="val">—</div></div>
+            <div><div class="lab">Far half-width</div><div id="kpi_hw" class="val">—</div></div>
+            <div><div class="lab">\(\psi_\mathrm{stag}=m/2\)</div><div id="kpi_psi" class="val">—</div></div>
+          </div>
+
+          <div class="eqwrap" style="margin:0">
+            <div class="eqbig eq-lines">
+              \( b=\dfrac{m}{2\pi U},\qquad x_\mathrm{stag}=-b \)
+              \( \psi_\mathrm{stag}=\dfrac{m}{2},\qquad y_{\infty}=\pm\pi b \)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <div class="note">
+        The source is an idealized line source. In the half-body interpretation, that singularity lies inside the streamline that becomes the model body, so the exterior flow field remains finite.
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+    </div>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const fmt = (v, d=3) => Number.isFinite(v) ? v.toFixed(d) : '—';
+    const XMIN = -3, XMAX = 8, YMIN = -4.1, YMAX = 4.1;
+
+    [['U','U_s'], ['m','m_s'], ['density','density_s']].forEach(([n, r]) => {
+      $(n).addEventListener('input', () => { $(r).value = $(n).value; update(); });
+      $(r).addEventListener('input', () => { $(n).value = $(r).value; update(); });
+    });
+
+    function normPsi(xn, yn){
+      const theta = Math.atan2(yn, xn);
+      return yn + theta;
+    }
+
+    function bodyPolygon(x, y){
+      const eps = 0.018;
+      const top = [];
+      for (let i = 0; i <= 700; i++){
+        const th = Math.PI - eps - (Math.PI - 2 * eps) * i / 700;
+        const r = (Math.PI - th) / Math.sin(th);
+        const xn = r * Math.cos(th);
+        const yn = Math.PI - th;
+        if (xn <= XMAX) top.push([x(xn), y(yn), xn, yn]);
+      }
+      const bottom = [];
+      for (let i = 0; i <= 700; i++){
+        const th = -eps - (Math.PI - 2 * eps) * i / 700;
+        const r = (-Math.PI - th) / Math.sin(th);
+        const xn = r * Math.cos(th);
+        const yn = -Math.PI - th;
+        if (xn <= XMAX) bottom.push([x(xn), y(yn), xn, yn]);
+      }
+      const topPts = top.map(p => [p[0], p[1]]);
+      const bottomPts = bottom.map(p => [p[0], p[1]]);
+      return {topPts, bottomPts, closed: topPts.concat(bottomPts)};
+    }
+
+    function update(){
+      const U = Math.max(0.1, parseFloat($('U').value) || 0.1);
+      const strength = Math.max(0.2, parseFloat($('m').value) || 0.2);
+      const density = Math.round(parseFloat($('density').value) || 11);
+      const b = strength / (2 * Math.PI * U);
+      const halfWidth = Math.PI * b;
+      const psiStag = strength / 2;
+
+      $('kpi_b').textContent = `${fmt(b,3)} m`;
+      $('kpi_stag').textContent = `x = ${fmt(-b,3)} m`;
+      $('kpi_hw').textContent = `±${fmt(halfWidth,3)} m`;
+      $('kpi_psi').textContent = fmt(psiStag,3);
+
+      const svg = d3.select('#plot');
+      svg.selectAll('*').remove();
+      const W = 820, H = 460, mrg = {l:64,r:22,t:22,b:54};
+      const iw = W - mrg.l - mrg.r, ih = H - mrg.t - mrg.b;
+      const x = d3.scaleLinear().domain([XMIN, XMAX]).range([mrg.l, mrg.l + iw]);
+      const y = d3.scaleLinear().domain([YMIN, YMAX]).range([mrg.t + ih, mrg.t]);
+
+      svg.append('defs').append('marker')
+        .attr('id','flowArrow').attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+        .attr('markerWidth',7).attr('markerHeight',7).attr('orient','auto')
+        .append('path').attr('d','M0,-5L10,0L0,5').attr('fill','#111827');
+
+      d3.range(Math.ceil(XMIN), XMAX + 0.001, 1).forEach(t => {
+        svg.append('line').attr('class','gridline').attr('x1',x(t)).attr('x2',x(t)).attr('y1',y(YMIN)).attr('y2',y(YMAX));
+      });
+      d3.range(Math.ceil(YMIN), YMAX + 0.001, 1).forEach(t => {
+        svg.append('line').attr('class','gridline').attr('x1',x(XMIN)).attr('x2',x(XMAX)).attr('y1',y(t)).attr('y2',y(t));
+      });
+      svg.append('line').attr('class','axisline').attr('x1',x(XMIN)).attr('x2',x(XMAX)).attr('y1',y(0)).attr('y2',y(0));
+      svg.append('line').attr('class','axisline').attr('x1',x(0)).attr('x2',x(0)).attr('y1',y(YMIN)).attr('y2',y(YMAX));
+      svg.append('text').attr('class','axis-title').attr('x',W/2).attr('y',H-10).attr('text-anchor','middle').text('x / b');
+      svg.append('text').attr('class','axis-title').attr('x',18).attr('y',H/2).attr('text-anchor','middle').attr('transform',`rotate(-90 18 ${H/2})`).text('y / b');
+
+      const nx = 210, ny = 150;
+      const values = [];
+      for (let j = 0; j < ny; j++){
+        const yn = YMAX - (YMAX - YMIN) * j / (ny - 1);
+        for (let i = 0; i < nx; i++){
+          const xn = XMIN + (XMAX - XMIN) * i / (nx - 1);
+          values.push(normPsi(xn, yn));
+        }
+      }
+      const levels = d3.range(-density, density + 0.001, 2).filter(v => Math.abs(Math.abs(v) - Math.PI) > 0.16);
+      const contours = d3.contours().size([nx, ny]).thresholds(levels)(values);
+      const contourTransform = d3.geoTransform({
+        point(px, py){
+          this.stream.point(mrg.l + px * iw / (nx - 1), mrg.t + py * ih / (ny - 1));
+        }
+      });
+      const path = d3.geoPath(contourTransform);
+      svg.append('g').selectAll('path')
+        .data(contours)
+        .join('path')
+        .attr('class','streamline')
+        .attr('d', path);
+
+      const body = bodyPolygon(x, y);
+      svg.append('path')
+        .attr('class','body-fill')
+        .attr('d', d3.line()(body.closed) + 'Z');
+      svg.append('path').attr('class','body-edge').attr('d', d3.line()(body.topPts));
+      svg.append('path').attr('class','body-edge').attr('d', d3.line()(body.bottomPts));
+
+      svg.append('circle').attr('class','stag').attr('r',6).attr('cx',x(-1)).attr('cy',y(0));
+      svg.append('text').attr('x',x(-1)-8).attr('y',y(0)-14).attr('text-anchor','end').attr('font-size',14).text('stagnation');
+      svg.append('circle').attr('class','source').attr('r',7).attr('cx',x(0)).attr('cy',y(0));
+      svg.append('text').attr('x',x(0)+10).attr('y',y(0)-12).attr('font-size',14).attr('font-weight',700).text('source');
+
+      [-2.7, -1.6, -0.5, 0.6, 1.7, 2.8].forEach(yn => {
+        svg.append('line').attr('class','flow-arrow')
+          .attr('x1',x(XMIN + 0.15)).attr('y1',y(yn))
+          .attr('x2',x(XMIN + 1.0)).attr('y2',y(yn))
+          .attr('marker-end','url(#flowArrow)');
+      });
+      svg.append('text').attr('x',x(XMIN + 1.1)).attr('y',y(3.35)).attr('font-weight',700).text('U');
+    }
+
+    update();
+  </script>
+</body>
+</html>
