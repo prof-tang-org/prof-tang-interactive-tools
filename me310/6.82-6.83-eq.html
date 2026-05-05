@@ -76,10 +76,10 @@
     <section class="top-grid">
       <div class="ctl">
         <div class="eqwrap">
-          <div class="note title-xl" style="margin-bottom:10px"><b>Eqs. 6.82 and 6.83: source or sink at the origin</b></div>
+          <div class="note title-xl" style="margin-bottom:10px"><b>Source or sink at the origin</b></div>
           <div class="eqbig eq-lines">
-            \( \phi = \dfrac{m}{2\pi}\ln r \qquad \text{(Eq. 6.82)} \)
-            \( \psi = \dfrac{m}{2\pi}\theta \qquad \text{(Eq. 6.83)} \)
+            \( \phi = \dfrac{m}{2\pi}\ln r \)
+            \( \psi = \dfrac{m}{2\pi}\theta \)
           </div>
           <div class="note" style="margin-top:10px">
             Positive \(m\) gives outward radial flow. Negative \(m\) gives inward radial flow. The ideal model has a mathematical singularity at \(r=0\), so the small center disk marks a region where the model is not physical.
@@ -87,10 +87,10 @@
         </div>
 
         <div class="viz">
-          <svg id="plot" viewBox="0 0 760 460" aria-label="Source and sink streamlines and equipotential lines"></svg>
+          <svg id="plot" viewBox="0 0 520 520" aria-label="Source and sink streamlines and equipotential lines"></svg>
           <div class="legend" aria-label="plot legend">
-            <span><i class="swatch"></i> \(\psi=\) constant</span>
             <span><i class="swatch phi"></i> \(\phi=\) constant</span>
+            <span><i class="swatch"></i> \(\psi=\) constant</span>
           </div>
         </div>
       </div>
@@ -182,10 +182,13 @@
 
       const svg = d3.select('#plot');
       svg.selectAll('*').remove();
-      const W = 760, H = 460, mrg = {l:54,r:22,t:22,b:54};
+      const W = 520, H = 520, mrg = {l:54,r:22,t:22,b:54};
       const iw = W - mrg.l - mrg.r, ih = H - mrg.t - mrg.b;
-      const x = d3.scaleLinear().domain([-RMAX, RMAX]).range([mrg.l, mrg.l + iw]);
-      const y = d3.scaleLinear().domain([-RMAX, RMAX]).range([mrg.t + ih, mrg.t]);
+      const screenX = d3.scaleLinear().domain([-RMAX, RMAX]).range([mrg.l, mrg.l + iw]);
+      const screenY = d3.scaleLinear().domain([-RMAX, RMAX]).range([mrg.t + ih, mrg.t]);
+      const plotX = (xVal, yVal) => screenX(yVal);
+      const plotY = (xVal, yVal) => screenY(xVal);
+      const unit = Math.abs(screenX(1) - screenX(0));
 
       svg.append('defs').append('marker')
         .attr('id','sourceArrow').attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
@@ -193,19 +196,19 @@
         .append('path').attr('d','M0,-5L10,0L0,5').attr('fill','#0ea5e9');
 
       d3.range(-RMAX, RMAX + 0.001, 1).forEach(t => {
-        svg.append('line').attr('class','gridline').attr('x1',x(-RMAX)).attr('x2',x(RMAX)).attr('y1',y(t)).attr('y2',y(t));
-        svg.append('line').attr('class','gridline').attr('x1',x(t)).attr('x2',x(t)).attr('y1',y(-RMAX)).attr('y2',y(RMAX));
+        svg.append('line').attr('class','gridline').attr('x1',plotX(t,-RMAX)).attr('x2',plotX(t,RMAX)).attr('y1',plotY(t,-RMAX)).attr('y2',plotY(t,RMAX));
+        svg.append('line').attr('class','gridline').attr('x1',plotX(-RMAX,t)).attr('x2',plotX(RMAX,t)).attr('y1',plotY(-RMAX,t)).attr('y2',plotY(RMAX,t));
       });
-      svg.append('line').attr('class','axisline').attr('x1',x(-RMAX)).attr('x2',x(RMAX)).attr('y1',y(0)).attr('y2',y(0));
-      svg.append('line').attr('class','axisline').attr('x1',x(0)).attr('x2',x(0)).attr('y1',y(-RMAX)).attr('y2',y(RMAX));
-      svg.append('text').attr('class','axis-title').attr('x',W/2).attr('y',H-10).attr('text-anchor','middle').text('x');
-      svg.append('text').attr('class','axis-title').attr('x',18).attr('y',H/2).attr('text-anchor','middle').attr('transform',`rotate(-90 18 ${H/2})`).text('y');
+      svg.append('line').attr('class','axisline').attr('x1',plotX(-RMAX,0)).attr('x2',plotX(RMAX,0)).attr('y1',plotY(-RMAX,0)).attr('y2',plotY(RMAX,0));
+      svg.append('line').attr('class','axisline').attr('x1',plotX(0,-RMAX)).attr('x2',plotX(0,RMAX)).attr('y1',plotY(0,-RMAX)).attr('y2',plotY(0,RMAX));
+      svg.append('text').attr('class','axis-title').attr('x',W/2).attr('y',H-10).attr('text-anchor','middle').text('y');
+      svg.append('text').attr('class','axis-title').attr('x',18).attr('y',H/2).attr('text-anchor','middle').attr('transform',`rotate(-90 18 ${H/2})`).text('x');
 
       [0.75, 1.35, 2.0, 2.75, 3.45].forEach(r => {
         svg.append('circle')
           .attr('class','equipotential')
-          .attr('cx',x(0)).attr('cy',y(0))
-          .attr('r',Math.abs(x(r) - x(0)));
+          .attr('cx',plotX(0,0)).attr('cy',plotY(0,0))
+          .attr('r',unit * r);
       });
 
       const rayAngles = d3.range(0, 360, 22.5);
@@ -215,8 +218,8 @@
         const r1 = 3.65;
         svg.append('line')
           .attr('class','streamline')
-          .attr('x1',x(r0*Math.cos(a))).attr('y1',y(r0*Math.sin(a)))
-          .attr('x2',x(r1*Math.cos(a))).attr('y2',y(r1*Math.sin(a)));
+          .attr('x1',plotX(r0*Math.cos(a), r0*Math.sin(a))).attr('y1',plotY(r0*Math.cos(a), r0*Math.sin(a)))
+          .attr('x2',plotX(r1*Math.cos(a), r1*Math.sin(a))).attr('y2',plotY(r1*Math.cos(a), r1*Math.sin(a)));
 
         if (Math.abs(strength) > 0.05){
           const inward = strength < 0;
@@ -224,19 +227,19 @@
           const a1 = inward ? 2.05 : 2.45;
           svg.append('line')
             .attr('class','arrow')
-            .attr('x1',x(a0*Math.cos(a))).attr('y1',y(a0*Math.sin(a)))
-            .attr('x2',x(a1*Math.cos(a))).attr('y2',y(a1*Math.sin(a)))
+            .attr('x1',plotX(a0*Math.cos(a), a0*Math.sin(a))).attr('y1',plotY(a0*Math.cos(a), a0*Math.sin(a)))
+            .attr('x2',plotX(a1*Math.cos(a), a1*Math.sin(a))).attr('y2',plotY(a1*Math.cos(a), a1*Math.sin(a)))
             .attr('marker-end','url(#sourceArrow)');
         }
       });
 
-      svg.append('circle').attr('class','source-core').attr('r',7).attr('cx',x(0)).attr('cy',y(0));
-      svg.append('text').attr('x',x(0)+12).attr('y',y(0)-12).attr('font-weight',700).text(flowLabel === 'nearly still' ? 'origin' : flowLabel);
+      svg.append('circle').attr('class','source-core').attr('r',7).attr('cx',plotX(0,0)).attr('cy',plotY(0,0));
+      svg.append('text').attr('x',plotX(0,0)+12).attr('y',plotY(0,0)-12).attr('font-weight',700).text(flowLabel === 'nearly still' ? 'origin' : flowLabel);
 
       const px = rp * Math.cos(theta);
       const py = rp * Math.sin(theta);
-      svg.append('circle').attr('class','probe').attr('r',6).attr('cx',x(px)).attr('cy',y(py));
-      svg.append('text').attr('x',x(px)+10).attr('y',y(py)-10).attr('font-size',14).text('probe');
+      svg.append('circle').attr('class','probe').attr('r',6).attr('cx',plotX(px, py)).attr('cy',plotY(px, py));
+      svg.append('text').attr('x',plotX(px, py)+10).attr('y',plotY(px, py)-10).attr('font-size',14).text('probe');
     }
 
     update();

@@ -322,7 +322,7 @@
     window.addEventListener('DOMContentLoaded', ()=>{ wire(); drawPlot(); });
     window.addEventListener('resize', drawPlot);
 
-    const FEEDBACK = { course: 'ME 310', sim: 'Eq. 3.16: Pitot-static (incompressible)' };
+    const FEEDBACK = { course: 'ME 310', sim: 'Pitot-static (incompressible)' };
     document.addEventListener('DOMContentLoaded', () => {
       const url = new URL('../feedback.html', location.href);
       url.searchParams.set('course', FEEDBACK.course);
