@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Stationary Vane and Jet Momentum</title>
+  <title>Ex 5.10 Change in Water Jet Flow Direction by a Stationary Vane</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="../styles.css" />
   <style>
@@ -26,6 +26,11 @@ input[type="number"],select{font:inherit}
 .kpi{background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:72px;display:flex;flex-direction:column;justify-content:center}
 .kpi .lab{font-size:12px;color:#6b7280}
 .kpi .val{font-size:16px;font-weight:700;color:#111;margin-top:2px}
+.input-summary{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:0 0 12px}
+.input-summary div{background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:600;color:#111}
+.scale-note{margin-top:12px;display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.scale-note p{margin:0;color:#111}
+.scale-note .note-tight{color:#0ea5e9;font-weight:700}
 
 .schem-box{border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px}
 .schem-ph{min-height:340px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#f8fbff,#fff);padding:10px}
@@ -69,7 +74,7 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
 <header class="site-header">
   <div class="container">
     <div class="header-row">
-      <h1 style="margin:0">Stationary Vane and Jet Momentum</h1>
+      <h1 style="margin:0">Ex 5.10 Change in Water Jet Flow Direction by a Stationary Vane</h1>
       <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
     </div>
   </div>
@@ -83,19 +88,15 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
   <section class="top-grid">
     <div class="stack">
       <section class="card ps">
-        <h3 style="margin:6px 0 10px">Problem Statement</h3>
         <div class="eqwrap">
-          <h4 style="margin:0 0 6px">Known</h4>
+          <h3 style="margin:0 0 6px">Known</h3>
           <p style="margin:0 0 10px">
-            A free water jet enters a smooth stationary vane and leaves with the same speed but with a changed direction.
-          </p>
-          <p style="margin:0 0 10px">
-            Atmospheric pressure surrounds the jet, and weight and viscous effects are neglected.
+            As shown in the schematic, a horizontal water jet exits a nozzle with a uniform velocity of \(V_1\), strikes a stationary vane, and is turned through an angle \(\alpha\). The water flow is assumed to be a steady one-dimensional flow with a constant cross-sectional area. Gravity and viscous effects are negligible.
           </p>
 
-          <h4 style="margin:0 0 6px">Find</h4>
+          <h3 style="margin:0 0 6px">Find</h3>
           <p style="margin:0">
-            Determine the force components needed to hold the vane fixed as the flow is redirected.
+            Determine the horizontal and vertical components of the force exerted by the vane on the water flow.
           </p>
         </div>
       </section>
@@ -104,25 +105,49 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
         <h3 style="margin:6px 0 8px">Analysis</h3>
         <div class="eqwrap">
           <p style="margin:0 0 8px">
-            With a fixed control volume around the vane, the steady linear momentum equation reduces to a flux balance between the inlet and outlet jets.
+            Define a control volume shown by the dash lines.
+          </p>
+          <p style="margin:0 0 10px">
+            Assume \(F_x\) is pointing left and \(F_z\) is pointing upward, as shown in the schematic.
+          </p>
+          <p style="margin:0 0 8px">
+            For the steady one-dimensional water flow with a constant cross-sectional area, we have the speed \(V_1=V_2\) and the flow cross-sectional area \(A_1=A_2\) of the flow stream entering and leaving the control volume.
+          </p>
+          <p style="margin:0 0 8px">
+            Apply the linear momentum equation to the defined control volume;
           </p>
           \[
-            \sum F_x = \dot{m}(V_{2x}-V_{1x}),\qquad
-            \sum F_z = \dot{m}(V_{2z}-V_{1z})
+            \sum \mathbf{F}
+            =
+            \frac{\partial}{\partial t}\int_{CV}\mathbf{V}\rho\,d\mathcal{V}
+            +
+            \int_{CS}\mathbf{V}\rho\,\mathbf{V}\cdot\hat{\mathbf{n}}\,dA
           \]
-          <p style="margin:10px 0 0">
-            The inlet velocity is horizontal. If the exit direction is turned upward by \(\theta\),
-          </p>
+          <p style="margin:10px 0 8px">In the \(x\) direction:</p>
           \[
-            V_{1x}=V,\quad V_{1z}=0,\quad
-            V_{2x}=V\cos\theta,\quad V_{2z}=V\sin\theta
+            -F_x=u_1\rho(\mathbf{V}_1\cdot\hat{\mathbf{n}}_1)A_1
+            +u_2\rho(\mathbf{V}_2\cdot\hat{\mathbf{n}}_2)A_2
           \]
-          <p style="margin:10px 0 0">
-            Using \(\dot{m}=\rho A V\), the holding-force components become
-          </p>
           \[
-            F_x=-\rho A V^2(1-\cos\theta),\qquad
-            F_z=\rho A V^2\sin\theta
+            -F_x=V_1\rho(-V_1)A_1+V_2\cos\alpha\,\rho V_2A_2
+          \]
+          \[
+            F_x=\rho A_1V_1^2-\rho A_2V_2^2\cos\alpha
+            =\rho A_1V_1^2(1-\cos\alpha)
+          \]
+          <p style="margin:10px 0 8px">In the \(z\) direction:</p>
+          \[
+            F_z=w_1\rho(\mathbf{V}_1\cdot\hat{\mathbf{n}}_1)A_1
+            +w_2\rho(\mathbf{V}_2\cdot\hat{\mathbf{n}}_2)A_2
+          \]
+          <p style="margin:10px 0 8px">Since \(w_1=0\), we have</p>
+          \[
+            F_z=w_2\rho(\mathbf{V}_2\cdot\hat{\mathbf{n}}_2)A_2
+          \]
+          \[
+            F_z=V_2\sin\alpha\,\rho V_2A_2
+            =\rho A_2V_2^2\sin\alpha
+            =\rho A_1V_1^2\sin\alpha
           \]
         </div>
       </section>
@@ -133,85 +158,98 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
         <h3 style="margin:6px 0 10px">Schematic</h3>
         <div class="schem-box">
           <div class="schem-ph">
-            <svg class="schem-svg" viewBox="0 0 360 300" role="img" aria-label="Stationary vane redirecting a jet with force components">
+            <svg class="schem-svg" viewBox="0 0 360 300" role="img" aria-label="Change in water jet flow direction by a stationary vane">
               <defs>
                 <marker id="arrow-blue" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
                   <path d="M0,-5L10,0L0,5" fill="#0ea5e9"></path>
                 </marker>
                 <marker id="arrow-red" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
-                  <path d="M0,-5L10,0L0,5" fill="#ef4444"></path>
+                  <path d="M0,-5L10,0L0,5" fill="#f97316"></path>
+                </marker>
+                <marker id="arrow-green" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M0,-5L10,0L0,5" fill="#15803d"></path>
                 </marker>
               </defs>
-              <path class="pipe" d="M102 208C154 208 221 164 244 95"></path>
-              <path class="water" marker-end="url(#arrow-blue)" d="M28 208H112"></path>
+              <path d="M104 208C154 208 221 164 244 95" fill="none" stroke="#111827" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path class="water" marker-end="url(#arrow-blue)" d="M26 208H112"></path>
               <path class="water" marker-end="url(#arrow-blue)" d="M126 205C165 198 216 157 236 102"></path>
-              <path class="force" marker-end="url(#arrow-red)" d="M132 184H62"></path>
-              <path class="force" marker-end="url(#arrow-red)" d="M132 184V112"></path>
-              <path d="M197 198A72 72 0 0 0 244 130" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="5 5"></path>
+              <path d="M105 126H218L250 92" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="10 8"></path>
+              <path d="M105 126V208H206" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="10 8"></path>
+              <path class="force" marker-end="url(#arrow-red)" d="M200 202H146"></path>
+              <path class="force" marker-end="url(#arrow-red)" d="M172 250V204"></path>
+              <path d="M250 144H308" fill="none" stroke="#15803d" stroke-width="3"></path>
+              <path d="M255 136A36 36 0 0 0 279 112" fill="none" stroke="#15803d" stroke-width="2"></path>
+              <path d="M86 96V54M86 96H132" fill="none" stroke="#15803d" stroke-width="3"></path>
+              <path d="M114 58l18 38" fill="none" stroke="#15803d" stroke-width="3"></path>
+              <path d="M100 68l-14-14-14 14" fill="none" stroke="#15803d" stroke-width="3"></path>
+              <path d="M122 84l10 12-16 4" fill="none" stroke="#15803d" stroke-width="3"></path>
               <text class="label" x="38" y="190">V1</text>
-              <text class="label" x="232" y="84">V2</text>
-              <text class="label" x="74" y="173">Fx</text>
-              <text class="label" x="141" y="118">Fz</text>
-              <text class="label" x="240" y="164">theta</text>
-              <text x="125" y="240">stationary vane</text>
+              <text class="label" x="240" y="84">V2</text>
+              <text class="label" x="164" y="196">Fx</text>
+              <text class="label" x="181" y="238">Fz</text>
+              <text class="label" x="278" y="128">α</text>
+              <text class="label" x="111" y="120">Control Volume</text>
+              <text class="label" x="72" y="48">z</text>
+              <text class="label" x="135" y="103">x</text>
+              <text class="label" x="92" y="143">n1</text>
+              <text class="label" x="255" y="76">n2</text>
             </svg>
           </div>
-          <div class="schem-cap">The stationary vane redirects the jet; the plotted force components follow from the inlet and outlet momentum fluxes.</div>
+          <div class="schem-cap">Define a control volume shown by the dash lines. Assume \(F_x\) is pointing left and \(F_z\) is pointing upward, as shown in the schematic.</div>
         </div>
       </div>
     </aside>
   </section>
 
   <section class="card inputs" style="margin-top:12px">
-    <h3 style="margin:6px 0 10px">Known / Inputs</h3>
+    <h3 style="margin:6px 0 10px">Input:</h3>
+    <div class="input-summary">
+      <div>\(\rho\) of water: \(998.2~\mathrm{kg/m^3}\)</div>
+      <div>\(A_1: 0.01~\mathrm{m^2}\)</div>
+    </div>
     <div class="controls-grid">
       <div class="ctl">
-        <label>Water density, ρ (slug/ft³)</label>
+        <label>\(V_1: 3~\mathrm{m/s}\) default \([0.2,5]~\mathrm{m/s}\)</label>
         <div class="pair">
-          <input id="rho" type="number" min="1.5" max="2.2" step="0.01" value="1.94">
-          <input id="rho_s" type="range" min="1.5" max="2.2" step="0.01" value="1.94">
+          <input id="speed" type="number" min="0.2" max="5" step="0.1" value="3">
+          <input id="speed_s" type="range" min="0.2" max="5" step="0.1" value="3">
         </div>
       </div>
       <div class="ctl">
-        <label>Jet area, A (ft²)</label>
+        <label>\(\alpha: 30^\circ\) default \([0^\circ,180^\circ]\)</label>
         <div class="pair">
-          <input id="area" type="number" min="0.005" max="0.12" step="0.001" value="0.060">
-          <input id="area_s" type="range" min="0.005" max="0.12" step="0.001" value="0.060">
-        </div>
-      </div>
-      <div class="ctl">
-        <label>Jet speed, V (ft/s)</label>
-        <div class="pair">
-          <input id="speed" type="number" min="1" max="40" step="0.5" value="10">
-          <input id="speed_s" type="range" min="1" max="40" step="0.5" value="10">
-        </div>
-      </div>
-      <div class="ctl">
-        <label>Turning angle, θ (deg)</label>
-        <div class="pair">
-          <input id="theta" type="number" min="0" max="180" step="1" value="90">
-          <input id="theta_s" type="range" min="0" max="180" step="1" value="90">
+          <input id="alpha" type="number" min="0" max="180" step="1" value="30">
+          <input id="alpha_s" type="range" min="0" max="180" step="1" value="30">
         </div>
       </div>
     </div>
 
     <div class="kpis">
-      <div class="kpi"><div class="lab">Mass flow rate</div><div class="val" id="outMdot">--</div></div>
-      <div class="kpi"><div class="lab">Horizontal force, Fx</div><div class="val" id="outFax">--</div></div>
-      <div class="kpi"><div class="lab">Vertical force, Fz</div><div class="val" id="outFaz">--</div></div>
-      <div class="kpi"><div class="lab">Resultant force</div><div class="val" id="outR">--</div></div>
-      <div class="kpi"><div class="lab">Resultant angle from +x</div><div class="val" id="outAngle">--</div></div>
+      <div class="kpi"><div class="lab">\(F_x\)</div><div class="val" id="outFax">--</div></div>
+      <div class="kpi"><div class="lab">\(F_z\)</div><div class="val" id="outFaz">--</div></div>
+      <div class="kpi"><div class="lab">\(\dot{m}\)</div><div class="val" id="outMdot">--</div></div>
+      <div class="kpi"><div class="lab">\(\rho A_1V_1^2\)</div><div class="val" id="outMomentum">--</div></div>
     </div>
   </section>
 
   <section class="plots-grid">
     <div class="card plot-card">
-      <h3>Force Components vs Turning Angle</h3>
-      <div class="viz"><svg id="plot1" aria-label="force component plot"></svg></div>
+      <h3>\(F_x\) and \(F_z\) vs \(V_1\)</h3>
+      <div class="viz"><svg id="plot1" aria-label="force components versus V1"></svg></div>
     </div>
     <div class="card plot-card">
-      <h3>Resultant Force vs Turning Angle</h3>
-      <div class="viz"><svg id="plot2" aria-label="resultant force plot"></svg></div>
+      <h3>\(F_x\) and \(F_z\) vs \(\alpha\)</h3>
+      <div class="viz"><svg id="plot2" aria-label="force components versus alpha"></svg></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:12px">
+    <h3 style="margin:6px 0 10px">Scale of \(F_x\) and \(F_z\).</h3>
+    <div class="scale-note">
+      <p>\(F_{\max}<45~\mathrm{N}\quad [0,50]\)</p>
+      <p>\(45~\mathrm{N}\le F_{\max}<180~\mathrm{N}\quad [0,200]~\mathrm{N}\)</p>
+      <p>\(F_{\max}\ge 180~\mathrm{N}\quad [0,600]~\mathrm{N}\)</p>
+      <p class="note-tight">keep the two plots having the same \(F_x\) &amp; \(F_z\) scale.</p>
     </div>
   </section>
 </main>
@@ -224,9 +262,8 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
 
 <script>
 (function () {
-  var TAU = 2 * Math.PI;
-  var RHO_WATER_SI = 999;
-  var GAMMA_WATER_BG = 62.4;
+  var RHO_WATER = 998.2;
+  var AREA_1 = 0.01;
 
   function byId(id) {
     return document.getElementById(id);
@@ -255,14 +292,6 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
     return deg * Math.PI / 180;
   }
 
-  function rpmToOmega(rpm) {
-    return rpm * TAU / 60;
-  }
-
-  function omegaToRpm(omega) {
-    return omega * 60 / TAU;
-  }
-
   function dataRange(min, max, steps, fn) {
     var values = [];
     for (var i = 0; i <= steps; i += 1) {
@@ -270,56 +299,6 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
       values.push({ x: x, y: fn(x) });
     }
     return values;
-  }
-
-  function steppedLimit(raw) {
-    raw = Math.abs(raw);
-    if (!Number.isFinite(raw) || raw <= 0) return 1;
-
-    var base = Math.pow(10, Math.floor(Math.log10(raw)));
-    var multipliers = [1, 1.5, 2, 3, 5, 7.5, 10];
-    for (var i = 0; i < multipliers.length; i += 1) {
-      var candidate = multipliers[i] * base;
-      if (raw <= candidate) return candidate;
-    }
-    return 10 * base;
-  }
-
-  function steppedYDomain(extent, opts) {
-    if (opts && opts.yDomain) return opts.yDomain.slice();
-
-    var min = extent[0];
-    var max = extent[1];
-    if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
-
-    if (opts && opts.includeZeroY) {
-      min = Math.min(min, 0);
-      max = Math.max(max, 0);
-    }
-
-    if (min === max) {
-      min -= 0.5;
-      max += 0.5;
-    }
-
-    var span = max - min;
-    var pad = Math.max(span * 0.08, steppedLimit(span) * 0.02);
-    min -= pad;
-    max += pad;
-
-    if (opts && opts.includeZeroY) {
-      min = Math.min(min, 0);
-      max = Math.max(max, 0);
-    }
-
-    if (opts && opts.symmetricY) {
-      var lim = steppedLimit(Math.max(Math.abs(min), Math.abs(max)));
-      return [-lim, lim];
-    }
-
-    if (min >= 0) return [0, steppedLimit(max)];
-    if (max <= 0) return [-steppedLimit(Math.abs(min)), 0];
-    return [-steppedLimit(Math.abs(min)), steppedLimit(max)];
   }
 
   function syncInput(id, update) {
@@ -346,6 +325,12 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
     update();
   }
 
+  function forceScale(maxForce) {
+    if (maxForce < 45) return [0, 50];
+    if (maxForce < 180) return [0, 200];
+    return [0, 600];
+  }
+
   function chart(svgId, series, opts) {
     opts = opts || {};
     var svgNode = byId(svgId);
@@ -363,7 +348,7 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
     var all = [];
     series.forEach(function (s) { all = all.concat(s.values); });
     var xDomain = opts.xDomain || d3.extent(all, function (d) { return d.x; });
-    var yDomain = steppedYDomain(d3.extent(all, function (d) { return d.y; }), opts || {});
+    var yDomain = opts.yDomain || d3.extent(all, function (d) { return d.y; });
 
     var x = d3.scaleLinear().domain(xDomain).range([0, width]);
     if (!opts.xDomain) x.nice();
@@ -440,163 +425,40 @@ svg text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
     });
   }
 
-  function update57() {
-    var q = value("qMl") * 1e-6;
-    var exits = Math.max(1, Math.round(value("nozzles")));
-    var area = value("areaMm2") * 1e-6;
-    var radius = value("radiusM");
-    var rpm = value("rpm");
-    var omega = rpmToOmega(rpm);
-    var w = area > 0 && exits > 0 ? q / (exits * area) : 0;
-    var u = omega * radius;
-    var vtheta = w - u;
-    var mdot = RHO_WATER_SI * q;
-    var zeroRpm = radius > 0 ? omegaToRpm(w / radius) : 0;
-
-    output("outW", unit(w, 2, "m/s"));
-    output("outU", unit(u, 2, "m/s"));
-    output("outV", unit(vtheta, 2, "m/s"));
-    output("outMdot", unit(mdot, 3, "kg/s"));
-    output("outZero", unit(zeroRpm, 0, "rpm"));
-
-    var maxRpm = Math.max(900, zeroRpm * 1.15, rpm * 1.2);
-    chart("plot1", [
-      { name: "relative speed W", color: "#111827", values: dataRange(0, maxRpm, 90, function () { return w; }) },
-      { name: "fixed-frame Vtheta", color: "#0ea5e9", values: dataRange(0, maxRpm, 90, function (r) { return w - rpmToOmega(r) * radius; }) }
-    ], { xLabel: "rotation speed, rpm", yLabel: "speed, m/s", includeZeroY: true });
-
-    chart("plot2", [
-      { name: "mass flow", color: "#ef4444", values: dataRange(0.2, value("qMl") * 1.6, 80, function (qMl) { return RHO_WATER_SI * qMl * 1e-6; }) }
-    ], { xLabel: "flow rate, mL/s", yLabel: "mass flow, kg/s", includeZeroY: true });
-  }
-
   function update510() {
-    var rho = value("rho");
-    var area = value("area");
     var speed = value("speed");
-    var thetaDeg = value("theta");
-    var theta = rad(thetaDeg);
-    var momentum = rho * area * speed * speed;
-    var fax = -momentum * (1 - Math.cos(theta));
-    var faz = momentum * Math.sin(theta);
-    var resultant = Math.hypot(fax, faz);
-    var angle = Math.atan2(faz, fax) * 180 / Math.PI;
-    var mdot = rho * area * speed;
+    var alphaDeg = value("alpha");
+    var alpha = rad(alphaDeg);
+    var rhoArea = RHO_WATER * AREA_1;
+    var momentum = rhoArea * speed * speed;
+    var fax = momentum * (1 - Math.cos(alpha));
+    var faz = momentum * Math.sin(alpha);
+    var mdot = RHO_WATER * AREA_1 * speed;
 
-    output("outMdot", unit(mdot, 3, "slug/s"));
-    output("outFax", unit(fax, 2, "lb"));
-    output("outFaz", unit(faz, 2, "lb"));
-    output("outR", unit(resultant, 2, "lb"));
-    output("outAngle", unit(angle, 1, "deg"));
-
-    chart("plot1", [
-      { name: "Fx", color: "#111827", values: dataRange(0, 180, 120, function (a) { return -momentum * (1 - Math.cos(rad(a))); }) },
-      { name: "Fz", color: "#0ea5e9", values: dataRange(0, 180, 120, function (a) { return momentum * Math.sin(rad(a)); }) }
-    ], { xLabel: "turning angle, deg", yLabel: "force component, lb", xDomain: [0, 180], includeZeroY: true, symmetricY: true });
-
-    chart("plot2", [
-      { name: "resultant", color: "#ef4444", values: dataRange(0, 180, 120, function (a) {
-        var ax = -momentum * (1 - Math.cos(rad(a)));
-        var az = momentum * Math.sin(rad(a));
-        return Math.hypot(ax, az);
-      }) }
-    ], { xLabel: "turning angle, deg", yLabel: "resultant force, lb", xDomain: [0, 180], includeZeroY: true });
-  }
-
-  function update517() {
-    var rho = value("rho");
-    var area = value("area");
-    var vJet = value("vJet");
-    var vVane = value("vVane");
-    var thetaDeg = value("theta");
-    var length = value("length");
-    var theta = rad(thetaDeg);
-    var w = Math.max(0, vJet - vVane);
-    var mdot = rho * w * area;
-    var momentum = rho * area * w * w;
-    var waterWeight = GAMMA_WATER_BG * area * length;
-    var rx = momentum * (1 - Math.cos(theta));
-    var rz = momentum * Math.sin(theta) + waterWeight;
-    var resultant = Math.hypot(rx, rz);
-    var angle = Math.atan2(rz, rx) * 180 / Math.PI;
-    var power = rx * vVane / 550;
-
-    output("outW", unit(w, 2, "ft/s"));
-    output("outMdot", unit(mdot, 3, "slug/s"));
-    output("outRx", unit(rx, 2, "lb"));
-    output("outRz", unit(rz, 2, "lb"));
-    output("outR", unit(resultant, 2, "lb"));
-    output("outAngle", unit(angle, 1, "deg"));
-    output("outPower", unit(power, 2, "hp"));
-
-    var maxSpeed = Math.max(vJet * 0.98, vVane * 1.4, 40);
-    chart("plot1", [
-      { name: "resultant", color: "#111827", values: dataRange(0, maxSpeed, 100, function (vo) {
-        var rel = Math.max(0, vJet - vo);
-        var mom = rho * area * rel * rel;
-        var x = mom * (1 - Math.cos(theta));
-        var z = mom * Math.sin(theta) + waterWeight;
-        return Math.hypot(x, z);
-      }) }
-    ], { xLabel: "vane speed, ft/s", yLabel: "force magnitude, lb", includeZeroY: true });
-
-    chart("plot2", [
-      { name: "power", color: "#ef4444", values: dataRange(0, maxSpeed, 100, function (vo) {
-        var rel = Math.max(0, vJet - vo);
-        var x = rho * area * rel * rel * (1 - Math.cos(theta));
-        return x * vo / 550;
-      }) }
-    ], { xLabel: "vane speed, ft/s", yLabel: "power, hp", includeZeroY: true });
-  }
-
-  function update518() {
-    var q = value("qMl") * 1e-6;
-    var area = value("areaMm2") * 1e-6;
-    var rho = value("rho");
-    var radius = value("radiusMm") / 1000;
-    var rpm = value("rpm");
-    var omega = rpmToOmega(rpm);
-    var w = area > 0 ? q / (2 * area) : 0;
-    var mdot = rho * q;
-    var u = radius * omega;
-    var vtheta = w - u;
-    var torque = -radius * vtheta * mdot;
-    var power = torque * omega;
-    var powerAlt = -u * vtheta * mdot;
-    var zeroRpm = radius > 0 ? omegaToRpm(w / radius) : 0;
-
-    output("outW", unit(w, 2, "m/s"));
+    output("outFax", unit(fax, 2, "N"));
+    output("outFaz", unit(faz, 2, "N"));
     output("outMdot", unit(mdot, 3, "kg/s"));
-    output("outU", unit(u, 2, "m/s"));
-    output("outVtheta", unit(vtheta, 2, "m/s"));
-    output("outTorque", unit(torque, 2, "N m"));
-    output("outPower", unit(power, 2, "W"));
-    output("outPowerAlt", unit(powerAlt, 2, "W"));
-    output("outZero", unit(zeroRpm, 0, "rpm"));
+    output("outMomentum", unit(momentum, 2, "N"));
 
-    var maxRpm = Math.max(850, zeroRpm * 1.15, rpm * 1.3);
+    var maxSpeed = 5;
+    var maxFromSpeedPlot = rhoArea * maxSpeed * maxSpeed * Math.max(1 - Math.cos(alpha), Math.sin(alpha));
+    var maxFromAlphaPlot = rhoArea * speed * speed * 2;
+    var maxForce = Math.max(maxFromSpeedPlot, maxFromAlphaPlot);
+    var forceDomain = forceScale(maxForce);
+
     chart("plot1", [
-      { name: "shaft torque", color: "#111827", values: dataRange(0, maxRpm, 120, function (r) {
-        var vt = w - radius * rpmToOmega(r);
-        return -radius * vt * mdot;
-      }) }
-    ], { xLabel: "rotation speed, rpm", yLabel: "shaft torque, N m", includeZeroY: true });
+      { name: "F_x", color: "#0ea5e9", values: dataRange(0.2, 5, 120, function (v1) { return RHO_WATER * AREA_1 * v1 * v1 * (1 - Math.cos(alpha)); }) },
+      { name: "F_z", color: "#f97316", values: dataRange(0.2, 5, 120, function (v1) { return RHO_WATER * AREA_1 * v1 * v1 * Math.sin(alpha); }) }
+    ], { xLabel: "V1 [m/s]", yLabel: "F_x & F_z [N]", xDomain: [0.2, 5], yDomain: forceDomain, includeZeroY: true });
 
     chart("plot2", [
-      { name: "shaft power", color: "#ef4444", values: dataRange(0, maxRpm, 120, function (r) {
-        var om = rpmToOmega(r);
-        var vt = w - radius * om;
-        return (-radius * vt * mdot) * om;
-      }) }
-    ], { xLabel: "rotation speed, rpm", yLabel: "shaft power, W", includeZeroY: true });
+      { name: "F_x", color: "#0ea5e9", values: dataRange(0, 180, 120, function (a) { return momentum * (1 - Math.cos(rad(a))); }) },
+      { name: "F_z", color: "#f97316", values: dataRange(0, 180, 120, function (a) { return momentum * Math.sin(rad(a)); }) }
+    ], { xLabel: "α", yLabel: "F_x & F_z [N]", xDomain: [0, 180], yDomain: forceDomain, includeZeroY: true });
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var example = document.body.getAttribute("data-example");
-    if (example === "5.7") setup(["qMl", "nozzles", "areaMm2", "radiusM", "rpm"], update57);
-    if (example === "5.10") setup(["rho", "area", "speed", "theta"], update510);
-    if (example === "5.17") setup(["rho", "area", "vJet", "vVane", "theta", "length"], update517);
-    if (example === "5.18") setup(["qMl", "areaMm2", "rho", "radiusMm", "rpm"], update518);
+    setup(["speed", "alpha"], update510);
   });
 })();
 </script>

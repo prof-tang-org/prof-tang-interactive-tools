@@ -81,6 +81,13 @@
             \( \phi = \dfrac{m}{2\pi}\ln r \)
             \( \psi = \dfrac{m}{2\pi}\theta \)
           </div>
+          <div class="eqbig eq-lines" style="margin-top:10px">
+            \( v_r=\dfrac{\partial\phi}{\partial r}=\dfrac{1}{r}\dfrac{\partial\psi}{\partial\theta}=\dfrac{m}{2\pi r} \)
+            \( v_\theta=\dfrac{1}{r}\dfrac{\partial\phi}{\partial\theta}=-\dfrac{\partial\psi}{\partial r}=0 \)
+          </div>
+          <div class="note" style="margin-top:10px">
+            Differentiating the velocity potential in polar coordinates gives the radial and tangential velocity components. The stream function gives the same components through \(v_r=(1/r)\partial\psi/\partial\theta\) and \(v_\theta=-\partial\psi/\partial r\). For a pure source or sink, flow is only radial, so \(v_\theta=0\).
+          </div>
           <div class="note" style="margin-top:10px">
             Positive \(m\) gives outward radial flow. Negative \(m\) gives inward radial flow. The ideal model has a mathematical singularity at \(r=0\), so the small center disk marks a region where the model is not physical.
           </div>
@@ -120,13 +127,6 @@
             <div><div class="lab">\(v_r=m/(2\pi r)\)</div><div id="kpi_vr" class="val">—</div></div>
             <div><div class="lab">φ at probe</div><div id="kpi_phi" class="val">—</div></div>
             <div><div class="lab">ψ at probe</div><div id="kpi_psi" class="val">—</div></div>
-          </div>
-
-          <div class="eqwrap" style="margin:0">
-            <div class="eqbig eq-lines">
-              \( v_r=\dfrac{\partial\phi}{\partial r}=\dfrac{1}{r}\dfrac{\partial\psi}{\partial\theta}=\dfrac{m}{2\pi r} \)
-              \( v_\theta=\dfrac{1}{r}\dfrac{\partial\phi}{\partial\theta}=-\dfrac{\partial\psi}{\partial r}=0 \)
-            </div>
           </div>
         </div>
       </div>
