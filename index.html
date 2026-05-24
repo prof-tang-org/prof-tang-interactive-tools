@@ -96,7 +96,7 @@
         <button class="tab" data-tab="me200" role="tab" aria-selected="false">
           <span class="tab-label">Thermodynamics</span>
         </button>
-        <button class="tab is-active" data-tab="me310" role="tab" aria-selected="true">
+        <button class="tab" data-tab="me310" role="tab" aria-selected="false">
           <span class="tab-label">Fundamentals of Fluid Mechanics</span>
         </button>
         <button class="tab" data-tab="me320" role="tab" aria-selected="false">
@@ -403,12 +403,16 @@
         </div>
       </section>
 
-      <!-- ============ COURSE: Thermodynamics (placeholder) ============ -->
+      <!-- ============ COURSE: Thermodynamics ============ -->
       <section id="course-me200" data-course="me200" hidden>
         <div class="course-layout">
-          <aside class="toc"><h3>Topics</h3><a class="active" href="#me200-intro">Overview</a></aside>
+          <aside class="toc">
+            <h3>Topics</h3>
+            <!-- <a class="active" href="#me200-intro">Overview</a> -->
+            <a href="#t-work-heat-transfer">Work and Heat Transfer</a>      
+          </aside>
           <div>
-            <div id="me200-intro" class="topic">
+            <!-- <div id="me200-intro" class="topic">
               <h2>Overview</h2>
               <div class="cards">
                 <div class="sim-card">
@@ -423,7 +427,18 @@
                 <h3>Coming soon</h3>
                 <p class="muted">Cycle analysis, property relations, and more.</p>
               </div>
-            </section>
+            </section> -->
+
+            <!-- Work and Heat Transfer -->
+            <div id="t-work-heat-transfer" class="topic">
+              <h2>Work and Heat Transfer</h2>
+              <div class="cards">
+                <a class="sim-card" href="./me200/2.17-eq.html">
+                  <div class="thumb"><img src="assets/me200/2.17-eq.png" alt=""></div>
+                  <h3>Polytropic Process for Ideal Gas in Closed System</h3>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -489,33 +504,60 @@
         me320: document.getElementById('course-me320'),
       };
 
-      function moveInkTo(el){
+      function moveInkTo(el, instant = false){
         const rBar = bar.getBoundingClientRect();
         const rBtn = el.getBoundingClientRect();
         const left = rBtn.left - rBar.left + 6;
+        
+        if (instant) ink.style.transition = 'none';
+        
         ink.style.width = (rBtn.width - 12) + 'px';
         ink.style.transform = `translateX(${left}px)`;
+        
+        if (instant) {
+          ink.offsetHeight; // force reflow
+          ink.style.transition = '';
+        }
       }
 
-      function showCourse(key){
+      function showCourse(key, instant = false){
         Object.keys(sections).forEach(k=>{
           sections[k].hidden = (k!==key);
         });
+        
+        if (instant) {
+          tabs.forEach(t => t.style.transition = 'none');
+        }
+
         const on = tabs.find(t=>t.dataset.tab===key) || tabs[0];
         tabs.forEach(t=>{
           const active = (t===on);
           t.classList.toggle('is-active', active);
           t.setAttribute('aria-selected', active?'true':'false');
         });
-        moveInkTo(on);
+        moveInkTo(on, instant);
         // reset active link in outline for the newly shown course
         const firstLink = sections[key].querySelector('.toc a');
         if(firstLink){ sections[key].querySelectorAll('.toc a').forEach(a=>a.classList.remove('active')); firstLink.classList.add('active'); }
+        
+        try { localStorage.setItem('active_course', key); } catch(e) {}
+        
+        if (instant) {
+          tabs[0].offsetHeight; // force reflow
+          tabs.forEach(t => t.style.transition = '');
+        }
       }
 
       tabs.forEach(t=>t.addEventListener('click', ()=>showCourse(t.dataset.tab)));
-      window.addEventListener('resize', ()=>moveInkTo(bar.querySelector('.tab.is-active')||tabs[0]));
-      requestAnimationFrame(()=>moveInkTo(bar.querySelector('.tab.is-active')||tabs[0]));
+      window.addEventListener('resize', ()=>moveInkTo(bar.querySelector('.tab.is-active')||tabs[0], true));
+      
+      let initKey = 'me310';
+      try { initKey = localStorage.getItem('active_course') || 'me310'; } catch(e) {}
+      if (!sections[initKey]) initKey = 'me310';
+      
+      // Delay initialization slightly to let layout settle for ink movement
+      requestAnimationFrame(()=>showCourse(initKey, true));
+      
       window.showCourse = showCourse; // for potential external calls
     })();
 

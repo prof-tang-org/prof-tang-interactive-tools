@@ -1,0 +1,179 @@
+<!-- /me200/2.17-eq.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Polytropic Process for Ideal Gas in Closed System</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;
+         background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
+    .btn.primary{background:var(--accent);border-color:transparent}
+
+    .top-grid{display:grid;gap:12px}
+    @media (min-width:1024px){ .top-grid{grid-template-columns:1.2fr 0.9fr} }
+
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
+    .eqbig{font-size:1.02em}
+    .title-xl{font-size:18px;line-height:1.25;color:#111}
+
+    .eq-schem{display:grid;gap:12px}
+    @media (min-width:900px){ .eq-schem{grid-template-columns:1.15fr .85fr} }
+
+    .schem{
+      min-height:240px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
+      display:flex;align-items:center;justify-content:center;color:#64748b;overflow:hidden
+    }
+    .schem img{display:block;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;padding:6px}
+
+    .controls{display:grid;gap:12px}
+    .rowflex{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .inline{display:flex;align-items:center;gap:8px}
+    .num-sm{width:170px}
+    .controls input.num-sm[type="number"]{width:170px !important}
+    .hint{font-size:12px;color:#6b7280;margin-top:4px}
+
+    input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
+
+    .kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(2,minmax(120px,1fr))}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:600;color:#334155}
+
+    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
+    .axis text{font-size:14px}
+    .axis-title{font-size:15px}
+    .curve{stroke:#111;fill:none;stroke-width:2}
+    .zeroline{stroke:#000;stroke-opacity:.35;stroke-dasharray:6 6}
+    .dragpt{fill:#ef4444;stroke:#111;stroke-width:1.2}
+    .hit{fill:transparent;cursor:ew-resize}
+  
+    /* consistency polish */
+    .header-row h1{font-size:clamp(1.75rem,2.1vw,2.2rem);line-height:1.12}
+    .note.title-xl,.title-xl{font-size:18px;line-height:1.22;color:#111}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
+    .controls{gap:12px}
+    .controls label,.ctl>label,.inputs-grid label,.inputs-row1 label,.inputs-row2 label{font-size:13px;color:#4b5563}
+    .hint,.dim-note,.mini-note,.mini{font-size:13px;color:#64748b;line-height:1.35}
+    .symgrid{display:grid;gap:0 18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    .kpi .lab,.out-label{font-size:12px;color:#6b7280}
+    .kpi .val,.out-value{font-size:16px;font-weight:700;color:#111}
+    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
+    .axis text,svg .axis text{font-size:14px;fill:#111}
+    .axis-title,svg .axis-title{font-size:16px;fill:#111}
+    input[type="number"],select{font:inherit}
+  </style>
+  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
+  <script defer src="../analytics.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-row">
+        <h1 style="margin:0">Polytropic Process for Ideal Gas in Closed System</h1>
+        <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="back-row">
+      <a href="../index.html" class="back-home" aria-label="Back to home"><span class="chev">←</span> Home</a>
+    </nav>
+
+    <section class="top-grid">
+      <div class="ctl">
+        <div class="eq-schem">
+          <div class="eqwrap">
+            <div class="note title-xl" style="margin-bottom:10px"><b>Polytropic process equation</b></div>
+            <div class="eqbig">
+              <!-- Equation will go here -->
+            </div>
+            <div class="note" style="margin-top:12px"><b>Symbols</b>
+              <ul style="margin:8px 0 0 20px">
+                <!-- Symbols will go here -->
+              </ul>
+            </div>
+          </div>
+
+          <div class="schem" aria-label="Schematic">
+            <!-- Schematic will go here -->
+          </div>
+        </div>
+
+        <div class="viz" style="margin-top:12px">
+          <svg id="plot" viewBox="0 0 760 320" aria-label="Plot"></svg>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="controls">
+          <h3 style="margin:0 0 6px">Inputs</h3>
+
+          <div class="rowflex">
+            <!-- Inputs will go here -->
+          </div>
+
+          <div>
+            <label>Current values</label>
+            <div class="kpi">
+              <!-- Output KPIs will go here -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <div class="note">
+        <!-- Additional notes will go here -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+    </div>
+  </footer>
+
+  <script>
+    /* ---------- constants & helpers ---------- */
+    const $ = id => document.getElementById(id);
+
+    function compute(){
+      // Compute logic will go here
+    }
+
+    function init(){
+      // Initialization logic will go here
+      window.addEventListener('resize', compute);
+    }
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <script>
+    const FEEDBACK = { course: 'ME 200', sim: 'Polytropic Process for Ideal Gas in Closed System' };
+    document.addEventListener('DOMContentLoaded', () => {
+      const url = new URL('../feedback.html', location.href);
+      if (FEEDBACK.course) url.searchParams.set('course', FEEDBACK.course);
+      if (FEEDBACK.sim)    url.searchParams.set('sim',    FEEDBACK.sim);
+      document.querySelectorAll('a.feedback-link').forEach(a => {
+        a.href = url.toString();
+        try { localStorage.setItem('fb_ctx', JSON.stringify(FEEDBACK)); } catch {}
+      });
+    });
+  </script>
+</body>
+</html>
