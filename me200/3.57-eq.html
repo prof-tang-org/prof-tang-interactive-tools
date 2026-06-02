@@ -45,7 +45,7 @@
     input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
 
     .kpi{
-      display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(2,minmax(120px,1fr));
+      display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(3,minmax(120px,1fr));
       background:#fcfcff;
       border:1px solid var(--line);
       border-radius:12px;
@@ -108,52 +108,77 @@
             \( \text{Polytropic process: } pV^n = \text{constant} \)
           </div>
           <div class="eqbig">
-            \( \displaystyle W = \begin{cases} 
-              p_1 V_1 \ln\left(\frac{V_2}{V_1}\right) & \text{if } n = 1.0 \\
-              \frac{p_2 V_2 - p_1 V_1}{1 - n} & \text{if } n \neq 1.0 
-            \end{cases} \)
+            \( \displaystyle 
+              \begin{aligned}
+                W &= \begin{cases} 
+                  mRT \ln\left(\frac{V_2}{V_1}\right) & \text{if } n = 1.0 \\
+                  \frac{mR(T_2 - T_1)}{1 - n} & \text{if } n \neq 1.0 
+                \end{cases} \\
+                &= \begin{cases} 
+                  mRT \ln\left(\frac{V_2}{V_1}\right) & \text{if } n = 1.0 \\
+                  \frac{mRT_1[(\frac{V_1}{V_2})^n - 1]}{1 - n} & \text{if } n \neq 1.0 
+                \end{cases}
+              \end{aligned}
+            \)
           </div>
           <div class="note" style="margin-top:12px"><b>Symbols</b>
-            <ul style="margin:8px 0 0 20px">
-              <li><b>\(W\)</b> — work done by the gas (J)</li>
+            <ul style="margin:8px 0 0 0px">
+              <li><b>\(W\)</b> — work done by the gas (kJ)</li>
+              <li><b>\(m\)</b> — mass of the gas (kg)</li>
               <li><b>\(V_1\)</b> — initial volume (m\(^3\))</li>
               <li><b>\(V_2\)</b> — final volume (m\(^3\))</li>
-              <li><b>\(p\)</b> — absolute pressure (Pa)</li>
+              <li><b>\(T_1\)</b> — initial temperature (K)</li>
+              <li><b>\(T_2\)</b> — final temperature (K)</li>
               <li><b>\(n\)</b> — polytropic index (dimensionless)</li>
             </ul>
           </div>
           <div id="n1-note" class="note" style="margin-top:12px; transition: color 0.2s;">
-            Note: \( p_1V_1 = p_2V_2 \) for \( n = 1.0 \)
+            Note: \( mRT_1 = p_1V_1 = p_2V_2 = mRT_2 \Rightarrow T_1 = T_2 = T \rightarrow \text{Isothermal Process} \) for \( n = 1.0 \)
           </div>
         </div>
 
         <div class="eqwrap" style="margin-top:12px">
           <div class="note title-xl" style="margin-bottom:10px"><b>Derivation steps</b></div>
           <div class="note" style="margin-bottom:8px">
-            The work associated with the change in the volume of a closed system due to the movement of its boundary can be evaluated by:
+            From <a href="/me200/2.17-eq.html" target="_blank">polytropic process work of a closed system</a>, we have:
           </div>
           <div class="note">
             <!-- Further derivation steps will go here -->
-            \( \displaystyle W = \int_{V_1}^{V_2} p \, dV \)
+            \( \displaystyle W = \begin{cases} 
+              p_1 V_1 \ln\left(\frac{V_2}{V_1}\right) & \text{if } n = 1.0 \\
+              \frac{p_2 V_2 - p_1 V_1}{1 - n} & \text{if } n \neq 1.0 
+            \end{cases} \)
+          </div>
+          <div class="note">
+            <p>For ideal gases, we have: \(pV = mRT \)</p>
+            <p>Substituting, we get:</p>
+            \( 
+              \begin{aligned}
+                \displaystyle W &= \begin{cases} 
+                  mRT_1 \ln\left(\frac{V_2}{V_1}\right) & \text{if } n = 1.0 \\
+                  \frac{mRT_2 - mRT_1}{1 - n} & \text{if } n \neq 1.0 
+                \end{cases} \\
+                &= \begin{cases} 
+                  mRT \ln\left(\frac{V_2}{V_1}\right) & \text{if } n = 1.0 \\
+                  \frac{mR(T_2 - T_1)}{1 - n} & \text{if } n \neq 1.0 
+                \end{cases} 
+              \end{aligned}
+            \)
+          </div>
+          <div class="note">
+            <p>We can derive other forms by combining the polytropic and ideal gas assumptions</p>
+            <p>For polytropic processes, we have: \( \displaystyle p_1V_1^n = p_2V_2^n \Rightarrow \frac{p_2}{p_1} = (\frac{V_2}{V_1}) ^ n \ \)</p>
+            <p>To relate temperature to pressure: </p>
+            \( \displaystyle \frac{T_2}{T_1} = \frac{p_2 V_2 / (mR)}{p_1 V_1 / (mR)} = \frac{p_2}{p_1} \frac{V_2}{V_1} = \left(\frac{V_1}{V_2}\right)^{n-1} \frac{V_2}{V_1} = \left(\frac{V_1}{V_2}\right)^{n-1} \)
             <p>
-                For \( n = 1.0 \):
-                <br>
-                \( \displaystyle W = \int_{V_1}^{V_2} \frac{\text{constant}}{V} \, dV 
-                = \text{constant} \ln\left(\frac{V_2}{V_1}\right) 
-                = p_1V_1 \ln\left(\frac{V_2}{V_1}\right) \) 
+              Then for \( n \neq 1 \), 
+              <br>
+              \( \displaystyle 
+                W = \frac{mR(T_2 - T_1)}{1 - n} 
+                = \frac{mRT_1(\frac{T_2}{T_1} - 1)}{1 - n} 
+                = \frac{mRT_1[(\frac{V_1}{V_2})^{n-1} - 1]}{1 - n} 
+              \)
             </p>
-            <p>
-                For \( n \neq 1.0 \):
-                <br>
-                \( 
-                    \begin{aligned}
-                    W &= \int_{V_1}^{V_2} \frac{\text{constant}}{V^n} \, dV 
-                    = \frac{\text{constant}(V_2^{1-n} - V_1^{1-n})}{1-n} 
-                    = \frac{(p_2V_2^n)V_2^{1-n} - (p_1V_1^n)V_1^{1-n}}{1-n} \\
-                    &= \frac{p_2 V_2 - p_1 V_1}{1 - n}
-                    \end{aligned}
-                \)
-            </p> 
           </div>
         </div>
       </div>
@@ -173,16 +198,6 @@
       <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Inputs & Outputs</h2>
       <div class="controls inputs-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="rowflex" style="flex-direction:column;align-items:flex-start;">
-          <div class="ctl" style="width:100%">
-            <label style="width:120px" for="n-in">Polytropic index \(n\)</label>
-            <div class="inline">
-              <input type="number" id="n-out" class="num-sm" min="0" max="2" step="0.01" value="1.3" onchange="handleNInput(this)" />
-              <div style="position:relative; flex:1; display:flex; align-items:center;">
-                <div id="n-marker" style="position:absolute; left:50%; width:6px; height:6px; border-radius:50%; background:#4b5563; transform:translateX(-50%); pointer-events:none; z-index:2; transition: background 0.2s;"></div>
-                <input type="range" id="n-in" min="0" max="2" step="0.01" value="1.3" oninput="handleNInput(this)" style="width:100%; margin:0; position:relative; z-index:1;" />
-              </div>
-            </div>
-          </div>
           <div class="ctl" style="width: 100%">
             <div class="inline" style="justify-content: space-between;">
               <label>Initial pressure \(p_1\) (kPa)</label>
@@ -195,16 +210,33 @@
               <input type="number" disabled class="num-sm" value="0.1" />
             </div>
           </div>
+          <div class="ctl" style="width: 100%">
+            <div class="inline" style="justify-content: space-between;">
+              <label>Initial temperature \(T_1\) (K)</label>
+              <input type="number" disabled class="num-sm" value="300" />
+            </div>
+          </div>
+          <div class="ctl" style="width:100%">
+            <label style="width:120px" for="n-in">Polytropic index \(n\)</label>
+            <div class="inline">
+              <input type="number" id="n-out" class="num-sm" min="0" max="2" step="0.01" value="1.3" onchange="handleNInput(this)" />
+              <div style="position:relative; flex:1; display:flex; align-items:center;">
+                <div id="n-marker" style="position:absolute; left:50%; width:6px; height:6px; border-radius:50%; background:#4b5563; transform:translateX(-50%); pointer-events:none; z-index:2; transition: background 0.2s;"></div>
+                <input type="range" id="n-in" min="0" max="2" step="0.01" value="1.3" oninput="handleNInput(this)" style="width:100%; margin:0; position:relative; z-index:1;" />
+              </div>
+            </div>
+          </div>
           <div class="ctl" style="width:100%">
             <label style="width:120px" for="v2-in">Final volume \(V_2\) (m\(^3\))</label>
             <div class="inline" style="width:100%">
-              <input type="number" id="v2-out" class="num-sm" min="0.05" max="0.2" step="0.001" value="0.15" onchange="handleV2Input(this)" /> 
-              <input type="range" id="v2-in" min="0.05" max="0.2" step="0.001" value="0.15" oninput="handleV2Input(this)" style="flex:1" />
+              <input type="number" id="v2-out" class="num-sm" min="0.01" max="0.2" step="0.001" value="0.15" onchange="handleV2Input(this)" /> 
+              <input type="range" id="v2-in" min="0.01" max="0.2" step="0.001" value="0.15" oninput="handleV2Input(this)" style="flex:1" />
             </div>
         </div>
 
         <div>
           <div class="kpi">
+            <div><div class="lab">Final temp \(T_2\)</div><div class="val"><span id="t2-kpi">...</span> K</div></div>
             <div><div class="lab">Final pressure \(p_2\)</div><div class="val"><span id="p2-kpi">...</span> kPa</div></div>
             <div><div class="lab">Work \(W\)</div><div class="val"><span id="w-kpi">...</span> kJ</div></div>
           </div>
@@ -215,7 +247,7 @@
     <section class="ctl" style="margin-top:12px">
       <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Plot</h2>
       <div class="viz">
-        <svg id="plot" viewBox="0 0 760 320" aria-label="Plot"></svg>
+        <svg id="plot" viewBox="0 0 1100 320" aria-label="Plot"></svg>
       </div>
     </section>
   </main>
@@ -230,14 +262,19 @@
     /* ---------- constants & helpers ---------- */
     const $ = id => document.getElementById(id);
     const p1 = 100; // kPa
+    const T1 = 300; // K
     const V1 = 0.1; // m^3
+    const N_MIN = 0;
+    const N_MAX = 2;
+    const V2_MIN = 0.01;
+    const V2_MAX = 0.2;
 
     const N_SNAP_RANGE = 0.04;
 
     function handleNInput(el) {
       let val = parseFloat(el.value);
-      if (val < 0) val = 0;
-      if (val > 2) val = 2;
+      if (val < N_MIN) val = N_MIN;
+      if (val > N_MAX) val = N_MAX;
 
       if (el.id === 'n-in' && Math.abs(val - 1.0) <= N_SNAP_RANGE) {
         val = 1.0;
@@ -265,8 +302,8 @@
 
     function handleV2Input(el) {
       let val = parseFloat(el.value);
-      if (val < 0.05) val = 0.05;
-      if (val > 0.2) val = 0.2;
+      if (val < V2_MIN) val = V2_MIN;
+      if (val > V2_MAX) val = V2_MAX;
 
       if (el.id === 'v2-out') {
         el.value = val;
@@ -282,12 +319,15 @@
       return p1 * Math.pow(V1 / v, n);
     }
 
+    function calcT2(v, n) {
+      return T1 * Math.pow(V1 / v, n - 1);
+    }
+
     function calcW(v, n) {
       if (Math.abs(n - 1) < 1e-4) {
         return p1 * V1 * Math.log(v / V1); // kPa * m^3 = kJ
       }
-      const p2 = calcP2(v, n);
-      return (p2 * v - p1 * V1) / (1 - n);
+      return p1 * V1 * (Math.pow(V1 / v, n - 1) - 1) / (1 - n);
     }
 
     function compute(){
@@ -295,8 +335,10 @@
       const n = parseFloat($('n-in').value);
 
       const p2 = calcP2(v2, n);
+      const t2 = calcT2(v2, n);
       const w = calcW(v2, n);
       
+      $('t2-kpi').textContent = t2.toFixed(1);
       $('p2-kpi').textContent = p2.toFixed(1);
       $('w-kpi').textContent = w.toFixed(2);
       
@@ -307,71 +349,81 @@
       const svg = d3.select("#plot");
       svg.selectAll("*").remove();
       
-      const width = 760;
+      const width = 1100;
       const height = 320;
-      const margin = { top: 20, right: 40, bottom: 40, left: 60 };
-      const gap = 90;
+      const margin = { top: 20, right: 30, bottom: 40, left: 55 };
+      const gap = 70;
       
-      const plotW = (width - margin.left - margin.right - gap) / 2;
+      const plotW = (width - margin.left - margin.right - 2 * gap) / 3;
       const plotH = height - margin.top - margin.bottom;
       
-      const v_domain = [0.05, 0.2];
-      const v_points = d3.range(0.05, 0.201, 0.001);
-      
-      let p_max = 0, p_min = Infinity;
-      let w_max = -Infinity, w_min = Infinity;
+      const v_domain = [0, 0.2];
+      const v_points = d3.range(0.01, 0.205, 0.005);
       
       const n_arr = [0, n_val, 2];
       const data_all = n_arr.map(n => {
         return v_points.map(v => {
+          const t = calcT2(v, n);
           const p = calcP2(v, n);
           const w = calcW(v, n);
-          if (p > p_max) p_max = p;
-          if (p < p_min) p_min = p;
-          if (w > w_max) w_max = w;
-          if (w < w_min) w_min = w;
-          return {v, p, w, n};
+          return {v, t, p, w, n};
         });
       });
       
       const xScale1 = d3.scaleLinear().domain(v_domain).range([margin.left, margin.left + plotW]);
-      const yScale1 = d3.scaleLinear().domain([0, p_max]).range([margin.top + plotH, margin.top]);
+      const yScale1 = d3.scaleLinear().domain([0, 700]).range([margin.top + plotH, margin.top]);
       
-      const xScale2 = d3.scaleLinear().domain(v_domain).range([margin.left + plotW + gap, width - margin.right]);
-      const yScale2 = d3.scaleLinear().domain([Math.min(0, w_min), Math.max(0, w_max)]).range([margin.top + plotH, margin.top]);
+      const xScale2 = d3.scaleLinear().domain(v_domain).range([margin.left + plotW + gap, margin.left + 2*plotW + gap]);
+      const yScale2 = d3.scaleLinear().domain([0, 450]).range([margin.top + plotH, margin.top]);
       
-      // Axes
+      const xScale3 = d3.scaleLinear().domain(v_domain).range([margin.left + 2*plotW + 2*gap, width - margin.right]);
+      const yScale3 = d3.scaleLinear().domain([-15, 15]).range([margin.top + plotH, margin.top]);
+      
       svg.append("g").attr("class", "axis").attr("transform", `translate(0,${margin.top + plotH})`).call(d3.axisBottom(xScale1).ticks(5));
       svg.append("g").attr("class", "axis").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(yScale1));
       
       svg.append("g").attr("class", "axis").attr("transform", `translate(0,${margin.top + plotH})`).call(d3.axisBottom(xScale2).ticks(5));
-      // For y-axis of W, if it contains zero, we might want a zero line, which we draw later
       svg.append("g").attr("class", "axis").attr("transform", `translate(${margin.left + plotW + gap},0)`).call(d3.axisLeft(yScale2));
       
-      // Axis titles
+      svg.append("g").attr("class", "axis").attr("transform", `translate(0,${margin.top + plotH})`).call(d3.axisBottom(xScale3).ticks(5));
+      svg.append("g").attr("class", "axis").attr("transform", `translate(${margin.left + 2*plotW + 2*gap},0)`).call(d3.axisLeft(yScale3));
+      
       svg.append("text").attr("class", "axis-title")
          .attr("x", margin.left + plotW/2).attr("y", height - 5).attr("text-anchor", "middle")
          .text("Volume V₂ (m³)");
       svg.append("text").attr("class", "axis-title")
          .attr("x", -(margin.top + plotH/2)).attr("y", 15).attr("text-anchor", "middle").attr("transform", "rotate(-90)")
-         .text("Pressure p₂ (kPa)");
+         .text("Temperature T₂ (K)");
          
       svg.append("text").attr("class", "axis-title")
          .attr("x", margin.left + plotW + gap + plotW/2).attr("y", height - 5).attr("text-anchor", "middle")
          .text("Volume V₂ (m³)");
       svg.append("text").attr("class", "axis-title")
-         .attr("x", -(margin.top + plotH/2)).attr("y", margin.left + plotW + gap - 35).attr("text-anchor", "middle").attr("transform", "rotate(-90)")
+         .attr("x", -(margin.top + plotH/2)).attr("y", margin.left + plotW + gap - 40).attr("text-anchor", "middle").attr("transform", "rotate(-90)")
+         .text("Pressure p₂ (kPa)");
+
+      svg.append("text").attr("class", "axis-title")
+         .attr("x", margin.left + 2*plotW + 2*gap + plotW/2).attr("y", height - 5).attr("text-anchor", "middle")
+         .text("Volume V₂ (m³)");
+      svg.append("text").attr("class", "axis-title")
+         .attr("x", -(margin.top + plotH/2)).attr("y", margin.left + 2*plotW + 2*gap - 40).attr("text-anchor", "middle").attr("transform", "rotate(-90)")
          .text("Work W (kJ)");
          
-      // Zero line for Work if domain covers negative and positive
-      if (w_min < 0 && w_max > 0) {
-        svg.append("line").attr("class", "zeroline")
-           .attr("x1", xScale2(v_domain[0])).attr("y1", yScale2(0))
-           .attr("x2", xScale2(v_domain[1])).attr("y2", yScale2(0));
-      }
+      svg.append("line").attr("class", "zeroline")
+         .attr("x1", xScale3(v_domain[0])).attr("y1", yScale3(0))
+         .attr("x2", xScale3(v_domain[1])).attr("y2", yScale3(0));
       
-      const lineP = d3.line().x(d => xScale1(d.v)).y(d => yScale1(d.p));
-      const lineW = d3.line().x(d => xScale2(d.v)).y(d => yScale2(d.w));
+      // Clipping paths so curves don't bleed out of plots (since points might exceed 700K or 450kPa)
+      svg.append("clipPath").attr("id", "clip1")
+         .append("rect").attr("x", margin.left).attr("y", margin.top).attr("width", plotW).attr("height", plotH);
+      svg.append("clipPath").attr("id", "clip2")
+         .append("rect").attr("x", margin.left + plotW + gap).attr("y", margin.top).attr("width", plotW).attr("height", plotH);
+      svg.append("clipPath").attr("id", "clip3")
+         .append("rect").attr("x", margin.left + 2*plotW + 2*gap).attr("y", margin.top).attr("width", plotW).attr("height", plotH);
+
+      const lineT = d3.line().x(d => xScale1(d.v)).y(d => yScale1(d.t));
+      const lineP = d3.line().x(d => xScale2(d.v)).y(d => yScale2(d.p));
+      const lineW = d3.line().x(d => xScale3(d.v)).y(d => yScale3(d.w));
       
       const colors = {0: "#9ca3af", 2: "#9ca3af"};
       
@@ -384,45 +436,55 @@
         
         svg.append("path").datum(data).attr("class", "curve")
            .style("stroke", color).style("stroke-width", strokeW).style("stroke-dasharray", dash)
-           .attr("d", lineP);
+           .attr("clip-path", "url(#clip1)").attr("d", lineT);
            
         svg.append("path").datum(data).attr("class", "curve")
            .style("stroke", color).style("stroke-width", strokeW).style("stroke-dasharray", dash)
-           .attr("d", lineW);
+           .attr("clip-path", "url(#clip2)").attr("d", lineP);
+           
+        svg.append("path").datum(data).attr("class", "curve")
+           .style("stroke", color).style("stroke-width", strokeW).style("stroke-dasharray", dash)
+           .attr("clip-path", "url(#clip3)").attr("d", lineW);
            
         if (!isUserN) {
           const last = data[data.length - 1];
-          svg.append("text").attr("x", xScale1(last.v) + 5).attr("y", yScale1(last.p))
-             .style("font-size", "12px").style("fill", color).attr("alignment-baseline", "middle")
-             .text(`n=${n}`);
-          svg.append("text").attr("x", xScale2(last.v) + 5).attr("y", yScale2(last.w))
-             .style("font-size", "12px").style("fill", color).attr("alignment-baseline", "middle")
-             .text(`n=${n}`);
+          svg.append("text").attr("x", xScale1(last.v) + 5).attr("y", yScale1(last.t))
+             .style("font-size", "12px").style("fill", color).attr("alignment-baseline", "middle").text(`n=${n}`);
+          svg.append("text").attr("x", xScale2(last.v) + 5).attr("y", yScale2(last.p))
+             .style("font-size", "12px").style("fill", color).attr("alignment-baseline", "middle").text(`n=${n}`);
+          svg.append("text").attr("x", xScale3(last.v) + 5).attr("y", yScale3(last.w))
+             .style("font-size", "12px").style("fill", color).attr("alignment-baseline", "middle").text(`n=${n}`);
         } else {
           const last = data[data.length - 1];
-          svg.append("text").attr("x", xScale1(last.v) + 5).attr("y", yScale1(last.p))
-             .style("font-size", "12px").style("fill", color).style("font-weight", "bold").attr("alignment-baseline", "middle")
-             .text(`n=${n_val.toFixed(1)}`);
-          svg.append("text").attr("x", xScale2(last.v) + 5).attr("y", yScale2(last.w))
-             .style("font-size", "12px").style("fill", color).style("font-weight", "bold").attr("alignment-baseline", "middle")
-             .text(`n=${n_val.toFixed(1)}`);
+          svg.append("text").attr("x", xScale1(last.v) + 5).attr("y", yScale1(last.t))
+             .style("font-size", "12px").style("fill", color).style("font-weight", "bold").attr("alignment-baseline", "middle").text(`n=${n_val.toFixed(1)}`);
+          svg.append("text").attr("x", xScale2(last.v) + 5).attr("y", yScale2(last.p))
+             .style("font-size", "12px").style("fill", color).style("font-weight", "bold").attr("alignment-baseline", "middle").text(`n=${n_val.toFixed(1)}`);
+          svg.append("text").attr("x", xScale3(last.v) + 5).attr("y", yScale3(last.w))
+             .style("font-size", "12px").style("fill", color).style("font-weight", "bold").attr("alignment-baseline", "middle").text(`n=${n_val.toFixed(1)}`);
         }
       });
       
+      const t_dot = calcT2(v2_val, n_val);
       const p_dot = calcP2(v2_val, n_val);
       const w_dot = calcW(v2_val, n_val);
       
       const dragpt1 = svg.append("circle").attr("class", "dragpt")
-         .attr("cx", xScale1(v2_val)).attr("cy", yScale1(p_dot)).attr("r", 6);
+         .attr("clip-path", "url(#clip1)")
+         .attr("cx", xScale1(v2_val)).attr("cy", yScale1(t_dot)).attr("r", 6);
       const dragpt2 = svg.append("circle").attr("class", "dragpt")
-         .attr("cx", xScale2(v2_val)).attr("cy", yScale2(w_dot)).attr("r", 6);
+         .attr("clip-path", "url(#clip2)")
+         .attr("cx", xScale2(v2_val)).attr("cy", yScale2(p_dot)).attr("r", 6);
+      const dragpt3 = svg.append("circle").attr("class", "dragpt")
+         .attr("clip-path", "url(#clip3)")
+         .attr("cx", xScale3(v2_val)).attr("cy", yScale3(w_dot)).attr("r", 6);
 
       const hit1 = svg.append("rect").attr("class", "hit")
-         .attr("x", margin.left).attr("y", margin.top)
-         .attr("width", plotW).attr("height", plotH);
+         .attr("x", margin.left).attr("y", margin.top).attr("width", plotW).attr("height", plotH);
       const hit2 = svg.append("rect").attr("class", "hit")
-         .attr("x", margin.left + plotW + gap).attr("y", margin.top)
-         .attr("width", plotW).attr("height", plotH);
+         .attr("x", margin.left + plotW + gap).attr("y", margin.top).attr("width", plotW).attr("height", plotH);
+      const hit3 = svg.append("rect").attr("class", "hit")
+         .attr("x", margin.left + 2*plotW + 2*gap).attr("y", margin.top).attr("width", plotW).attr("height", plotH);
 
       const drag = d3.drag()
         .on("start drag", (event) => {
@@ -430,23 +492,29 @@
           if (event.x < margin.left + plotW + gap/2) {
             const xm = Math.max(margin.left, Math.min(margin.left + plotW, event.x));
             v_new = xScale1.invert(xm);
-          } else {
-            const xm = Math.max(margin.left + plotW + gap, Math.min(width - margin.right, event.x));
+          } else if (event.x < margin.left + 2*plotW + 1.5*gap) {
+            const xm = Math.max(margin.left + plotW + gap, Math.min(margin.left + 2*plotW + gap, event.x));
             v_new = xScale2.invert(xm);
+          } else {
+            const xm = Math.max(margin.left + 2*plotW + 2*gap, Math.min(width - margin.right, event.x));
+            v_new = xScale3.invert(xm);
           }
-          // snap to nearest 0.001
           v_new = Math.round(v_new / 0.001) * 0.001;
-          v_new = Math.max(v_domain[0], Math.min(v_domain[1], v_new));
+          v_new = Math.max(V2_MIN, Math.min(V2_MAX, v_new));
 
+          const t_new = calcT2(v_new, n_val);
           const p_new = calcP2(v_new, n_val);
           const w_new = calcW(v_new, n_val);
 
-          dragpt1.attr("cx", xScale1(v_new)).attr("cy", yScale1(p_new));
-          dragpt2.attr("cx", xScale2(v_new)).attr("cy", yScale2(w_new));
+
+          dragpt1.attr("cx", xScale1(v_new)).attr("cy", yScale1(t_new));
+          dragpt2.attr("cx", xScale2(v_new)).attr("cy", yScale2(p_new));
+          dragpt3.attr("cx", xScale3(v_new)).attr("cy", yScale3(w_new));
 
           $('v2-in').value = v_new.toFixed(3);
           $('v2-out').value = v_new.toFixed(3);
           
+          $('t2-kpi').textContent = t_new.toFixed(1);
           $('p2-kpi').textContent = p_new.toFixed(1);
           $('w-kpi').textContent = w_new.toFixed(2);
         })
@@ -454,6 +522,7 @@
 
       hit1.call(drag);
       hit2.call(drag);
+      hit3.call(drag);
     }
 
     function init(){
@@ -479,7 +548,4 @@
     });
   </script>
 </body>
-</html>   });
-  </script>
-</body>
-</html>
+</html>  
