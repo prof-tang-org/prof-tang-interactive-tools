@@ -49,9 +49,8 @@
     /* top two-column grid */
     .top-grid{display:grid;gap:12px}
     @media(min-width:1024px){.top-grid{grid-template-columns:1.2fr 0.9fr}}
-
     /* schematic box */
-    .schem{min-height:260px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
+    .schem{min-height:160px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
            display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
 
     /* controls / inputs */
@@ -122,34 +121,15 @@
       <div style="margin-top:10px;padding:0 4px">
         <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px">Symbols</div>
         <ul style="margin:0;padding-left:18px;font-size:13px;color:#4b5563;line-height:1.9">
-          <li><b>\(\dot{Q}_{\text{cond},x}\)</b> — heat transfer rate (kW)</li>
-          <li><b>\(k\)</b> — thermal conductivity of wall material (W/(m·K))</li>
-          <li><b>\(A\)</b> — wall area normal to the direction of heat transfer (m²)</li>
-          <li><b>\(L\)</b> — wall thickness in the direction of heat transfer (m)</li>
-          <li><b>\(T_1,\,T_2\)</b> — temperatures of the wall surfaces (K)</li>
+          <li><b>\(\dot{Q}_{\text{cond},x}\)</b> — heat transfer rate</li>
+          <li><b>\(k\)</b> — thermal conductivity of wall material</li>
+          <li><b>\(A\)</b> — wall area normal to the direction of heat transfer</li>
+          <li><b>\(L\)</b> — wall thickness in the direction of heat transfer</li>
+          <li><b>\(T_1,\,T_2\)</b> — temperatures of the wall surfaces</li>
         </ul>
       </div>
 
-      <!-- Derivation -->
-      <div style="margin-top:18px;padding:12px 4px 0;border-top:1px solid var(--line)">
-        <div style="font-size:1.1rem;font-weight:700;color:#111;margin-bottom:8px">Derivation</div>
-        <div style="font-size:13px;color:#4b5563;margin-bottom:6px">
-          Fourier's law relates the local heat flux \(q_x''\) (W/m²) to the temperature gradient:
-        </div>
-        \(\displaystyle q_x'' = -k\,\frac{dT}{dx}\)
-        <div style="font-size:13px;color:#4b5563;margin-top:8px;margin-bottom:6px">
-          Multiplying by the cross-sectional area \(A\):
-        </div>
-        \(\displaystyle \dot{Q}_{\text{cond},x} = q_x'' \cdot A = -kA\,\frac{dT}{dx}\)
-        <div style="font-size:13px;color:#4b5563;margin-top:8px;margin-bottom:6px">
-          For a plane wall with uniform \(k\) under steady-state conditions the temperature profile
-          is linear. Integrating from \(x=0\) (\(T=T_1\)) to \(x=L\) (\(T=T_2\)):
-        </div>
-        \(\displaystyle \dot{Q}_{\text{cond},x} = -kA\,\frac{T_2-T_1}{L}\)
-        <div style="font-size:13px;color:#4b5563;margin-top:8px">
-          A positive result means heat flows in the \(+x\)-direction (i.e. \(T_1 > T_2\)).
-        </div>
-      </div>
+      
     </div>
 
     <!-- Schematic -->
@@ -157,7 +137,7 @@
       <div class="ctl" style="position:sticky;top:20px">
         <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
         <div class="schem" aria-label="Plane wall schematic">
-          <img src="../assets/me200/2.31-eq.png" alt="Plane wall conduction schematic" />
+          <img src="../assets/me200/2.31-eq.png" alt="Plane wall conduction schematic" style="max-height:300px;width:auto;" />
         </div>
       </div>
     </div>
@@ -171,7 +151,7 @@
     <div style="margin-bottom:10px">
       <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Wall material preset</label>
       <select id="material-select" onchange="setPresetFromSelect(this)" style="width:100%;max-width:360px">
-        <option value="custom">Custom (0.1–55 W/(m·K))</option>
+        <option value="custom">Custom (0.1–60 W/(m·K))</option>
         <option value="52"   selected>Carbon steel — 52 W/(m·K) (default)</option>
         <option value="15">Stainless steel — 15 W/(m·K)</option>
         <option value="1">Concrete — 1 W/(m·K)</option>
@@ -186,9 +166,9 @@
         <div class="ctl">
           <label>Thermal conductivity \(k\) (W/(m·K))</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="k-out" min="0.1" max="55" step="0.1" value="52"
+            <input type="number" id="k-out" min="0.1" max="60" step="0.1" value="52"
                    onchange="syncInput('k',this,'num')" />
-            <input type="range"  id="k-in"  min="0.1" max="55" step="0.1" value="52"
+            <input type="range"  id="k-in"  min="0.1" max="60" step="0.1" value="52"
                    oninput="syncInput('k',this,'range')" style="flex:1" />
           </div>
         </div>
@@ -206,9 +186,9 @@
         <div class="ctl">
           <label>Wall thickness \(L\) (m)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="L-out" min="0.01" max="0.5" step="0.01" value="0.1"
+            <input type="number" id="L-out" min="0.1" max="0.5" step="0.01" value="0.1"
                    onchange="syncInput('L',this,'num')" />
-            <input type="range"  id="L-in"  min="0.01" max="0.5" step="0.01" value="0.1"
+            <input type="range"  id="L-in"  min="0.1" max="0.5" step="0.01" value="0.1"
                    oninput="syncInput('L',this,'range')" style="flex:1" />
           </div>
         </div>
@@ -272,9 +252,9 @@ let S = { k:52, A:0.5, L:0.1, T1:330 };
 
 /* parameter meta */
 const META = {
-  k:{ min:0.1, max:55,  step:0.1,  axis:'k  (W/(m·K))' },
+  k:{ min:0.1, max:60,  step:0.1,  axis:'k  (W/(m·K))' },
   A:{ min:0.1, max:0.5, step:0.01, axis:'A  (m²)' },
-  L:{ min:0.01, max:0.5, step:0.01, axis:'L  (m)' },
+  L:{ min:0.1, max:0.5, step:0.01, axis:'L  (m)' },
   T1:{ min:300, max:350, step:1,   axis:'T₁  (K)' }   // 4th panel varies T1
 };
 
@@ -289,16 +269,15 @@ function syncInput(p, el, from){
   document.getElementById(p+'-out').value = v;
   document.getElementById(p+'-in').value  = v;
   if(p==='k') highlightPreset(v);
-  if(p==='k' || p==='A' || p==='L') resetT1();
   compute();
 }
 
 function setPresetFromSelect(sel){
   const val = sel.value;
   if(val === 'custom'){
-    setKRange(0.1, 55, 0.1, 5);
+    setKRange(0.1, 60, 0.1, 5);
   } else {
-    setKRange(0.1, 55, 0.1, parseFloat(val));
+    setKRange(0.1, 60, 0.1, parseFloat(val));
   }
 }
 
@@ -309,7 +288,6 @@ function setKRange(min, max, step, val){
   kIn.min=min;  kIn.max=max;  kIn.step=step;  kIn.value=val;
   META.k.min=min; META.k.max=max;
   S.k=val;
-  resetT1();
   compute();
 }
 
@@ -356,7 +334,10 @@ function drawPlot(){
 
   const qCur = calcQ(S.k, S.A, S.L, S.T1);
   // two auto-scale ranges per professor's notes
-  const yMax = Math.abs(qCur) < 3.5 ? 4 : 16;
+  const yMax = Math.abs(qCur) < 0.09 ? 0.1
+           : Math.abs(qCur) < 0.9  ? 1
+           : Math.abs(qCur) < 3.5  ? 4
+           : 16;;
 
   // 4 panels: vary k, A, L, T1
   const panels = [
@@ -364,7 +345,7 @@ function drawPlot(){
       fn: v => calcQ(v, S.A, S.L, S.T1), cur: S.k, xMax: 60 },
     { p:'A',  label:'A  (m²)',      pts: d3.range(0.1, 0.501, 0.4/27),
       fn: v => calcQ(S.k, v, S.L, S.T1), cur: S.A },
-    { p:'L',  label:'L  (m)',       pts: d3.range(0.01, 0.501, 0.5/27),
+    { p:'L',  label:'L  (m)',       pts: d3.range(0.1, 0.501, 0.4/27),
       fn: v => calcQ(S.k, S.A, v, S.T1), cur: S.L },
     { p:'T1', label:'T₁  (K)',      pts: d3.range(300, 350.1, 50/27),
       fn: v => calcQ(S.k, S.A, S.L, v), cur: S.T1 }
@@ -386,7 +367,7 @@ function drawPlot(){
     const xAxis = panel.p === 'k'
       ? d3.axisBottom(xSc).tickValues([0, 10, 20, 30, 40, 50, 60]).tickFormat(d3.format('d'))
       : panel.p === 'L'
-      ? d3.axisBottom(xSc).tickValues([0, 0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'))
+      ? d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'))
       : d3.axisBottom(xSc).ticks(4).tickFormat(d3.format(panel.p==='T1'?'d':'.2~g'));
 
     // x-axis
@@ -397,7 +378,7 @@ function drawPlot(){
     // y-axis (first panel only for label; all panels get ticks)
     svg.append('g').attr('class','axis')
        .attr('transform',`translate(${xOff},0)`)
-       .call(d3.axisLeft(ySc).ticks(5));
+       .call(d3.axisLeft(ySc).ticks(8));
 
     if(i===0){
       svg.append('text').attr('class','axis-title')
