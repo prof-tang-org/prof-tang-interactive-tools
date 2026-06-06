@@ -45,7 +45,7 @@
     input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
 
     .kpi{
-      display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(3,minmax(120px,1fr));
+      display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(5,minmax(120px,1fr));
       background:#fcfcff;
       border:1px solid var(--line);
       border-radius:12px;
@@ -125,6 +125,7 @@
             <ul style="margin:8px 0 0 0px">
               <li><b>\(W\)</b> — work done by the gas</li>
               <li><b>\(m\)</b> — mass of the gas</li>
+              <li><b>\( R \)</b> — gas constant</li>
               <li><b>\(V_1\)</b> — initial volume</li>
               <li><b>\(V_2\)</b> — final volume</li>
               <li><b>\(T_1\)</b> — initial thermodynamic temperature</li>
@@ -196,6 +197,9 @@
 
     <section class="ctl" style="margin-top:12px">
       <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Inputs & Outputs</h2>
+      <div class="note">
+        0.12 kg of air acting as an ideal gas in a piston-cylinder assembly undergoes a polytropic process.
+      </div>
       <div class="controls inputs-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="rowflex" style="flex-direction:column;align-items:flex-start;">
           <div class="ctl" style="width: 100%">
@@ -236,6 +240,8 @@
 
         <div>
           <div class="kpi">
+            <div><div class="lab">M (kg/kmol)</div><div class="val"><span id="m-kpi">...</span></div></div>
+            <div><div class="lab">R (kJ/kg·K)</div><div class="val"><span id="r-kpi">...</span></div></div>
             <div><div class="lab">Final temp \(T_2\)</div><div class="val"><span id="t2-kpi">...</span> K</div></div>
             <div><div class="lab">Final pressure \(p_2\)</div><div class="val"><span id="p2-kpi">...</span> kPa</div></div>
             <div><div class="lab">Work \(W\)</div><div class="val"><span id="w-kpi">...</span> kJ</div></div>
@@ -334,10 +340,16 @@
       const v2 = parseFloat($('v2-in').value);
       const n = parseFloat($('n-in').value);
 
+      const M = 28.97;
+      const Rbar = 8.314;
+      const R = Rbar / M;
+
       const p2 = calcP2(v2, n);
       const t2 = calcT2(v2, n);
       const w = calcW(v2, n);
       
+      $('m-kpi').textContent = M;
+      $('r-kpi').textContent = R.toFixed(4);
       $('t2-kpi').textContent = t2.toFixed(1);
       $('p2-kpi').textContent = p2.toFixed(1);
       $('w-kpi').textContent = w.toFixed(2);

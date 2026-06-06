@@ -323,7 +323,7 @@
                     <div class="eqbig">
                         \( \displaystyle 
                             c = \sqrt{kRT}, 
-                            \bar{R} = \frac{R}{M} 
+                            R = \frac{\bar{R}}{M} 
                         \)
                     </div>
 
@@ -331,10 +331,10 @@
                         <ul style="margin:8px 0 0 20px">
                             <li><b>\(c\)</b> — sound speed</li>
                             <li><b>\( k \)</b> — specific heat ratio, Cp/Cv</li>
-                            <li><b>\( R \)</b> — gas constant (J/kg·K)</li>
-                            <li><b>\( \bar{R} \)</b> — universal gas constant</li>
+                            <li><b>\( R \)</b> — gas constant</li>
+                            <li><b>\( \bar{R} \)</b> — universal gas constant (8314 J/(kg·K))</li>
                             <li><b>\( M \)</b> — molar mass</li>
-                            <li><b>\( T \)</b> — temperature</li>
+                            <li><b>\( T \)</b> — thermodynamic temperature</li>
                         </ul>
                     </div>
                 </div>
@@ -420,7 +420,7 @@
             ar: { M: 39.95, k: 1.67 }
         };
 
-        const Ru = 8.31446; // kJ/kmol.K
+        const Ru = 8.314; // kJ/kmol.K
 
         const T_MIN = 200, T_MAX = 1000;
         const C_MAX = 2500;
