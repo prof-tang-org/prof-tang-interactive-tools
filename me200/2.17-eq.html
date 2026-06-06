@@ -19,7 +19,7 @@
     .btn.primary{background:var(--accent);border-color:transparent}
 
     .top-grid{display:grid;gap:12px}
-    @media (min-width:1024px){ .top-grid{grid-template-columns:1.2fr 0.9fr} }
+    @media (min-width:1024px){ .top-grid{grid-template-columns:1.2fr 0.6fr} }
 
     .ctl{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
     .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
@@ -115,11 +115,11 @@
           </div>
           <div class="note" style="margin-top:12px"><b>Symbols</b>
             <ul style="margin:8px 0 0 0px">
-              <li><b>\(W\)</b> — work done by the gas (kJ)</li>
-              <li><b>\(V_1\)</b> — initial volume (m\(^3\))</li>
-              <li><b>\(V_2\)</b> — final volume (m\(^3\))</li>
-              <li><b>\(p\)</b> — absolute pressure (kPa)</li>
-              <li><b>\(n\)</b> — polytropic index (dimensionless)</li>
+              <li><b>\(W\)</b> — work done by the gas</li>
+              <li><b>\(V_1\)</b> — initial volume</li>
+              <li><b>\(V_2\)</b> — final volume</li>
+              <li><b>\(p\)</b> — absolute pressure</li>
+              <li><b>\(n\)</b> — polytropic index</li>
             </ul>
           </div>
           <div id="n1-note" class="note" style="margin-top:12px; transition: color 0.2s;">
@@ -214,7 +214,7 @@
 
     <section class="ctl" style="margin-top:12px">
       <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Plot</h2>
-      <div class="viz">
+      <div>
         <svg id="plot" viewBox="0 0 760 320" aria-label="Plot"></svg>
       </div>
     </section>
@@ -318,8 +318,8 @@
       const v_domain = [0.05, 0.2];
       const v_points = d3.range(0.05, 0.201, 0.001);
       
-      let p_max = 0, p_min = Infinity;
-      let w_max = -Infinity, w_min = Infinity;
+      const WORK_PLOT_Y_BOUND = 10;
+      let p_max = 450, p_min = 0;
       
       const n_arr = [0, n_val, 2];
       const data_all = n_arr.map(n => {
@@ -328,8 +328,6 @@
           const w = calcW(v, n);
           if (p > p_max) p_max = p;
           if (p < p_min) p_min = p;
-          if (w > w_max) w_max = w;
-          if (w < w_min) w_min = w;
           return {v, p, w, n};
         });
       });
@@ -338,7 +336,7 @@
       const yScale1 = d3.scaleLinear().domain([0, p_max]).range([margin.top + plotH, margin.top]);
       
       const xScale2 = d3.scaleLinear().domain(v_domain).range([margin.left + plotW + gap, width - margin.right]);
-      const yScale2 = d3.scaleLinear().domain([Math.min(0, w_min), Math.max(0, w_max)]).range([margin.top + plotH, margin.top]);
+      const yScale2 = d3.scaleLinear().domain([-WORK_PLOT_Y_BOUND, WORK_PLOT_Y_BOUND]).range([margin.top + plotH, margin.top]);
       
       // Axes
       svg.append("g").attr("class", "axis").attr("transform", `translate(0,${margin.top + plotH})`).call(d3.axisBottom(xScale1).ticks(5));
@@ -363,12 +361,10 @@
          .attr("x", -(margin.top + plotH/2)).attr("y", margin.left + plotW + gap - 35).attr("text-anchor", "middle").attr("transform", "rotate(-90)")
          .text("Work W (kJ)");
          
-      // Zero line for Work if domain covers negative and positive
-      if (w_min < 0 && w_max > 0) {
-        svg.append("line").attr("class", "zeroline")
-           .attr("x1", xScale2(v_domain[0])).attr("y1", yScale2(0))
-           .attr("x2", xScale2(v_domain[1])).attr("y2", yScale2(0));
-      }
+      // Zero line for Work
+      svg.append("line").attr("class", "zeroline")
+         .attr("x1", xScale2(v_domain[0])).attr("y1", yScale2(0))
+         .attr("x2", xScale2(v_domain[1])).attr("y2", yScale2(0));
       
       const lineP = d3.line().x(d => xScale1(d.v)).y(d => yScale1(d.p));
       const lineW = d3.line().x(d => xScale2(d.v)).y(d => yScale2(d.w));
