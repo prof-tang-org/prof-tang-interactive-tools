@@ -1,303 +1,539 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Sound Speed of Ideal Gases</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="../styles.css" />
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+    <meta charset="UTF-8" />
+    <title>Sound Speed of Ideal Gases</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 
-  <script>
-    window.MathJax = { chtml:{scale:0.92}, options:{renderActions:{addMenu:[]}} };
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = { chtml: { scale: 0.92 }, options: { renderActions: { addMenu: [] } } };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-  <style>
-    .site-header .container{padding-top:20px;padding-bottom:20px}
-    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
-    .btn.primary{background:var(--accent);border-color:transparent}
+    <style>
+        .site-header .container {
+            padding-top: 20px;
+            padding-bottom: 20px
+        }
 
-    .top-grid{display:grid;gap:12px}
-    @media (min-width:1024px){ .top-grid{grid-template-columns:1.5fr .9fr} }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap
+        }
 
-    .ctl{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
-    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
-    .eqbig{font-size:1.02em}
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #ffffff55;
+            background: rgba(255, 255, 255, .12);
+            color: #fff;
+            text-decoration: none
+        }
 
-    .eq-schem{display:grid;gap:12px}
-    @media (min-width:900px){ .eq-schem{grid-template-columns:1.2fr .8fr} }
+        .btn.primary {
+            background: var(--accent);
+            border-color: transparent
+        }
 
-    .schem{
-      min-height:240px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
-      display:flex;align-items:center;justify-content:center;overflow:hidden
-    }
-    .schem img{display:block;width:100%;height:100%;object-fit:contain;padding:6px}
+        .top-grid {
+            display: grid;
+            gap: 12px
+        }
 
-    .controls{display:grid;gap:12px}
-    .rowflex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .inline{display:flex;align-items:center;gap:8px}
-    .num-sm{width:170px}
-    .controls input.num-sm[type="number"]{width:170px !important}
-    input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
+        @media (min-width:1024px) {
+            .top-grid {
+                grid-template-columns: 1.5fr .9fr
+            }
+        }
 
-    .kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(2,minmax(120px,1fr))}
-    .kpi .lab{font-size:12px;color:#6b7280}
-    .kpi .val{font-size:16px;font-weight:600;color:#334155}
+        .ctl {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px
+        }
 
-    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
-    .axis text{font-size:14px}
-    .axis-title{font-size:15px}
-    .curve{stroke:#111;fill:none;stroke-width:2}
-    .dragpt{fill:#ef4444;stroke:#111;stroke-width:1.2}
-    .zeroline{stroke:#000;stroke-opacity:.35;stroke-dasharray:6 6}
-    .hit{fill:transparent;cursor:ew-resize}
-  
-    /* consistency polish */
-    .header-row h1{font-size:clamp(1.75rem,2.1vw,2.2rem);line-height:1.12}
-    .note.title-xl,.title-xl{font-size:18px;line-height:1.22;color:#111}
-    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
-    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
-    .controls{gap:12px}
-    .controls label,.ctl>label,.inputs-grid label,.inputs-row1 label,.inputs-row2 label{font-size:13px;color:#4b5563}
-    .hint,.dim-note,.mini-note,.mini{font-size:13px;color:#64748b;line-height:1.35}
-    .symgrid{display:grid;gap:0 18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-    .kpi .lab,.out-label{font-size:12px;color:#6b7280}
-    .kpi .val,.out-value{font-size:16px;font-weight:700;color:#111}
-    .viz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
-    .axis text,svg .axis text{font-size:14px;fill:#111}
-    .axis-title,svg .axis-title{font-size:16px;fill:#111}
-    input[type="number"],select{font:inherit}
-  </style>
-  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
-          async src="https://gc.zgo.at/count.js"></script>
-  <script defer src="../analytics.js"></script>
+        .eqwrap {
+            padding: 12px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #fcfcff
+        }
+
+        .eqbig {
+            font-size: 1.02em
+        }
+
+        .eq-schem {
+            display: grid;
+            gap: 12px
+        }
+
+        @media (min-width:900px) {
+            .eq-schem {
+                grid-template-columns: 1.2fr .8fr
+            }
+        }
+
+        .schem {
+            min-height: 240px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fafcff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden
+        }
+
+        .schem img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 6px
+        }
+
+        .controls {
+            display: grid;
+            gap: 12px;
+        }
+
+        .rowflex {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .inline {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .num-sm {
+            width: 170px
+        }
+
+        .controls input.num-sm[type="number"] {
+            width: 170px !important
+        }
+
+        input:disabled {
+            background: #f3f4f6 !important;
+            color: #6b7280 !important;
+            cursor: not-allowed;
+            opacity: 1
+        }
+
+        .kpi {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+            grid-template-columns: repeat(2, minmax(120px, 1fr))
+        }
+
+        .kpi .lab {
+            font-size: 12px;
+            color: #6b7280
+        }
+
+        .kpi .val {
+            font-size: 16px;
+            font-weight: 600;
+            color: #334155
+        }
+
+        .viz {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 8px
+        }
+
+        .axis text {
+            font-size: 14px
+        }
+
+        .axis-title {
+            font-size: 15px
+        }
+
+        .curve {
+            stroke: #111;
+            fill: none;
+            stroke-width: 2
+        }
+
+        .dragpt {
+            fill: #ef4444;
+            stroke: #111;
+            stroke-width: 1.2
+        }
+
+        .zeroline {
+            stroke: #000;
+            stroke-opacity: .35;
+            stroke-dasharray: 6 6
+        }
+
+        .hit {
+            fill: transparent;
+            cursor: ew-resize
+        }
+
+        /* consistency polish */
+        .header-row h1 {
+            font-size: clamp(1.75rem, 2.1vw, 2.2rem);
+            line-height: 1.12
+        }
+
+        .note.title-xl,
+        .title-xl {
+            font-size: 18px;
+            line-height: 1.22;
+            color: #111
+        }
+
+        .eqwrap {
+            padding: 12px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #fcfcff
+        }
+
+        .ctl {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--r-sm);
+            padding: 10px 12px
+        }
+
+        .controls {
+            gap: 12px
+        }
+
+        .controls label,
+        .ctl>label,
+        .inputs-grid label,
+        .inputs-row1 label,
+        .inputs-row2 label {
+            font-size: 13px;
+            color: #4b5563
+        }
+
+        .hint,
+        .dim-note,
+        .mini-note,
+        .mini {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.35
+        }
+
+        .symgrid {
+            display: grid;
+            gap: 0 18px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))
+        }
+
+        .kpi .lab,
+        .out-label {
+            font-size: 12px;
+            color: #6b7280
+        }
+
+        .kpi .val,
+        .out-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111
+        }
+
+        .viz {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 8px
+        }
+
+        .axis text,
+        svg .axis text {
+            font-size: 14px;
+            fill: #111
+        }
+
+        .axis-title,
+        svg .axis-title {
+            font-size: 16px;
+            fill: #111
+        }
+
+        input[type="number"],
+        select {
+            font: inherit
+        }
+
+        .controls input[type="range"] {
+            padding: 0;
+            border: none;
+            background: transparent;
+            box-shadow: none
+        }
+    </style>
+    <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count" async
+        src="https://gc.zgo.at/count.js"></script>
+    <script defer src="../analytics.js"></script>
 </head>
 
 <body>
-<header class="site-header">
-  <div class="container">
-    <div class="header-row">
-      <h1 style="margin:0">Sound Speed of Ideal Gases</h1>
-      <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
-    </div>
-  </div>
-</header>
-
-<main class="container">
-  <nav class="back-row">
-    <a href="../index.html" class="back-home" aria-label="Back to home"><span class="chev">←</span> Home</a>
-  </nav>
-
-  <section class="top-grid">
-    <div class="ctl">
-      <div class="eq-schem">
-        <div class="eqwrap">
-          <div class="note title-xl" style="margin-bottom:8px"><b>Sound Speed of Ideal Gases</b></div>
-          <div class="note" style="margin-bottom:8px">
-            <b>Assumptions:</b> Isentropic flow of an ideal gas with Constant Cp and Cv
-          </div>
-
-          <div class="eqbig">
-            \( \displaystyle c = \sqrt{kRT} \)
-          </div>
-
-          <div class="note" style="margin-top:12px"><b>Symbols</b>
-            <ul style="margin:8px 0 0 20px">
-              <li><b>\(c\)</b> — sound speed (m/s)</li>
-              <li><b>\( k \)</b> — specific heat ratio (Cp/Cv)</li>
-              <li><b>\( R \)</b> — gas constant (kJ/kg·K)</li>
-              <li><b>\( \bar{R} \)</b> — universal gas constant (kJ/kmol·K)</li>
-              <li><b>\( M \)</b> — molar mass (kg/kmol)</li>
-              <li><b>\( T \)</b> — temperature</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="schem" aria-label="Schematic">
-          <!-- TODO: update this image to something relevant, keeping old for layout -->
-          <img src="../assets/me310/11.47-eq.png" alt="Schematic">
-        </div>
-      </div>
-
-      <!-- Plot -->
-      <div class="viz" style="margin-top:12px">
-        <svg id="plot" viewBox="0 0 760 320" aria-label="Sound Speed vs Temperature plot"></svg>
-      </div>
-    </div>
-
-    <div class="ctl">
-        <div class="controls">
-          <div>
-            <label>Gas</label>
-            <select id="gas">
-              <option value="air" selected>Air</option>
-              <option value="o2">Oxygen (O₂)</option>
-              <option value="n2">Nitrogen (N₂)</option>
-              <option value="h2">Hydrogen (H₂)</option>
-              <option value="he">Helium (He)</option>
-              <option value="ne">Neon (Ne)</option>
-              <option value="ar">Argon (Ar)</option>
-            </select>
-          </div>
-
-          <div class="rowflex">
-            <div style="width: 100%">
-              <label>Temperature, T (K)</label>
-              <div class="inline">
-                <input id="T_in" class="num-sm" type="number" step="1" min="200" max="1000" value="300" />
-                <input id="T_s" type="range" min="200" max="1000" step="1" value="300" style="width:100%; max-width: 260px;">
-              </div>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-row">
+                <h1 style="margin:0">Sound Speed of Ideal Gases</h1>
+                <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send
+                    feedback</a>
             </div>
-          </div>
-
-          <div>
-            <label>Properties & Outputs</label>
-            <div class="kpi" style="grid-template-columns: repeat(4, 1fr);">
-              <div><div class="lab">k</div><div id="kpi_k" class="val">—</div></div>
-              <div><div class="lab">M (kg/kmol)</div><div id="kpi_M" class="val">—</div></div>
-              <div><div class="lab">R (kJ/kg·K)</div><div id="kpi_R" class="val">—</div></div>
-              <div><div class="lab">c (m/s)</div><div id="kpi_c" class="val">—</div></div>
-            </div>
-          </div>
         </div>
-      </div>
-    </section>
-  </main>
+    </header>
 
-  <footer class="site-footer">
-    <div class="container">
-      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
-    </div>
-  </footer>
+    <main class="container">
+        <nav class="back-row">
+            <a href="../index.html" class="back-home" aria-label="Back to home"><span class="chev">←</span> Home</a>
+        </nav>
 
-  <script>
-    const $ = id => document.getElementById(id);
-    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+        <section class="top-grid">
+            <div class="ctl">
+                <div class="eqwrap">
+                    <div class="note title-xl" style="margin-bottom:8px"><b>Sound Speed of Ideal Gases</b></div>
+                    <div class="note" style="margin-bottom:8px">
+                        <b>Assumptions:</b> Isentropic flow of an ideal gas with constant specific heats
+                    </div>
 
-    const GASES = {
-      air: { M: 28.97, k: 1.4 },
-      o2:  { M: 32.00, k: 1.4 },
-      n2:  { M: 28.01, k: 1.4 },
-      h2:  { M: 2.016, k: 1.4 },
-      he:  { M: 4.003, k: 1.67 },
-      ne:  { M: 20.18, k: 1.67 },
-      ar:  { M: 39.95, k: 1.67 }
-    };
-    
-    const Ru = 8.31446; // kJ/kmol.K
+                    <div class="eqbig">
+                        \( \displaystyle 
+                            c = \sqrt{kRT}, 
+                            R = \frac{\bar{R}}{M} 
+                        \)
+                    </div>
 
-    const T_MIN = 200, T_MAX = 1000;
-    const C_MAX = 2500;
+                    <div class="note" style="margin-top:12px"><b>Symbols</b>
+                        <ul style="margin:8px 0 0 20px">
+                            <li><b>\(c\)</b> — sound speed</li>
+                            <li><b>\( k \)</b> — specific heat ratio, Cp/Cv</li>
+                            <li><b>\( R \)</b> — gas constant</li>
+                            <li><b>\( \bar{R} \)</b> — universal gas constant (8314 J/(kg·K))</li>
+                            <li><b>\( M \)</b> — molar mass</li>
+                            <li><b>\( T \)</b> — thermodynamic temperature</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="ctl" style="position: sticky; top: 1em;">
+                <div class="controls">
+                    <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Inputs & Outputs</h2>
+                    <div>
+                        <label>Gas</label>
+                        <select id="gas">
+                            <option value="air" selected>Air</option>
+                            <option value="o2">Oxygen (O₂)</option>
+                            <option value="n2">Nitrogen (N₂)</option>
+                            <option value="h2">Hydrogen (H₂)</option>
+                            <option value="he">Helium (He)</option>
+                            <option value="ne">Neon (Ne)</option>
+                            <option value="ar">Argon (Ar)</option>
+                        </select>
+                    </div>
 
-    function calcC(T, k, M) {
-      const R = Ru / M; // kJ/kg.K
-      // c = sqrt(k * R * 1000 * T)
-      return Math.sqrt(k * R * 1000 * T);
-    }
+                    <div class="rowflex">
+                        <div style="width: 100%">
+                            <label>Temperature, T (K)</label>
+                            <div class="inline" style="width:100%">
+                                <input id="T_in" class="num-sm" type="number" step="1" min="200" max="1000"
+                                    value="300" />
+                                <input id="T_s" type="range" min="200" max="1000" step="1" value="300"
+                                    style="flex: 1; width: 100%;">
+                            </div>
+                        </div>
+                    </div>
 
-    function drawPlotFrame(){
-      const svg = d3.select('#plot'); svg.selectAll('*').remove();
-      const W = 760, H = 320, m = {l:64,r:16,t:14,b:54};
-      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+                    <div>
+                        <label>Properties & Outputs</label>
+                        <div class="kpi" style="grid-template-columns: repeat(4, 1fr);">
+                            <div>
+                                <div class="lab">k</div>
+                                <div id="kpi_k" class="val">—</div>
+                            </div>
+                            <div>
+                                <div class="lab">M (kg/kmol)</div>
+                                <div id="kpi_M" class="val">—</div>
+                            </div>
+                            <div>
+                                <div class="lab">R (J/kg·K)</div>
+                                <div id="kpi_R" class="val">—</div>
+                            </div>
+                            <div>
+                                <div class="lab">c (m/s)</div>
+                                <div id="kpi_c" class="val">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ctl">
+                <!-- Plot -->
+                <div style="margin-top:12px">
+                    <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Plot</h2>
+                    <svg id="plot" viewBox="0 0 760 320" aria-label="Sound Speed vs Temperature plot"></svg>
+                </div>
+            </div>
+        </section>
+    </main>
 
-      const x = d3.scaleLinear().domain([T_MIN, T_MAX]).range([m.l, m.l+iw]);
-      const y = d3.scaleLinear().domain([0, C_MAX]).range([m.t+ih, m.t]);
+    <footer class="site-footer">
+        <div class="container">
+            <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+        </div>
+    </footer>
 
-      svg.append('g').attr('class','axis').attr('transform',`translate(0,${m.t+ih})`).call(d3.axisBottom(x).ticks(10));
-      svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
-      svg.append('text').attr('class','axis-title').attr('x',W/2).attr('y',H-10).attr('text-anchor','middle').text('Temperature T (K)');
-      svg.append('text').attr('class','axis-title').attr('x',-(H/2)).attr('y',18).attr('text-anchor','middle').attr('transform','rotate(-90)').text('Sound Speed c (m/s)');
+    <script>
+        const $ = id => document.getElementById(id);
+        const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-      svg.append('line').attr('class','zeroline')
-        .attr('x1', x(T_MIN)).attr('x2', x(T_MAX)).attr('y1', y(0)).attr('y2', y(0));
+        const GASES = {
+            air: { M: 28.97, k: 1.4 },
+            o2: { M: 32.00, k: 1.4 },
+            n2: { M: 28.01, k: 1.4 },
+            h2: { M: 2.016, k: 1.4 },
+            he: { M: 4.003, k: 1.67 },
+            ne: { M: 20.18, k: 1.67 },
+            ar: { M: 39.95, k: 1.67 }
+        };
 
-      const hit = svg.append('rect').attr('class','hit')
-        .attr('x', x(T_MIN)).attr('y', y(C_MAX))
-        .attr('width', x(T_MAX)-x(T_MIN)).attr('height', (m.t+ih)-y(C_MAX));
+        const Ru = 8.314; // kJ/kmol.K
 
-      return {svg, x, y, hit};
-    }
+        const T_MIN = 200, T_MAX = 1000;
+        const C_MAX = 2500;
 
-    function drawCurveAndDragger(scales, k, M, T_now){
-      const {svg, x, y, hit} = scales;
-      const T_arr = d3.range(T_MIN, T_MAX+0.1, 10);
-      const c_arr = T_arr.map(t => calcC(t, k, M));
+        function calcC(T, k, M) {
+            const R = Ru / M; // kJ/kg.K
+            // c = sqrt(k * R * 1000 * T)
+            return Math.sqrt(k * R * 1000 * T);
+        }
 
-      svg.append('path').attr('class','curve')
-        .attr('d', d3.line()(T_arr.map((t,i)=>[x(t), y(c_arr[i])])));
+        function drawPlotFrame() {
+            const svg = d3.select('#plot'); svg.selectAll('*').remove();
+            const W = 760, H = 320, m = { l: 64, r: 16, t: 14, b: 54 };
+            const iw = W - m.l - m.r, ih = H - m.t - m.b;
 
-      const c_now = calcC(T_now, k, M);
-      const dragpt = svg.append('circle').attr('class','dragpt')
-        .attr('r',6).attr('cx', x(T_now)).attr('cy', y(c_now));
+            const x = d3.scaleLinear().domain([T_MIN, T_MAX]).range([m.l, m.l + iw]);
+            const y = d3.scaleLinear().domain([0, C_MAX]).range([m.t + ih, m.t]);
 
-      const drag = d3.drag()
-        .on('start drag', (event)=>{
-          let T_new = clamp(Math.round(x.invert(event.x)), T_MIN, T_MAX);
-          const c_new = calcC(T_new, k, M);
-          dragpt.attr('cx', x(T_new)).attr('cy', y(c_new));
+            svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${m.t + ih})`).call(d3.axisBottom(x).ticks(10));
+            svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+            svg.append('text').attr('class', 'axis-title').attr('x', W / 2).attr('y', H - 10).attr('text-anchor', 'middle').text('Temperature T (K)');
+            svg.append('text').attr('class', 'axis-title').attr('x', -(H / 2)).attr('y', 18).attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('Sound Speed c (m/s)');
 
-          $('T_s').value = T_new;
-          $('T_in').value = T_new;
+            svg.append('line').attr('class', 'zeroline')
+                .attr('x1', x(T_MIN)).attr('x2', x(T_MAX)).attr('y1', y(0)).attr('y2', y(0));
 
-          $('kpi_c').textContent = c_new.toFixed(1);
-        })
-        .on('end', ()=> compute());
+            const hit = svg.append('rect').attr('class', 'hit')
+                .attr('x', x(T_MIN)).attr('y', y(C_MAX))
+                .attr('width', x(T_MAX) - x(T_MIN)).attr('height', (m.t + ih) - y(C_MAX));
 
-      hit.call(drag);
-    }
+            return { svg, x, y, hit };
+        }
 
-    function compute(){
-      const gasKey = $('gas').value;
-      const gas = GASES[gasKey];
-      const k = gas.k;
-      const M = gas.M;
-      const R = Ru / M;
+        function drawCurveAndDragger(scales, k, M, T_now) {
+            const { svg, x, y, hit } = scales;
+            const T_arr = d3.range(T_MIN, T_MAX + 0.1, 10);
+            const c_arr = T_arr.map(t => calcC(t, k, M));
 
-      let T_now = parseFloat($('T_in').value);
-      if (!Number.isFinite(T_now)) T_now = 300;
-      T_now = clamp(T_now, T_MIN, T_MAX);
-      $('T_in').value = T_now;
-      $('T_s').value = T_now;
+            svg.append('path').attr('class', 'curve')
+                .attr('d', d3.line()(T_arr.map((t, i) => [x(t), y(c_arr[i])])));
 
-      const c_now = calcC(T_now, k, M);
+            const c_now = calcC(T_now, k, M);
+            const dragpt = svg.append('circle').attr('class', 'dragpt')
+                .attr('r', 6).attr('cx', x(T_now)).attr('cy', y(c_now));
 
-      $('kpi_k').textContent = k.toFixed(2);
-      $('kpi_M').textContent = M.toFixed(3);
-      $('kpi_R').textContent = R.toFixed(4);
-      $('kpi_c').textContent = c_now.toFixed(1);
+            const drag = d3.drag()
+                .on('start drag', (event) => {
+                    let T_new = clamp(Math.round(x.invert(event.x)), T_MIN, T_MAX);
+                    const c_new = calcC(T_new, k, M);
+                    dragpt.attr('cx', x(T_new)).attr('cy', y(c_new));
 
-      const scales = drawPlotFrame();
-      drawCurveAndDragger(scales, k, M, T_now);
-    }
+                    $('T_s').value = T_new;
+                    $('T_in').value = T_new;
 
-    function wire(){
-      $('gas').addEventListener('change', compute);
-      $('T_in').addEventListener('input', e=>{
-        $('T_s').value = e.target.value;
-        compute();
-      });
-      $('T_s').addEventListener('input', e=>{
-        $('T_in').value = e.target.value;
-        compute();
-      });
-      compute();
-      window.addEventListener('resize', compute);
-    }
-    window.addEventListener('DOMContentLoaded', wire);
-  </script>
+                    $('kpi_c').textContent = c_new.toFixed(1);
+                })
+                .on('end', () => compute());
 
-  <script>
-    const FEEDBACK = { course: 'ME 310', sim: 'Sound Speed of Ideal Gases' };
-    document.addEventListener('DOMContentLoaded', () => {
-      const url = new URL('../feedback.html', location.href);
-      if (FEEDBACK.course) url.searchParams.set('course', FEEDBACK.course);
-      if (FEEDBACK.sim)    url.searchParams.set('sim',    FEEDBACK.sim);
-      document.querySelectorAll('a.feedback-link').forEach(a => {
-        a.href = url.toString();
-        try { localStorage.setItem('fb_ctx', JSON.stringify(FEEDBACK)); } catch {}
-      });
-    });
-  </script>
+            hit.call(drag);
+        }
+
+        function compute() {
+            const gasKey = $('gas').value;
+            const gas = GASES[gasKey];
+            const k = gas.k;
+            const M = gas.M;
+            const R = Ru / M;
+
+            let T_now = parseFloat($('T_in').value);
+            if (!Number.isFinite(T_now)) T_now = 300;
+            T_now = clamp(T_now, T_MIN, T_MAX);
+            $('T_in').value = T_now;
+            $('T_s').value = T_now;
+
+            const c_now = calcC(T_now, k, M);
+
+            $('kpi_k').textContent = k;
+            $('kpi_M').textContent = M;
+            $('kpi_R').textContent = (R * 1000).toFixed(1);
+            $('kpi_c').textContent = c_now.toFixed(1);
+
+            const scales = drawPlotFrame();
+            drawCurveAndDragger(scales, k, M, T_now);
+        }
+
+        function wire() {
+            $('gas').addEventListener('change', compute);
+            $('T_in').addEventListener('input', e => {
+                $('T_s').value = e.target.value;
+                compute();
+            });
+            $('T_s').addEventListener('input', e => {
+                $('T_in').value = e.target.value;
+                compute();
+            });
+            compute();
+            window.addEventListener('resize', compute);
+        }
+        window.addEventListener('DOMContentLoaded', wire);
+    </script>
+
+    <script>
+        const FEEDBACK = { course: 'ME 310', sim: 'Sound Speed of Ideal Gases' };
+        document.addEventListener('DOMContentLoaded', () => {
+            const url = new URL('../feedback.html', location.href);
+            if (FEEDBACK.course) url.searchParams.set('course', FEEDBACK.course);
+            if (FEEDBACK.sim) url.searchParams.set('sim', FEEDBACK.sim);
+            document.querySelectorAll('a.feedback-link').forEach(a => {
+                a.href = url.toString();
+                try { localStorage.setItem('fb_ctx', JSON.stringify(FEEDBACK)); } catch { }
+            });
+        });
+    </script>
 </body>
+
 </html>

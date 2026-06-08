@@ -19,7 +19,7 @@
     .btn.primary{background:var(--accent);border-color:transparent}
 
     .top-grid{display:grid;gap:12px}
-    @media (min-width:1024px){ .top-grid{grid-template-columns:1.2fr 0.9fr} }
+    @media (min-width:1024px){ .top-grid{grid-template-columns:1.2fr 0.6fr} }
 
     .ctl{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
     .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fcfcff}
@@ -45,7 +45,7 @@
     input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
 
     .kpi{
-      display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(3,minmax(120px,1fr));
+      display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(5,minmax(120px,1fr));
       background:#fcfcff;
       border:1px solid var(--line);
       border-radius:12px;
@@ -103,7 +103,7 @@
         <!-- <h2 style="margin:4px 0 8px; font-size: 1.25rem;">Polytropic Process Derivation</h2> -->
         
         <div class="eqwrap">
-          <div class="note title-xl" style="margin-bottom:10px"><b>Polytropic process work equation for a closed system</b></div>
+          <div class="note title-xl" style="margin-bottom:10px"><b>Polytropic process work equation for a closed system with ideal gas</b></div>
           <div class="eqbig" style="margin-bottom:8px">
             \( \text{Polytropic process: } pV^n = \text{constant} \)
           </div>
@@ -123,13 +123,14 @@
           </div>
           <div class="note" style="margin-top:12px"><b>Symbols</b>
             <ul style="margin:8px 0 0 0px">
-              <li><b>\(W\)</b> — work done by the gas (kJ)</li>
-              <li><b>\(m\)</b> — mass of the gas (kg)</li>
-              <li><b>\(V_1\)</b> — initial volume (m\(^3\))</li>
-              <li><b>\(V_2\)</b> — final volume (m\(^3\))</li>
-              <li><b>\(T_1\)</b> — initial temperature (K)</li>
-              <li><b>\(T_2\)</b> — final temperature (K)</li>
-              <li><b>\(n\)</b> — polytropic index (dimensionless)</li>
+              <li><b>\(W\)</b> — work done by the gas</li>
+              <li><b>\(m\)</b> — mass of the gas</li>
+              <li><b>\( R \)</b> — gas constant</li>
+              <li><b>\(V_1\)</b> — initial volume</li>
+              <li><b>\(V_2\)</b> — final volume</li>
+              <li><b>\(T_1\)</b> — initial thermodynamic temperature</li>
+              <li><b>\(T_2\)</b> — final thermodynamic temperature</li>
+              <li><b>\(n\)</b> — polytropic index</li>
             </ul>
           </div>
           <div id="n1-note" class="note" style="margin-top:12px; transition: color 0.2s;">
@@ -144,7 +145,7 @@
           </div>
           <div class="note">
             <!-- Further derivation steps will go here -->
-            \( \displaystyle W = \begin{cases} 
+            \( \displaystyle W = \int_{V_1}^{V_2} p \, dV = \begin{cases} 
               p_1 V_1 \ln\left(\frac{V_2}{V_1}\right) & \text{if } n = 1.0 \\
               \frac{p_2 V_2 - p_1 V_1}{1 - n} & \text{if } n \neq 1.0 
             \end{cases} \)
@@ -168,8 +169,8 @@
           <div class="note">
             <p>We can derive other forms by combining the polytropic and ideal gas assumptions</p>
             <p>For polytropic processes, we have: \( \displaystyle p_1V_1^n = p_2V_2^n \Rightarrow \frac{p_2}{p_1} = (\frac{V_2}{V_1}) ^ n \ \)</p>
-            <p>To relate temperature to pressure: </p>
-            \( \displaystyle \frac{T_2}{T_1} = \frac{p_2 V_2 / (mR)}{p_1 V_1 / (mR)} = \frac{p_2}{p_1} \frac{V_2}{V_1} = \left(\frac{V_1}{V_2}\right)^{n-1} \frac{V_2}{V_1} = \left(\frac{V_1}{V_2}\right)^{n-1} \)
+            <p>To relate temperature to volume: </p>
+            \( \displaystyle \frac{T_2}{T_1} = \frac{p_2 V_2 / (mR)}{p_1 V_1 / (mR)} = \frac{p_2}{p_1} \cdot \frac{V_2}{V_1} = \left(\frac{V_1}{V_2}\right)^{n} \frac{V_2}{V_1} = \left(\frac{V_1}{V_2}\right)^{n-1} \)
             <p>
               Then for \( n \neq 1 \), 
               <br>
@@ -196,6 +197,9 @@
 
     <section class="ctl" style="margin-top:12px">
       <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Inputs & Outputs</h2>
+      <div class="note">
+        0.12 kg of air acting as an ideal gas in a piston-cylinder assembly undergoes a polytropic process.
+      </div>
       <div class="controls inputs-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="rowflex" style="flex-direction:column;align-items:flex-start;">
           <div class="ctl" style="width: 100%">
@@ -236,6 +240,8 @@
 
         <div>
           <div class="kpi">
+            <div><div class="lab">M (kg/kmol)</div><div class="val"><span id="m-kpi">...</span></div></div>
+            <div><div class="lab">R (kJ/kg·K)</div><div class="val"><span id="r-kpi">...</span></div></div>
             <div><div class="lab">Final temp \(T_2\)</div><div class="val"><span id="t2-kpi">...</span> K</div></div>
             <div><div class="lab">Final pressure \(p_2\)</div><div class="val"><span id="p2-kpi">...</span> kPa</div></div>
             <div><div class="lab">Work \(W\)</div><div class="val"><span id="w-kpi">...</span> kJ</div></div>
@@ -246,7 +252,7 @@
 
     <section class="ctl" style="margin-top:12px">
       <h2 style="margin:4px 0 10px; font-size: 1.25rem;">Plot</h2>
-      <div class="viz">
+      <div>
         <svg id="plot" viewBox="0 0 1100 320" aria-label="Plot"></svg>
       </div>
     </section>
@@ -334,10 +340,16 @@
       const v2 = parseFloat($('v2-in').value);
       const n = parseFloat($('n-in').value);
 
+      const M = 28.97;
+      const Rbar = 8.314;
+      const R = Rbar / M;
+
       const p2 = calcP2(v2, n);
       const t2 = calcT2(v2, n);
       const w = calcW(v2, n);
       
+      $('m-kpi').textContent = M;
+      $('r-kpi').textContent = R.toFixed(4);
       $('t2-kpi').textContent = t2.toFixed(1);
       $('p2-kpi').textContent = p2.toFixed(1);
       $('w-kpi').textContent = w.toFixed(2);
@@ -377,7 +389,7 @@
       const yScale2 = d3.scaleLinear().domain([0, 450]).range([margin.top + plotH, margin.top]);
       
       const xScale3 = d3.scaleLinear().domain(v_domain).range([margin.left + 2*plotW + 2*gap, width - margin.right]);
-      const yScale3 = d3.scaleLinear().domain([-15, 15]).range([margin.top + plotH, margin.top]);
+      const yScale3 = d3.scaleLinear().domain([-12, 12]).range([margin.top + plotH, margin.top]);
       
       svg.append("g").attr("class", "axis").attr("transform", `translate(0,${margin.top + plotH})`).call(d3.axisBottom(xScale1).ticks(5));
       svg.append("g").attr("class", "axis").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(yScale1));
