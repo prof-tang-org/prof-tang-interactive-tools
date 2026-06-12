@@ -241,7 +241,7 @@ function drawPlot(){
 
   const W=900, H=300;
   const mg={top:22,right:18,bottom:46,left:52};
-  const gap=22;
+  const gap=60;
   const nP=3;
   const pW=(W-mg.left-mg.right-gap*(nP-1))/nP;
   const pH=H-mg.top-mg.bottom;
@@ -283,12 +283,12 @@ function drawPlot(){
     const xOff = mg.left + i * (pW + gap);
     const xDomMin = panel.pts[0];
     const xDomMax = panel.pts[panel.pts.length - 1];
-    const xSc = d3.scaleLinear().domain([xDomMin, xDomMax]).range([xOff, xOff + pW]);
+    const xSc = d3.scaleLinear().domain([panel.p === 'Ts' ? xDomMin : 0, xDomMax]).range([xOff, xOff + pW]);
     const ySc = d3.scaleLinear().domain([0, yMax]).range([mg.top + pH, mg.top]);
 
     /* x-axis ticks */
     const xAxis = panel.p === 'h'
-      ? d3.axisBottom(xSc).tickValues([10, 200, 400, 600, 800, 1000]).tickFormat(d3.format('d'))
+      ? d3.axisBottom(xSc).tickValues([200, 400, 600, 800, 1000]).tickFormat(d3.format('d'))
       : panel.p === 'A'
       ? d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'))
       : d3.axisBottom(xSc).tickValues([300, 310, 320, 330, 340, 350]).tickFormat(d3.format('d'));
@@ -301,13 +301,12 @@ function drawPlot(){
        .attr('transform',`translate(${xOff},0)`)
        .call(d3.axisLeft(ySc).ticks(6));
 
-    if(i === 0){
-      svg.append('text').attr('class','axis-title')
-         .attr('transform','rotate(-90)')
-         .attr('x', -(mg.top + pH/2)).attr('y', 14)
-         .attr('text-anchor','middle')
-         .text('Q̇conv  (kW)');
-    }
+    
+    svg.append('text').attr('class','axis-title')
+        .attr('transform',`translate(${xOff-38}, ${mg.top+pH/2}) rotate(-90)`)
+        .attr('text-anchor','middle')
+        .text('Q̇ conv  (kW)');
+    
 
     svg.append('text').attr('class','axis-title')
        .attr('x', xOff + pW/2).attr('y', H - 4)
@@ -315,8 +314,12 @@ function drawPlot(){
        .text(panel.label);
 
     /* curve */
-    const lineData = panel.pts.map(x => ({ x, q: panel.fn(x) }));
-    const lineFn   = d3.line().x(d => xSc(d.x)).y(d => ySc(Math.max(0, d.q)));
+    const lineData = panel.pts.map(x => ({ x, q: panel.fn(x) })).filter(d => d.q >= 0 && d.q <= yMax);
+    if(panel.p !== 'Ts'){
+      const q0 = panel.fn(0);
+      if(isFinite(q0)) lineData.unshift({ x: 0, q: q0 });
+    }
+    const lineFn   = d3.line().x(d => xSc(d.x)).y(d => ySc(Math.max(0, Math.min(yMax, d.q))));
     svg.append('path').datum(lineData).attr('class','curve')
        .style('stroke','#3b82f6').attr('d', lineFn);
 

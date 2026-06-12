@@ -253,7 +253,7 @@ function drawPlot(){
 
   const W=900, H=300;
   const mg={top:22,right:18,bottom:46,left:56};
-  const gap=22;
+  const gap=60;
   const nP=3;
   const pW=(W-mg.left-mg.right-gap*(nP-1))/nP;
   const pH=H-mg.top-mg.bottom;
@@ -294,13 +294,13 @@ function drawPlot(){
     const xOff = mg.left + i * (pW + gap);
     const xDomMin = panel.pts[0];
     const xDomMax = panel.pts[panel.pts.length - 1];
-    const xSc = d3.scaleLinear().domain([xDomMin, xDomMax]).range([xOff, xOff + pW]);
+    const xSc = d3.scaleLinear().domain([panel.p === 'Ts' ? xDomMin : 0, xDomMax]).range([xOff, xOff + pW]);
     const ySc = d3.scaleLinear().domain([yMin, yMax]).range([mg.top + pH, mg.top]);
 
     /* x-axis ticks */
     let xAxis;
     if(panel.p === 'eps'){
-      xAxis = d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.4, 0.6, 0.8, 1.0]).tickFormat(d3.format('.1f'));
+      xAxis = d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5,0.6, 0.7, 0.8, 0.9, 1.0]).tickFormat(d3.format('.1f'));
     } else if(panel.p === 'A'){
       xAxis = d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'));
     } else {
@@ -315,13 +315,12 @@ function drawPlot(){
        .attr('transform',`translate(${xOff},0)`)
        .call(d3.axisLeft(ySc).ticks(6).tickFormat(d3.format('d')));
 
-    if(i === 0){
-      svg.append('text').attr('class','axis-title')
-         .attr('transform','rotate(-90)')
-         .attr('x', -(mg.top + pH/2)).attr('y', 14)
-         .attr('text-anchor','middle')
-         .text('Q̇rad  (W)');
-    }
+    
+    svg.append('text').attr('class','axis-title')
+        .attr('transform',`translate(${xOff-38}, ${mg.top+pH/2}) rotate(-90)`)
+        .attr('text-anchor','middle')
+        .text('Q̇ rad  (W)');
+    
 
     svg.append('text').attr('class','axis-title')
        .attr('x', xOff + pW/2).attr('y', H - 4)
@@ -330,6 +329,11 @@ function drawPlot(){
 
     /* curve — only draw points within the y-axis range (no clamping/flattening) */
     const lineData = panel.pts.map(x => ({ x, q: panel.fn(x) }));
+
+    if(panel.p !== 'Ts'){
+      const q0 = panel.fn(0);
+      if(isFinite(q0)) lineData.unshift({ x: 0, q: q0 });
+    }
     const lineFn   = d3.line()
       .defined(d => d.q >= yMin && d.q <= yMax)
       .x(d => xSc(d.x))

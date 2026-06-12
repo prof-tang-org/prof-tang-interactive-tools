@@ -225,9 +225,9 @@
 
   <!-- ── PLOT ── -->
   <section class="ctl" style="margin-top:12px">
-    <h2 style="margin:4px 0 6px;font-size:1.25rem">Plot</h2>
+    <h2 style="margin:4px 0 6px;font-size:1.25rem">Plots</h2>
     <div class="viz">
-      <svg id="plot" viewBox="0 0 900 300" aria-label="Conduction plots"></svg>
+      <svg id="plot" viewBox="0 0 900 600" aria-label="Conduction plots"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
       Each panel varies one parameter across its full range while the others are held at current values.
@@ -272,7 +272,14 @@ function syncInput(p, el, from){
 
 function setPresetFromSelect(sel){
   const val = sel.value;
-  if(val === 'custom'){
+  const kOut = document.getElementById('k-out');
+  const kIn  = document.getElementById('k-in');
+  const isCustom = val === 'custom';
+
+  kOut.disabled = !isCustom;
+  kIn.disabled  = !isCustom;
+
+  if(isCustom){
     setKRange(0.1, 60, 0.1, 5);
   } else {
     setKRange(0.1, 60, 0.1, parseFloat(val));
@@ -292,6 +299,7 @@ function setKRange(min, max, step, val){
 function highlightPreset(k){
   const sel = document.getElementById('material-select');
   if(!sel) return;
+  if(sel.value !== 'custom') return;  // add this line
   let matched = false;
   for(const opt of sel.options){
     if(opt.value !== 'custom' && Math.abs(parseFloat(opt.value) - k) < 0.001){
@@ -325,10 +333,11 @@ function drawPlot(){
 
   const W=900, H=300;
   const mg={top:22,right:18,bottom:46,left:52};
-  const gap=22;
-  const nP=4;
-  const pW=(W-mg.left-mg.right-gap*(nP-1))/nP;
+  const gap=60;
+  const nCols=2;
+  const pW=(W-mg.left-mg.right-gap*(nCols-1))/nCols;
   const pH=H-mg.top-mg.bottom;
+  const rowH=H;
 
   const qCur = calcQ(S.k, S.A, S.L, S.T1);
   // two auto-scale ranges per professor's notes
@@ -356,10 +365,13 @@ function drawPlot(){
     </marker>`);
 
   panels.forEach((panel, i) => {
-    const xOff = mg.left + i*(pW+gap);
+    const col  = i % nCols;
+    const row  = Math.floor(i / nCols);
+    const xOff = mg.left + col * (pW + gap);
+    const yOff = row * rowH;
     const xDomMax = panel.xMax || panel.pts[panel.pts.length-1];
-    const xSc  = d3.scaleLinear().domain([panel.pts[0], xDomMax]).range([xOff, xOff+pW]);
-    const ySc  = d3.scaleLinear().domain([0, yMax]).range([mg.top+pH, mg.top]);
+    const xSc = d3.scaleLinear().domain([panel.p === 'T1' ? panel.pts[0] : 0, xDomMax]).range([xOff, xOff+pW]);
+    const ySc = d3.scaleLinear().domain([0, yMax]).range([yOff+mg.top+pH, yOff+mg.top]);
 
     // x-axis — for k panel use custom ticks that include 60; for L panel include 0.5
     const xAxis = panel.p === 'k'
@@ -370,31 +382,42 @@ function drawPlot(){
 
     // x-axis
     svg.append('g').attr('class','axis')
-       .attr('transform',`translate(0,${mg.top+pH})`)
+       .attr('transform',`translate(0,${yOff+mg.top+pH})`)
        .call(xAxis);
 
-    // y-axis (first panel only for label; all panels get ticks)
+    
     svg.append('g').attr('class','axis')
        .attr('transform',`translate(${xOff},0)`)
        .call(d3.axisLeft(ySc).ticks(8));
 
-    if(i===0){
-      svg.append('text').attr('class','axis-title')
-         .attr('transform','rotate(-90)')
-         .attr('x',-(mg.top+pH/2)).attr('y',14)
-         .attr('text-anchor','middle')
-         .text('Q̇cond,x  (kW)');
-    }
+    svg.append('text').attr('class','axis-title')
+        .attr('transform',`translate(${xOff-38}, ${yOff+mg.top+pH/2}) rotate(-90)`)
+        .attr('text-anchor','middle')
+        .text('Q̇ cond,x  (kW)');
+    
 
     // x-axis title
     svg.append('text').attr('class','axis-title')
-       .attr('x', xOff+pW/2).attr('y', H-4)
+       .attr('x', xOff+pW/2).attr('y', yOff+H-4)
        .attr('text-anchor','middle')
        .text(panel.label);
 
     // curve
-    const lineData = panel.pts.map(x=>({x, q:panel.fn(x)}));
-    const lineFn   = d3.line().x(d=>xSc(d.x)).y(d=>ySc(Math.max(0,d.q)));
+    const lineData = panel.pts.map(x=>({x, q:panel.fn(x)})).filter(d => d.q >= 0 && d.q <= yMax);
+    if(panel.p !== 'T1'){
+      if(panel.p === 'L'){
+    
+        const extraPts = d3.range(0.01, META.L.min, 0.005);
+        const extraData = extraPts
+          .map(x => ({ x, q: panel.fn(x) }))
+          .filter(d => d.q >= 0 && d.q <= yMax);
+        lineData.unshift(...extraData);
+      }  else {
+          const q0 = panel.fn(0);
+          if(isFinite(q0)) lineData.unshift({ x: 0, q: q0 });
+        } 
+    }   
+    const lineFn   = d3.line().x(d=>xSc(d.x)).y(d=>ySc(Math.max(0, Math.min(yMax, d.q))));
     svg.append('path').datum(lineData).attr('class','curve')
        .style('stroke','#3b82f6').attr('d', lineFn);
 
@@ -407,21 +430,34 @@ function drawPlot(){
 
     if(panel.p !== 'NONE'){
       const hitRect = svg.append('rect').attr('class','hit')
-        .attr('x',xOff).attr('y',mg.top).attr('width',pW).attr('height',pH);
+        .attr('x',xOff).attr('y',yOff+mg.top).attr('width',pW).attr('height',pH);
 
-      hitRect.call(d3.drag().on('start drag end', function(event){
-        const xm  = Math.max(xOff, Math.min(xOff+pW, event.x));
-        let   val = xSc.invert(xm);
-        const m   = META[panel.p];
-        val = Math.max(m.min, Math.min(m.max, val));
-        val = Math.round(val/m.step)*m.step;
-        S[panel.p] = val;
-        document.getElementById(panel.p+'-out').value = +val.toFixed(3);
-        document.getElementById(panel.p+'-in').value  = +val.toFixed(3);
-        if(panel.p==='k') highlightPreset(val);
-        compute(); // redraws all panels and dots on every event
-      }));
-    }
+      if(panel.p === 'k' && document.getElementById('material-select').value !== 'custom'){
+        dot.style('cursor', 'not-allowed');
+        hitRect.style('cursor', 'not-allowed');
+      }
+
+      hitRect.call(d3.drag()
+        .filter(function(){
+          if(panel.p === 'k' && document.getElementById('material-select').value !== 'custom') return false;
+          return true;
+        })
+        .on('start drag end', function(event){
+          if(panel.p === 'k' && document.getElementById('material-select').value !== 'custom') return;
+
+          const xm  = Math.max(xOff, Math.min(xOff+pW, event.x));
+          let   val = xSc.invert(xm);
+          const m   = META[panel.p];
+          val = Math.max(m.min, Math.min(m.max, val));
+          val = Math.round(val/m.step)*m.step;
+          S[panel.p] = val;
+          document.getElementById(panel.p+'-out').value = +val.toFixed(3);
+          document.getElementById(panel.p+'-in').value  = +val.toFixed(3);
+          if(panel.p==='k' && document.getElementById('material-select').value !== 'custom') highlightPreset(val);
+          compute();
+    })
+  );
+}
   });
 }
 
@@ -430,6 +466,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
   resetT1();
   compute();
   window.addEventListener('resize', compute);
+
+  document.getElementById('k-out').disabled = true;
+  document.getElementById('k-in').disabled  = true;
 });
 </script>
 
