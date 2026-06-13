@@ -323,7 +323,7 @@
                     <div class="eqbig">
                         \( \displaystyle 
                             c = \sqrt{kRT}, 
-                            R = \frac{\bar{R}}{M} 
+                            \text{where } R = \frac{\bar{R}}{M} 
                         \)
                     </div>
 
@@ -332,7 +332,7 @@
                             <li><b>\(c\)</b> — sound speed</li>
                             <li><b>\( k \)</b> — specific heat ratio, Cp/Cv</li>
                             <li><b>\( R \)</b> — gas constant</li>
-                            <li><b>\( \bar{R} \)</b> — universal gas constant (8314 J/(kg·K))</li>
+                            <li><b>\( \bar{R} \)</b> — universal gas constant (8314 J/(kmol·K))</li>
                             <li><b>\( M \)</b> — molar mass</li>
                             <li><b>\( T \)</b> — thermodynamic temperature</li>
                         </ul>
@@ -433,7 +433,7 @@
 
         function drawPlotFrame() {
             const svg = d3.select('#plot'); svg.selectAll('*').remove();
-            const W = 760, H = 320, m = { l: 64, r: 16, t: 14, b: 54 };
+            const W = 760, H = 320, m = { l: 64, r: 30, t: 14, b: 54 };
             const iw = W - m.l - m.r, ih = H - m.t - m.b;
 
             const x = d3.scaleLinear().domain([T_MIN, T_MAX]).range([m.l, m.l + iw]);
