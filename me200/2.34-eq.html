@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Heat Transfer by Convection</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root{
+      --ink:#1f2937;--ink2:#374151;
+      --bg:#f6f7fb;--card:#fff;--line:#e5e7eb;
+      --accent:#0ea5e9;
+      --ok:#10b981;--warn:#f59e0b;--danger:#ef4444;
+      --r-sm:10px;--r-md:12px;--r-lg:14px;
+      --shadow-sm:0 6px 16px rgba(0,0,0,.04);
+      --shadow-md:0 10px 22px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45;background:var(--bg);color:var(--ink)}
+    html{scroll-behavior:smooth}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    .site-header{background:linear-gradient(135deg,var(--ink),var(--ink2));color:#fff;padding:28px 0}
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .header-row h1{font-size:clamp(1.4rem,2.1vw,2rem);line-height:1.12;margin:0}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none;cursor:pointer;font-size:14px}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.primary:hover{filter:brightness(1.06)}
+    .site-footer{border-top:1px solid var(--line);background:#fff;padding:16px 0;margin-top:28px}
+    .back-row{display:flex;align-items:center;margin:12px 0 14px}
+    .back-home{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#0ea5e9;text-decoration:none;font-size:14px}
+    .back-home:hover{background:#f0f9ff}
+    .back-home .chev{font-size:16px;line-height:1}
+
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:var(--r-md);background:#fcfcff;margin-bottom:10px;overflow-x:auto}
+    .eqbig{font-size:1.05em;margin-bottom:8px}
+    .title-xl{font-size:18px;line-height:1.22;color:#111;margin-bottom:10px}
+    .note{font-size:13px;color:#4b5563;margin-bottom:6px}
+
+    .top-grid{display:grid;gap:12px}
+    @media(min-width:1024px){.top-grid{grid-template-columns:1.2fr 0.9fr}}
+    .schem{min-height:260px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
+           display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+
+    .inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    input[type="number"]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;
+                         background:#fff;color:inherit;width:78px;text-align:right}
+    input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
+    input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
+    label{font-size:13px;color:#4b5563}
+
+    .inputs-two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media(max-width:760px){.inputs-two{grid-template-columns:1fr}}
+
+    .kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(2,minmax(120px,1fr));
+         background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    .viz{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px}
+    svg{width:100%;height:auto;display:block}
+    .axis text{font-size:10px;fill:#111}
+    .axis-title{font-size:11px;fill:#111}
+    .curve{fill:none;stroke-width:2}
+    .dragpt{fill:#ef4444;stroke:#111;stroke-width:1.2;cursor:ew-resize}
+    .hit{fill:transparent;cursor:ew-resize}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="header-row">
+      <h1>Heat Transfer by Convection</h1>
+      <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="back-row">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </nav>
+
+  <!-- TOP GRID: equation card + schematic -->
+  <section class="top-grid">
+
+    <div class="ctl">
+      <div class="eqwrap">
+        <div class="title-xl"><b>Heat transfer rate due to the convection of a fluid passing over a surface</b></div>
+        <div class="eqbig">
+          \(\displaystyle \dot{Q}_{\text{conv}} = h\,A\,(T_s - T_\infty)\)
+        </div>
+        <div style="margin-top:10px;padding:0 4px">
+          <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px">Symbols</div>
+          <ul style="margin:8px 0 0 20px">
+            <li><b>\(\dot{Q}_{\text{conv}}\)</b> — heat transfer rate</li>
+            <li><b>\(h\)</b> — convection heat transfer coefficient</li>
+            <li><b>\(A\)</b> — area of the surface</li>
+            <li><b>\(T_s,\,T_\infty\)</b> — temperatures of the surface and the fluid, respectively</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schematic -->
+    <div>
+      <div class="ctl" style="position:sticky;top:20px">
+        <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
+        <div class="schem" aria-label="Convection heat transfer schematic">
+          <img src="../assets/me200/2.34-eq.png" alt="Convection heat transfer schematic" style="max-height:260px; width:100%; object-fit:contain" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INPUTS & OUTPUTS -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Inputs &amp; Outputs</h2>
+
+    <div class="inputs-two">
+      <!-- Left: sliders -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="ctl">
+          <label>Convection coefficient \(h\) (W/(m²·K))</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="h-out" min="10" max="1000" step="10" value="500"
+                   onchange="syncInput('h',this,'num')" />
+            <input type="range"  id="h-in"  min="10" max="1000" step="10" value="500"
+                   oninput="syncInput('h',this,'range')" style="flex:1" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>Surface area \(A\) (m²)</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="A-out" min="0.1" max="0.5" step="0.01" value="0.3"
+                   onchange="syncInput('A',this,'num')" />
+            <input type="range"  id="A-in"  min="0.1" max="0.5" step="0.01" value="0.3"
+                   oninput="syncInput('A',this,'range')" style="flex:1" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>Surface temperature \(T_s\) (K)</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="Ts-out" min="300" max="350" step="1" value="325"
+                   onchange="syncInput('Ts',this,'num')" />
+            <input type="range"  id="Ts-in"  min="300" max="350" step="1" value="325"
+                   oninput="syncInput('Ts',this,'range')" style="flex:1" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>\(T_\infty\) — fluid temperature (K) &nbsp;<span style="color:#6b7280;font-size:12px">fixed at 300 K</span></label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" disabled value="300" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: output -->
+      <div>
+        <div class="kpi" style="grid-template-columns:1fr">
+          <div>
+            <div class="lab">Heat transfer rate \(\dot{Q}_{\text{conv}}\)</div>
+            <div class="val"><span id="q-kpi">—</span> kW</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLOT -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 6px;font-size:1.25rem">Plots</h2>
+    <div class="viz">
+      <svg id="plot" viewBox="0 0 900 300" aria-label="Convection heat transfer plots"></svg>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:#6b7280">
+      Each panel varies one parameter across its full range while the others are held at current values.
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point — drag it or use the sliders above.
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </div>
+</footer>
+
+<script>
+/* ── state ── */
+const T_INF = 300; // fixed K
+let S = { h: 500, A: 0.3, Ts: 325 };
+
+const META = {
+  h:  { min: 10,  max: 1000, step: 10,   axis: 'h  (W/(m²·K))' },
+  A:  { min: 0.1, max: 0.5,  step: 0.01, axis: 'A  (m²)' },
+  Ts: { min: 300, max: 350,  step: 1,    axis: 'Tₛ  (K)' }
+};
+
+function calcQ(h, A, Ts){ return h * A * (Ts - T_INF) / 1000; } // kW
+
+/* ── auto-scale: two ranges per professor's notes ── */
+function yScale(qCur){
+  return Math.abs(qCur) < 5.5 ? 6 : 30;
+}
+
+/* ── sync number ↔ range ── */
+function syncInput(p, el, from){
+  let v = parseFloat(el.value);
+  v = Math.max(META[p].min, Math.min(META[p].max, v));
+  S[p] = v;
+  document.getElementById(p+'-out').value = v;
+  document.getElementById(p+'-in').value  = v;
+  compute();
+}
+
+/* ── compute output ── */
+function compute(){
+  const q = calcQ(S.h, S.A, S.Ts);
+  document.getElementById('q-kpi').textContent = q.toFixed(3);
+  drawPlot();
+}
+
+/* ── draw 3-panel plot ── */
+function drawPlot(){
+  const svg = d3.select('#plot');
+  svg.selectAll('*').remove();
+
+  const W=900, H=300;
+  const mg={top:22,right:18,bottom:46,left:52};
+  const gap=60;
+  const nP=3;
+  const pW=(W-mg.left-mg.right-gap*(nP-1))/nP;
+  const pH=H-mg.top-mg.bottom;
+
+  const qCur = calcQ(S.h, S.A, S.Ts);
+  const yMax = yScale(qCur);
+
+  /* Each panel varies ONE parameter; the other two stay at current S values */
+  const panels = [
+    {
+      p: 'h',
+      label: 'h  (W/(m²·K))',
+      pts: d3.range(META.h.min, META.h.max + 0.001, (META.h.max - META.h.min) / 27),
+      fn:  v => calcQ(v, S.A, S.Ts),
+      cur: S.h
+    },
+    {
+      p: 'A',
+      label: 'A  (m²)',
+      pts: d3.range(META.A.min, META.A.max + 0.0001, (META.A.max - META.A.min) / 27),
+      fn:  v => calcQ(S.h, v, S.Ts),
+      cur: S.A
+    },
+    {
+      p: 'Ts',
+      label: 'Tₛ  (K)',
+      pts: d3.range(META.Ts.min, META.Ts.max + 0.001, (META.Ts.max - META.Ts.min) / 27),
+      fn:  v => calcQ(S.h, S.A, v),
+      cur: S.Ts
+    }
+  ];
+
+  svg.append('defs').html(`
+    <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 2L9 5L1 8" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>`);
+
+  panels.forEach((panel, i) => {
+    const xOff = mg.left + i * (pW + gap);
+    const xDomMin = panel.pts[0];
+    const xDomMax = panel.pts[panel.pts.length - 1];
+    const xSc = d3.scaleLinear().domain([panel.p === 'Ts' ? xDomMin : 0, xDomMax]).range([xOff, xOff + pW]);
+    const ySc = d3.scaleLinear().domain([0, yMax]).range([mg.top + pH, mg.top]);
+
+    /* x-axis ticks */
+    const xAxis = panel.p === 'h'
+      ? d3.axisBottom(xSc).tickValues([200, 400, 600, 800, 1000]).tickFormat(d3.format('d'))
+      : panel.p === 'A'
+      ? d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'))
+      : d3.axisBottom(xSc).tickValues([300, 310, 320, 330, 340, 350]).tickFormat(d3.format('d'));
+
+    svg.append('g').attr('class','axis')
+       .attr('transform',`translate(0,${mg.top+pH})`)
+       .call(xAxis);
+
+    svg.append('g').attr('class','axis')
+       .attr('transform',`translate(${xOff},0)`)
+       .call(d3.axisLeft(ySc).ticks(6));
+
+    
+    svg.append('text').attr('class','axis-title')
+        .attr('transform',`translate(${xOff-38}, ${mg.top+pH/2}) rotate(-90)`)
+        .attr('text-anchor','middle')
+        .text('Q̇ conv  (kW)');
+    
+
+    svg.append('text').attr('class','axis-title')
+       .attr('x', xOff + pW/2).attr('y', H - 4)
+       .attr('text-anchor','middle')
+       .text(panel.label);
+
+    /* curve */
+    const lineData = panel.pts.map(x => ({ x, q: panel.fn(x) })).filter(d => d.q >= 0 && d.q <= yMax);
+    if(panel.p !== 'Ts'){
+      const q0 = panel.fn(0);
+      if(isFinite(q0)) lineData.unshift({ x: 0, q: q0 });
+    }
+    const lineFn   = d3.line().x(d => xSc(d.x)).y(d => ySc(Math.max(0, Math.min(yMax, d.q))));
+    svg.append('path').datum(lineData).attr('class','curve')
+       .style('stroke','#3b82f6').attr('d', lineFn);
+
+    /* operating point dot */
+    const qDot = panel.fn(panel.cur);
+    svg.append('circle').attr('class','dragpt')
+       .attr('cx', xSc(panel.cur))
+       .attr('cy', ySc(Math.max(0, qDot)))
+       .attr('r', 5);
+
+    /* drag hit area — only moves THIS panel's parameter */
+    const hitRect = svg.append('rect').attr('class','hit')
+      .attr('x', xOff).attr('y', mg.top).attr('width', pW).attr('height', pH);
+
+    hitRect.call(d3.drag().on('start drag end', function(event){
+      const xm  = Math.max(xOff, Math.min(xOff + pW, event.x));
+      let   val = xSc.invert(xm);
+      const m   = META[panel.p];
+      val = Math.max(m.min, Math.min(m.max, val));
+      val = Math.round(val / m.step) * m.step;
+      S[panel.p] = val;
+      document.getElementById(panel.p + '-out').value = +val.toFixed(3);
+      document.getElementById(panel.p + '-in').value  = +val.toFixed(3);
+      compute();
+    }));
+  });
+}
+
+/* ── init ── */
+window.addEventListener('DOMContentLoaded', () => {
+  compute();
+  window.addEventListener('resize', compute);
+});
+</script>
+
+</body>
+</html>
