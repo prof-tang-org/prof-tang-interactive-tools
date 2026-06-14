@@ -230,8 +230,8 @@
       <svg id="plot" viewBox="0 0 900 600" aria-label="Conduction plots"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      Each panel varies one parameter across its full range while the others are held at current values.
-      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point — drag it or use the sliders above.
+      Each panel varies one variable across its full range while the other variables in the 1-D thermal conduction equation are held at current values.
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current value — drag it or use the sliders above to see how the graphs and \(\dot{Q}_{\text{cond},x}\) change.
     </div>
   </section>
 
@@ -266,7 +266,12 @@ function syncInput(p, el, from){
   S[p] = v;
   document.getElementById(p+'-out').value = v;
   document.getElementById(p+'-in').value  = v;
-  if(p==='k') highlightPreset(v);
+  if(p==='k'){
+    const sel = document.getElementById('material-select');
+    sel.value = 'custom';
+    document.getElementById('k-out').disabled = false;
+    document.getElementById('k-in').disabled  = false;
+  }
   compute();
 }
 
@@ -299,7 +304,7 @@ function setKRange(min, max, step, val){
 function highlightPreset(k){
   const sel = document.getElementById('material-select');
   if(!sel) return;
-  if(sel.value !== 'custom') return;  // add this line
+  if(sel.value !== 'custom') return; 
   let matched = false;
   for(const opt of sel.options){
     if(opt.value !== 'custom' && Math.abs(parseFloat(opt.value) - k) < 0.001){
