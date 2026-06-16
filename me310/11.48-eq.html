@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title></title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="./temp-styles.css" />
+  <link rel="stylesheet" href="../templates/temp-styles.css" />
   <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -16,7 +16,7 @@
   <header class="site-header">
     <div class="container">
       <div class="header-row">
-        <h1 id="header-title">{Insert Header Here}</h1>
+        <h1 id="header-title"></h1>
         <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
       </div>
     </div>
@@ -29,9 +29,9 @@
 
     <section class="top-grid">
       <div class="card">
-        <div class="eq-schem">
+        <div class="eq-schem" id="equation-container">
           <div class="dark-card">
-            <h3 class="title-xl">{Insert subtitle here}</h3>
+            <!-- <h3>{Insert subtitle here}</h3>
 
             <div class="eqbig">
               \( \text{Insert Latex Here} \)
@@ -41,7 +41,7 @@
               <ul>
                 <li>{Insert bullets here}</li>
               </ul>
-            </div>
+            </div> -->
           </div>
 
           <div class="dark-card schem" aria-label="">
@@ -58,8 +58,8 @@
 
       <div class="card">
         <h3>Inputs & Outputs</h3>
-        <div class="controls">
-          <div>
+        <div id="controls">
+          <!-- <div>
             <label>{Insert Dropdown Variable}</label>
             <select id="">
               <option value="" selected>{Insert dropdown option}</option>
@@ -67,33 +67,58 @@
             <div class="note">{Insert dropdown notes here}</div>
           </div>
 
-          <div class="rowflex">
-            <div>
-              <label>{Insert Input Variable}</label>
-              <input id="" class="num-sm" type="number" step="" min="" value="" />
-            </div>
-            <div>
-              <label>{Insert Slider Dropdown Variable}</label>
-              <div class="inline">
-                <input id="" class="num-sm" type="number" step="" min="" value="" />
-                <select id="" aria-label="">
-                  <option value="" selected></option>
-                </select>
-              </div>
-              <input id="" class="slider" type="range" min="" max="" step="" value="">
-            </div>
-          </div>
-
           <div>
-            <label></label>
-            <div class="kpi">
-              <div><div class="lab"></div><div id="" class="val"></div></div>
-              <div><div class="lab"></div><div id="" class="val"></div></div>
-              <div><div class="lab"></div><div id="" class="val"></div></div>
+            <label>{Insert Input Variable}</label>
+            <input id="" class="num-sm" type="number" step="" min="" value="" />
+          </div>
+          <div>
+            <label>{Insert Slider Dropdown Variable}</label>
+            <div class="inline">
+              <input id="" class="num-sm" type="number" step="" min="" value="" />
+              <select id="" aria-label="">
+                <option value="" selected></option>
+              </select>
+            </div>
+            <input id="" class="slider" type="range" min="" max="" step="" value="">
+          </div>
+          <div>
+            <label>{Insert Slider Variable}</label>
+            <div class="inline">
+              <input id="T_in" class="num-sm" type="number" step="1" min="200" max="1000"
+                  value="300" />
+              <input id="T_s" type="range" min="200" max="1000" step="1" value="300">
             </div>
           </div>
+          <div>
+            <label>{Insert Dropdown Variable}</label>
+            <select id="" aria-label="">
+              <option value="" selected></option>
+            </select>
+          </div> -->
+        </div>
 
-          <p class="note">Some more notes</p>
+        <div>
+          <label></label>
+          <div class="kpi">
+            <!-- <div>
+                <div class="lab">k</div>
+                <div id="kpi_k" class="val">—</div>
+            </div>
+            <div>
+                <div class="lab">M (kg/kmol)</div>
+                <div id="kpi_M" class="val">—</div>
+            </div>
+            <div>
+                <div class="lab">R (J/kg·K)</div>
+                <div id="kpi_R" class="val">—</div>
+            </div>
+            <div>
+                <div class="lab">c (m/s)</div>
+                <div id="kpi_c" class="val">—</div>
+            </div> -->
+          </div>
+
+          <!-- <p class="note">Some more notes</p> -->
         </div>
       </div>
     </section>
@@ -104,5 +129,8 @@
       <a href="../index.html" class="back-home"><span class="chev"></span></a>
     </div>
   </footer>
+
+  <script src="11.48-eq.js"></script>
+  <script src="../templates/renderer.js"></script>
 </body>
 </html>
