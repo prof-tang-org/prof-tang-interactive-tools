@@ -117,7 +117,7 @@
         </div>
         <div style="margin-top:10px;padding:0 4px">
           <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px">Symbols</div>
-          <ul style="margin:8px 0 0 20px">
+          <ul style="margin:8px 0 0 0;padding-left:38px">
             <li><b>\(\dot{Q}_{\text{cond},x}\)</b> — heat transfer rate</li>
             <li><b>\(k\)</b> — thermal conductivity of wall material</li>
             <li><b>\(A\)</b> — wall area normal to the direction of heat transfer</li>
@@ -150,7 +150,7 @@
       <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Wall material preset</label>
       <select id="material-select" onchange="setPresetFromSelect(this)" style="width:100%;max-width:360px">
         <option value="custom">Custom (0.1–60 W/(m·K))</option>
-        <option value="52"   selected>Carbon steel — 52 W/(m·K) (default)</option>
+        <option value="52"   selected>Carbon steel — 52 W/(m·K)</option>
         <option value="15">Stainless steel — 15 W/(m·K)</option>
         <option value="1">Concrete — 1 W/(m·K)</option>
         <option value="0.16">Hard woods — 0.16 W/(m·K)</option>
@@ -174,9 +174,9 @@
         <div class="ctl">
           <label>Wall area \(A\) (m²)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="A-out" min="0.1" max="0.5" step="0.01" value="0.5"
+            <input type="number" id="A-out" min="0.1" max="0.5" step="0.01" value="0.3"
                    onchange="syncInput('A',this,'num')" />
-            <input type="range"  id="A-in"  min="0.1" max="0.5" step="0.01" value="0.5"
+            <input type="range"  id="A-in"  min="0.1" max="0.5" step="0.01" value="0.3"
                    oninput="syncInput('A',this,'range')" style="flex:1" />
           </div>
         </div>
@@ -184,9 +184,9 @@
         <div class="ctl">
           <label>Wall thickness \(L\) (m)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="L-out" min="0.1" max="0.5" step="0.01" value="0.1"
+            <input type="number" id="L-out" min="0.1" max="0.5" step="0.01" value="0.2"
                    onchange="syncInput('L',this,'num')" />
-            <input type="range"  id="L-in"  min="0.1" max="0.5" step="0.01" value="0.1"
+            <input type="range"  id="L-in"  min="0.1" max="0.5" step="0.01" value="0.2"
                    oninput="syncInput('L',this,'range')" style="flex:1" />
           </div>
         </div>
@@ -230,8 +230,8 @@
       <svg id="plot" viewBox="0 0 900 600" aria-label="Conduction plots"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      Each panel varies one variable across its full range while the other variables in the 1-D thermal conduction equation are held at current values.
-      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current value — drag it or use the sliders above to see how the graphs and \(\dot{Q}_{\text{cond},x}\) change.
+      Each panel varies one variable across its full range while the other variables in the 1-D heat conduction equation are held at current values.
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point — drag it or use the sliders above to see how the graphs and \(\dot{Q}_{\text{cond},x}\) change.
     </div>
   </section>
 
@@ -246,7 +246,7 @@
 <script>
 /* ─── state ─── */
 const T2 = 300;   // fixed K
-let S = { k:52, A:0.5, L:0.1, T1:330 };
+let S = { k:52, A:0.3, L:0.2, T1:330 };
 
 /* parameter meta */
 const META = {
@@ -379,12 +379,15 @@ function drawPlot(){
     const ySc = d3.scaleLinear().domain([0, yMax]).range([yOff+mg.top+pH, yOff+mg.top]);
 
     // x-axis — for k panel use custom ticks that include 60; for L panel include 0.5
+    const decFmt = d => d === 0 ? '0' : d3.format('.1f')(d);
+
     const xAxis = panel.p === 'k'
       ? d3.axisBottom(xSc).tickValues([0, 10, 20, 30, 40, 50, 60]).tickFormat(d3.format('d'))
       : panel.p === 'L'
-      ? d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'))
-      : d3.axisBottom(xSc).ticks(4).tickFormat(d3.format(panel.p==='T1'?'d':'.2~g'));
-
+      ? d3.axisBottom(xSc).tickValues([0, 0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(decFmt)
+      : panel.p === 'A'
+      ? d3.axisBottom(xSc).tickValues([0, 0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(decFmt)
+      : d3.axisBottom(xSc).ticks(4).tickFormat(d3.format('d'));
     // x-axis
     svg.append('g').attr('class','axis')
        .attr('transform',`translate(0,${yOff+mg.top+pH})`)
@@ -409,19 +412,6 @@ function drawPlot(){
 
     // curve
     const lineData = panel.pts.map(x=>({x, q:panel.fn(x)})).filter(d => d.q >= 0 && d.q <= yMax);
-    if(panel.p !== 'T1'){
-      if(panel.p === 'L'){
-    
-        const extraPts = d3.range(0.01, META.L.min, 0.005);
-        const extraData = extraPts
-          .map(x => ({ x, q: panel.fn(x) }))
-          .filter(d => d.q >= 0 && d.q <= yMax);
-        lineData.unshift(...extraData);
-      }  else {
-          const q0 = panel.fn(0);
-          if(isFinite(q0)) lineData.unshift({ x: 0, q: q0 });
-        } 
-    }   
     const lineFn   = d3.line().x(d=>xSc(d.x)).y(d=>ySc(Math.max(0, Math.min(yMax, d.q))));
     svg.append('path').datum(lineData).attr('class','curve')
        .style('stroke','#3b82f6').attr('d', lineFn);

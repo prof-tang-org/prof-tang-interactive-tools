@@ -99,7 +99,7 @@
         </div>
         <div style="margin-top:10px;padding:0 4px">
           <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px">Symbols</div>
-          <ul style="margin:8px 0 0 20px">
+          <ul style="margin:8px 0 0 0;padding-left:38px">
             <li><b>\(\dot{Q}_{\text{conv}}\)</b> — heat transfer rate</li>
             <li><b>\(h\)</b> — convection heat transfer coefficient</li>
             <li><b>\(A\)</b> — area of the surface</li>
@@ -186,8 +186,8 @@
       <svg id="plot" viewBox="0 0 900 300" aria-label="Convection heat transfer plots"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      Each panel varies one variable across its full range while the other variables in the thermal convection equation are held at current values.
-      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current value — drag it or use the sliders above to see how the graphs and \(\dot{Q}_{\text{conv}}\) change.
+      Each panel varies one variable across its full range while the other variables in the heat convection equation are held at current values.
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point — drag it or use the sliders above to see how the graphs and \(\dot{Q}_{\text{conv}}\) change.
     </div>
   </section>
 
@@ -287,12 +287,13 @@ function drawPlot(){
     const ySc = d3.scaleLinear().domain([0, yMax]).range([mg.top + pH, mg.top]);
 
     /* x-axis ticks */
-    const xAxis = panel.p === 'h'
-      ? d3.axisBottom(xSc).tickValues([200, 400, 600, 800, 1000]).tickFormat(d3.format('d'))
-      : panel.p === 'A'
-      ? d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'))
-      : d3.axisBottom(xSc).tickValues([300, 310, 320, 330, 340, 350]).tickFormat(d3.format('d'));
+    const decFmt = d => d === 0 ? '0' : d3.format('.1f')(d);
 
+    const xAxis = panel.p === 'h'
+      ? d3.axisBottom(xSc).tickValues([0, 200, 400, 600, 800, 1000]).tickFormat(d3.format('d'))
+      : panel.p === 'A'
+      ? d3.axisBottom(xSc).tickValues([0, 0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(decFmt)
+      : d3.axisBottom(xSc).tickValues([300, 310, 320, 330, 340, 350]).tickFormat(d3.format('d'));
     svg.append('g').attr('class','axis')
        .attr('transform',`translate(0,${mg.top+pH})`)
        .call(xAxis);
@@ -315,10 +316,6 @@ function drawPlot(){
 
     /* curve */
     const lineData = panel.pts.map(x => ({ x, q: panel.fn(x) })).filter(d => d.q >= 0 && d.q <= yMax);
-    if(panel.p !== 'Ts'){
-      const q0 = panel.fn(0);
-      if(isFinite(q0)) lineData.unshift({ x: 0, q: q0 });
-    }
     const lineFn   = d3.line().x(d => xSc(d.x)).y(d => ySc(Math.max(0, Math.min(yMax, d.q))));
     svg.append('path').datum(lineData).attr('class','curve')
        .style('stroke','#3b82f6').attr('d', lineFn);

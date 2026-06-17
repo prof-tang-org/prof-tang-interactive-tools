@@ -100,7 +100,7 @@
       
         <div style="margin-top:10px;padding:0 4px">
           <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px">Symbols</div>
-          <ul style="margin:8px 0 0 20px">
+          <ul style="margin:8px 0 0 0;padding-left:38px">
             <li><b>\(\dot{Q}_{\text{rad}}\)</b> — heat transfer rate</li>
             <li><b>\(\varepsilon\)</b> — emissivity of the small surface</li>
             <li><b>\(\sigma\)</b> — Stefan–Boltzmann constant, \(5.67\times10^{-8}\ \text{W/(m}^2\text{·K}^4\text{)}\)</li>
@@ -109,14 +109,15 @@
           </ul>
         </div>
       </div>
+    </div>
 
     <!-- Schematic -->
-    <div>
-      <div class="ctl" style="position:sticky;top:20px">
-        <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
-        <div class="schem" aria-label="Radiation heat transfer schematic">
+    <div style="display:flex;flex-direction:column">
+      <div class="ctl" style="position:sticky;top:20px;flex:1;display:flex;flex-direction:column">
+       <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
+        <div class="schem" aria-label="Radiation heat transfer schematic" style="flex:1">
           <img src="../assets/me200/2.33-eq.png" alt="Radiation heat transfer schematic"
-     style="max-height:200px;width:100%;object-fit:contain;" />
+              style="max-height:200px;width:100%;object-fit:contain;" />
         </div>
       </div>
     </div>
@@ -188,8 +189,8 @@
       <svg id="plot" viewBox="0 0 900 300" aria-label="Radiation heat transfer plots"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      Each panel varies one variable across its full range while the other variables in the thermal radiation equation are held at current values.
-      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current value — drag it or use the sliders above to see how the graphs and \(\dot{Q}_{\text{rad}}\) change.
+      Each panel varies one variable across its full range while the other variables in the radiation equation are held at current values.
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point — drag it or use the sliders above to see how the graphs and \(\dot{Q}_{\text{rad}}\) change.
 
     </div>
   </section>
@@ -211,7 +212,7 @@ const SIGMA  = 5.67e-8;     // W/(m²·K⁴)
 let S = { eps: 0.5, A: 0.3, Ts: 400 };
 
 const META = {
-  eps: { min: 0.1,  max: 1,    step: 0.01, axis: 'ε  [—]' },
+  eps: { min: 0.1,  max: 1,    step: 0.01, axis: 'ε  (-)' },
   A:   { min: 0.1,  max: 0.5,  step: 0.01, axis: 'A  (m²)' },
   Ts:  { min: 300,  max: 500, step: 1,    axis: 'Tₛ  (K)' }
 };
@@ -264,7 +265,7 @@ function drawPlot(){
   const panels = [
     {
       p: 'eps',
-      label: 'ε  [—]',
+      label: 'ε  (-)',
       pts: d3.range(META.eps.min, META.eps.max + 0.001, (META.eps.max - META.eps.min) / 200),
       fn:  v => calcQ(v, S.A, S.Ts),
       cur: S.eps
@@ -298,11 +299,13 @@ function drawPlot(){
     const ySc = d3.scaleLinear().domain([yMin, yMax]).range([mg.top + pH, mg.top]);
 
     /* x-axis ticks */
+    const decFmt = d => d === 0 ? '0' : d3.format('.1f')(d);
+
     let xAxis;
     if(panel.p === 'eps'){
-      xAxis = d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5,0.6, 0.7, 0.8, 0.9, 1.0]).tickFormat(d3.format('.1f'));
+      xAxis = d3.axisBottom(xSc).tickValues([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]).tickFormat(decFmt);
     } else if(panel.p === 'A'){
-      xAxis = d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(d3.format('.1f'));
+      xAxis = d3.axisBottom(xSc).tickValues([0, 0.1, 0.2, 0.3, 0.4, 0.5]).tickFormat(decFmt);
     } else {
       xAxis = d3.axisBottom(xSc).tickValues([300, 350, 400, 450, 500]).tickFormat(d3.format('d'));
     }
@@ -330,10 +333,6 @@ function drawPlot(){
     /* curve — only draw points within the y-axis range (no clamping/flattening) */
     const lineData = panel.pts.map(x => ({ x, q: panel.fn(x) }));
 
-    if(panel.p !== 'Ts'){
-      const q0 = panel.fn(0);
-      if(isFinite(q0)) lineData.unshift({ x: 0, q: q0 });
-    }
     const lineFn   = d3.line()
       .defined(d => d.q >= yMin && d.q <= yMax)
       .x(d => xSc(d.x))
