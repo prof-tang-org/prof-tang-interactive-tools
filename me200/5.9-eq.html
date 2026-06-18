@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thermal Efficiency of Reversible Power Cycles</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* ─── variables ─── */
+    :root{
+      --ink:#1f2937;--ink2:#374151;
+      --bg:#f6f7fb;--card:#fff;--line:#e5e7eb;
+      --accent:#0ea5e9;
+      --ok:#10b981;--warn:#f59e0b;--danger:#ef4444;
+      --r-sm:10px;--r-md:12px;--r-lg:14px;
+      --shadow-sm:0 6px 16px rgba(0,0,0,.04);
+      --shadow-md:0 10px 22px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45;background:var(--bg);color:var(--ink)}
+    html{scroll-behavior:smooth}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    /* header / footer */
+    .site-header{background:linear-gradient(135deg,var(--ink),var(--ink2));color:#fff;padding:28px 0}
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .header-row h1{font-size:clamp(1.4rem,2.1vw,2rem);line-height:1.12;margin:0}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none;cursor:pointer;font-size:14px}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.primary:hover{filter:brightness(1.06)}
+    .site-footer{border-top:1px solid var(--line);background:#fff;padding:16px 0;margin-top:28px}
+    .back-row{display:flex;align-items:center;margin:12px 0 14px}
+    .back-home{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#0ea5e9;text-decoration:none;font-size:14px}
+    .back-home:hover{background:#f0f9ff}
+    .back-home .chev{font-size:16px;line-height:1}
+
+    /* cards */
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:var(--r-md);background:#fcfcff;margin-bottom:10px;overflow-x:auto}
+    .eqbig{font-size:1.05em;margin-bottom:8px}
+    .title-xl{font-size:18px;line-height:1.22;color:#111;margin-bottom:10px}
+    .note{font-size:13px;color:#4b5563;margin-bottom:6px}
+
+    /* top two-column grid */
+    .top-grid{display:grid;gap:12px}
+    @media(min-width:1024px){.top-grid{grid-template-columns:1.2fr 0.9fr}}
+
+    /* schematic box */
+    .schem{min-height:260px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
+           display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+
+    /* controls / inputs */
+    .inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    input[type="number"]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;
+                         background:#fff;color:inherit;width:88px;text-align:right}
+    input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
+    input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
+    label{font-size:13px;color:#4b5563}
+    select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
+
+    /* two-column inputs / output layout */
+    .inputs-two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media(max-width:760px){.inputs-two{grid-template-columns:1fr}}
+
+    /* KPI strip */
+    .kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(2,minmax(120px,1fr));
+         background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    /* plot */
+    .viz{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px;margin-top:12px}
+    svg{width:100%;height:auto;display:block}
+    .axis text{font-size:10px;fill:#111}
+    .axis-title{font-size:11px;fill:#111}
+    .curve{fill:none;stroke-width:2}
+    .dragpt{stroke:#111;stroke-width:1.2;cursor:ew-resize}
+    .hit{fill:transparent;cursor:ew-resize}
+
+    /* legend */
+    .legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#374151;padding:4px 8px 2px}
+    .legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="header-row">
+      <h1>Thermal Efficiency of Reversible Power Cycles</h1>
+      <a class="btn primary" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="back-row">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </nav>
+
+  <!-- ── TOP GRID: equation card + schematic ── -->
+  <section class="top-grid">
+
+    <div class="ctl">
+      <!-- Equation + Symbols in unified gray box -->
+      <div style="background:#fafcff;border:1px solid var(--line);border-radius:10px;padding:16px 18px">
+        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:12px">Thermal efficiency of reversible power cycles working between the given hot and cold reservoirs, i.e., Carnot efficiency</div>
+        \(\displaystyle \eta = \frac{W_R}{Q_H} = \frac{Q_H - Q_C}{Q_H} = \frac{T_H - T_C}{T_H} = 1 - \frac{T_C}{T_H}\)
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:16px;margin-bottom:4px">Symbols</div>
+        <ul style="margin:8px 0 0 0;padding-left:38px">
+          <li>\(\eta\) — thermal efficiency of reversible power cycle</li>
+          <li>\(Q_H\) — heat absorption from hot reservoir</li>
+          <li>\(Q_C\) — heat rejection to cold reservoir</li>
+          <li>\(W_R\) — work output of reversible power cycle</li>
+          <li>\(T_H\) — thermodynamic temperature of the hot reservoir</li>
+          <li>\(T_C\) — thermodynamic temperature of the cold reservoir</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Schematic -->
+    <div>
+      <div class="ctl" style="position:sticky;top:20px">
+        <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
+        <div class="schem" aria-label="Carnot power cycle schematic">
+          <svg viewBox="0 0 310 290" xmlns="http://www.w3.org/2000/svg" style="max-width:310px;width:100%">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M1 2L9 5L1 8" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </marker>
+              <marker id="arrW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M1 2L9 5L1 8" fill="none" stroke="#0ea5e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </marker>
+            </defs>
+
+            <!-- Hot reservoir -->
+            <rect x="60" y="14" width="190" height="46" rx="6" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+            <text x="155" y="33" text-anchor="middle" font-size="13" font-weight="700" fill="#b91c1c">Hot Reservoir</text>
+            <text x="155" y="51" text-anchor="middle" font-size="12" font-style="italic" fill="#b91c1c">T</text>
+            <text x="161" y="55" text-anchor="start" font-size="9" fill="#b91c1c">H</text>
+
+            <!-- Engine block -->
+            <rect x="95" y="118" width="120" height="68" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="155" y="148" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">Heat</text>
+            <text x="155" y="164" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">Engine</text>
+
+            <!-- Cold reservoir -->
+            <rect x="60" y="242" width="190" height="46" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="155" y="261" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">Cold Reservoir</text>
+            <text x="155" y="279" text-anchor="middle" font-size="12" font-style="italic" fill="#1e40af">T</text>
+            <text x="161" y="283" text-anchor="start" font-size="9" fill="#1e40af">C</text>
+
+            <!-- Q_H arrow (down, left side) -->
+            <line x1="110" y1="60" x2="110" y2="115" stroke="#ef4444" stroke-width="2" marker-end="url(#arr)"/>
+            <text x="94" y="92" text-anchor="middle" font-size="12" font-style="italic" fill="#ef4444">Q&#775;</text>
+            <text x="100" y="96" text-anchor="start" font-size="9" fill="#ef4444">H</text>
+
+            <!-- Q_C arrow (down, left side) -->
+            <line x1="110" y1="189" x2="110" y2="239" stroke="#3b82f6" stroke-width="2" marker-end="url(#arr)"/>
+            <text x="94" y="218" text-anchor="middle" font-size="12" font-style="italic" fill="#3b82f6">Q&#775;</text>
+            <text x="100" y="222" text-anchor="start" font-size="9" fill="#3b82f6">C</text>
+
+            <!-- W arrow (right side) -->
+            <line x1="215" y1="152" x2="265" y2="152" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arrW)"/>
+            <text x="272" y="148" text-anchor="start" font-size="12" font-style="italic" fill="#0ea5e9">W&#775;</text>
+            <text x="282" y="152" text-anchor="start" font-size="9" fill="#0ea5e9">cycle</text>
+
+            <!-- eta label -->
+            <text x="241" y="172" text-anchor="middle" font-size="11" fill="#0369a1">η = Ẇ/Q̇</text>
+            <text x="249" y="183" text-anchor="middle" font-size="9" fill="#0369a1">cycle    H</text>
+          </svg>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INPUTS & OUTPUTS ── -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Inputs &amp; Outputs</h2>
+
+    <div class="inputs-two">
+      <!-- Left: inputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="ctl">
+          <label>\(T_C\) — cold reservoir temperature (K)</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="TC-out" min="250" max="350" step="1" value="298"
+                   onchange="syncInput('TC',this)" />
+            <input type="range" id="TC-in" min="250" max="350" step="1" value="298"
+                   oninput="syncInput('TC',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>\(T_H\) — hot reservoir temperature (K)</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="TH-out" min="251" max="2000" step="1" value="1000"
+                   onchange="syncInput('TH',this)" />
+            <input type="range" id="TH-in" min="251" max="2000" step="1" value="1000"
+                   oninput="syncInput('TH',this)" style="flex:1" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: output -->
+      <div>
+        <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div>
+            <div class="lab">η at T<sub>C</sub> = input</div>
+            <div class="val"><span id="eta-kpi">—</span></div>
+          </div>
+          <div>
+            <div class="lab">η at T<sub>C</sub> = 250 K</div>
+            <div class="val"><span id="eta-250">—</span></div>
+          </div>
+          <div>
+            <div class="lab">η at T<sub>C</sub> = 350 K</div>
+            <div class="val"><span id="eta-350">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PLOT ── -->
+  <section class="viz" style="margin-top:14px">
+    <h2 style="margin:4px 0 6px;font-size:1.25rem">Plot</h2>
+    <div class="viz">
+      <div class="legend-row">
+        <span><span class="legend-dot" style="background:#3b82f6"></span>T<sub>C</sub> = input</span>
+        <span><span class="legend-dot" style="background:#f97316"></span>T<sub>C</sub> = 250 K</span>
+        <span><span class="legend-dot" style="background:#22c55e"></span>T<sub>C</sub> = 350 K</span>
+      </div>
+      <svg id="plot" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:#6b7280">
+      Each curve shows η vs T<sub>H</sub> for a certain T<sub>C</sub>. Each dot marks the current operating point for each T<sub>C</sub> curve — drag it or use the sliders above to see how η changes.
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </div>
+</footer>
+
+<script>
+/* ─── state ─── */
+const S = { TC: 298, TH: 1000 };
+
+function calcEta(TH, TC){ return TH > TC ? (TH - TC) / TH : 0; }
+
+/* ─── sync number ↔ range ─── */
+function syncInput(p, el){
+  let v = parseFloat(el.value);
+  if(isNaN(v)) return;
+  if(p === 'TC'){
+    v = Math.max(250, Math.min(350, v));
+    S.TC = v;
+    // Ensure TH > TC
+    if(S.TH <= S.TC){ S.TH = S.TC + 1; setVal('TH', S.TH); }
+  } else {
+    v = Math.max(S.TC + 1, Math.min(2000, v));
+    S.TH = v;
+  }
+  setVal(p, S[p]);
+  compute();
+}
+
+function setVal(p, v){
+  document.getElementById(p+'-out').value = v;
+  document.getElementById(p+'-in').value  = v;
+}
+
+/* ─── compute output ─── */
+function compute(){
+  const eta = calcEta(S.TH, S.TC);
+  document.getElementById('eta-kpi').textContent = eta.toFixed(4);
+  document.getElementById('eta-250').textContent = S.TH > 250 ? calcEta(S.TH, 250).toFixed(4) : '—';
+  document.getElementById('eta-350').textContent = S.TH > 350 ? calcEta(S.TH, 350).toFixed(4) : '—';
+  drawPlot();
+}
+
+/* ─── draw plot ─── */
+function drawPlot(){
+  const svg = d3.select('#plot');
+  svg.selectAll('*').remove();
+
+  const W = 860, H = 300;
+  const mg = { top: 22, right: 24, bottom: 46, left: 52 };
+  const pW = W - mg.left - mg.right;
+  const pH = H - mg.top - mg.bottom;
+
+  const xSc = d3.scaleLinear().domain([0, 2000]).range([mg.left, mg.left + pW]);
+  const ySc = d3.scaleLinear().domain([0, 1]).range([mg.top + pH, mg.top]);
+
+  // Axes
+  const xAxis = d3.axisBottom(xSc).tickValues([0,250,500,750,1000,1250,1500,1750,2000]).tickFormat(d3.format('d'));
+  const yAxis = d3.axisLeft(ySc).ticks(5).tickFormat(d3.format('~g'));
+
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(0,${mg.top+pH})`)
+     .call(xAxis);
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(${mg.left},0)`)
+     .call(yAxis);
+
+  // Axis labels
+  svg.append('text').attr('class','axis-title')
+     .attr('transform','rotate(-90)')
+     .attr('x', -(mg.top + pH/2)).attr('y', 14)
+     .attr('text-anchor','middle')
+     .text('η  (−)');
+  const xLabel = svg.append('text').attr('class','axis-title')
+     .attr('x', mg.left + pW/2).attr('y', H - 8)
+     .attr('text-anchor','middle');
+  xLabel.append('tspan').text('T');
+  xLabel.append('tspan').attr('baseline-shift','sub').attr('font-size','9').text('H');
+  xLabel.append('tspan').text('  (K)');
+
+  // Arrow marker
+  svg.append('defs').html(`
+    <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 2L9 5L1 8" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>`);
+
+  // Curve generator
+  const pts = d3.range(1, 2001, 5);
+  const lineFn = (TC) => d3.line()
+    .defined(d => d > TC)
+    .x(d => xSc(d))
+    .y(d => ySc(calcEta(d, TC)));
+
+  const curves = [
+    { TC: S.TC,  color: '#3b82f6', dashed: false },  // input (blue)
+    { TC: 250,   color: '#f97316', dashed: false },   // orange
+    { TC: 350,   color: '#22c55e', dashed: false },   // green
+  ];
+
+  curves.forEach(c => {
+    svg.append('path')
+       .datum(pts)
+       .attr('class','curve')
+       .style('stroke', c.color)
+       .style('stroke-dasharray', c.dashed ? '6 3' : null)
+       .attr('d', lineFn(c.TC)(pts));
+  });
+
+  // Operating point on the input curve
+  const dotCurves = [
+    { TC: S.TC, color: '#3b82f6' },
+    { TC: 250,  color: '#f97316' },
+    { TC: 350,  color: '#22c55e' },
+  ];
+
+  dotCurves.forEach(c => {
+    if(S.TH > c.TC){
+      svg.append('circle')
+         .attr('class','dragpt')
+         .attr('cx', xSc(S.TH))
+         .attr('cy', ySc(calcEta(S.TH, c.TC)))
+         .attr('r', 5)
+         .style('fill', c.color);
+    }
+  });
+
+  // Drag on plot area
+  const hitRect = svg.append('rect')
+    .attr('class','hit')
+    .attr('x', mg.left).attr('y', mg.top)
+    .attr('width', pW).attr('height', pH);
+
+  hitRect.call(d3.drag().on('start drag end', function(event){
+    const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
+    let   val = Math.round(xSc.invert(xm));
+    val = Math.max(S.TC + 1, Math.min(2000, val));
+    S.TH = val;
+    setVal('TH', val);
+    compute();
+  }));
+}
+
+/* ─── init ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  compute();
+  window.addEventListener('resize', compute);
+});
+</script>
+
+</body>
+</html>
