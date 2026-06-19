@@ -317,7 +317,7 @@ function setupCalculationEngine(pageData) {
 // ---------------------------------------------------------
 
 function injectPlots(state, pageData) {
-    if (!pageData.plots || pageData.plots.length === 0 || typeof d3 === 'undefined') return;
+    if (!pageData.plots || pageData.plots.settings.length === 0 || typeof d3 === 'undefined') return;
     
     const svg = d3.select('#plot');
     if (svg.empty()) return;
@@ -325,34 +325,62 @@ function injectPlots(state, pageData) {
     
     const W = 760, H = 320, m = { l: 64, r: 30, t: 14, b: 54 };
     const gap = 80;
-    const numPlots = pageData.plots.length;
+    const numPlots = pageData.plots.settings.length;
     const totalGap = gap * (numPlots - 1);
     const iw = (W - m.l - m.r - totalGap) / numPlots;
     const ih = H - m.t - m.b;
     
-    pageData.plots.forEach((plotConfig, i) => {
+    pageData.plots.settings.forEach((plotConfig, i) => {
         const plot_x_offset = m.l + i * (iw + gap);
         
         let currentYVal = state[plotConfig.y];
         if (currentYVal === undefined || isNaN(currentYVal)) return;
 
         let yMax = plotConfig.yMax;
+        let yIndex = 0;
         if (Array.isArray(yMax)) {
             // Evaluate dynamic max bounds based on current Y value
-            yMax = yMax.find(maxVal => currentYVal <= maxVal) || yMax[yMax.length - 1];
+            const matchedVal = yMax.find(maxVal => currentYVal <= maxVal);
+            if (matchedVal !== undefined) {
+                yIndex = yMax.indexOf(matchedVal);
+                yMax = matchedVal;
+            } else {
+                yIndex = yMax.length - 1;
+                yMax = yMax[yIndex];
+            }
         }
         
         const x = d3.scaleLinear().domain([plotConfig.xMin, plotConfig.xMax]).range([plot_x_offset, plot_x_offset + iw]);
         const y = d3.scaleLinear().domain([plotConfig.yMin, yMax]).range([m.t + ih, m.t]);
         
         // Axes
+        const xAxis = d3.axisBottom(x).ticks(5);
+        if (plotConfig.xTickInterval !== undefined) {
+            let xTickInterval = plotConfig.xTickInterval;
+            if (Array.isArray(xTickInterval)) {
+                xTickInterval = xTickInterval[0];
+            }
+            const ticks = d3.range(plotConfig.xMin, plotConfig.xMax + xTickInterval / 2, xTickInterval);
+            xAxis.tickValues(ticks);
+            xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
+        }
         svg.append('g').attr('class', 'axis')
            .attr('transform', `translate(0,${m.t + ih})`)
-           .call(d3.axisBottom(x).ticks(5));
+           .call(xAxis);
            
+        const yAxis = d3.axisLeft(y).ticks(5);
+        if (plotConfig.yTickInterval !== undefined) {
+            let yTickInterval = plotConfig.yTickInterval;
+            if (Array.isArray(yTickInterval)) {
+                yTickInterval = yTickInterval[yIndex] !== undefined ? yTickInterval[yIndex] : yTickInterval[yTickInterval.length - 1];
+            }
+            const ticks = d3.range(plotConfig.yMin, yMax + yTickInterval / 2, yTickInterval);
+            yAxis.tickValues(ticks);
+            yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
+        }
         svg.append('g').attr('class', 'axis')
            .attr('transform', `translate(${plot_x_offset},0)`)
-           .call(d3.axisLeft(y).ticks(5));
+           .call(yAxis);
         
         // Labels
         svg.append('text').attr('class', 'axis-title')
@@ -394,7 +422,6 @@ function injectPlots(state, pageData) {
         // Draw Current Point
         const currentXVal = state[plotConfig.x];
         const dragpt = svg.append('circle').attr('class', 'dragpt')
-            .attr('clip-path', `url(#${clipId})`)
             .attr('r', 6).attr('cx', x(currentXVal)).attr('cy', y(currentYVal));
             
         // Interaction Background
@@ -425,12 +452,45 @@ function injectPlots(state, pageData) {
             
         hit.call(drag);
     });
+
+    const plotNote = document.getElementById("plot-note");
+    plotNote.innerHTML = parseMarkdown(pageData.plots.text);
 }
 
 // ---------------------------------------------------------
 // Main Initialization Hook
 // ---------------------------------------------------------
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const course = urlParams.get('course');
+    const topic = urlParams.get('topic');
+
+    // Temporary dynamic loading using url parameters
+    if (course && topic) {
+        const dataScript = document.createElement('script');
+        dataScript.src = `../${course}/${topic}.js`
+        console.log(dataScript.src)
+
+        const scriptLoadPromise = new Promise((resolve, reject) => {
+            dataScript.onload = () => {
+                // console.log('Data script downloaded and parsed successfully.');
+                resolve();
+            };
+            dataScript.onerror = () => {
+                reject(new Error(`Failed to load script: ${dataScript.src}`));
+            };
+        });
+
+        document.body.appendChild(dataScript);
+
+        try {
+            await scriptLoadPromise;
+        } catch (error) {
+            console.error(error);
+            return; // Halt execution if the file doesn't exist
+        }
+    }
+
     if (typeof pageData !== 'undefined') {
         const titleEl = document.getElementById("header-title");
         if (titleEl) titleEl.textContent = pageData.title;

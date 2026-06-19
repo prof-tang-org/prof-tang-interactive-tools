@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title></title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="./temp-styles.css" />
+  <link rel="stylesheet" href="../templates/temp-styles.css" />
   <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -16,7 +16,7 @@
   <header class="site-header">
     <div class="container">
       <div class="header-row">
-        <h1 id="header-title">{Insert Header Here}</h1>
+        <h1 id="header-title"></h1>
         <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
       </div>
     </div>
@@ -29,71 +29,31 @@
 
     <section class="top-grid">
       <div class="card">
-        <div class="eq-schem">
+        <div id="equation-container">
           <div class="dark-card">
-            <h3 class="title-xl">{Insert subtitle here}</h3>
-
-            <div class="eqbig">
-              \( \text{Insert Latex Here} \)
-            </div>
-
-            <div class="note"><b></b>
-              <ul>
-                <li>{Insert bullets here}</li>
-              </ul>
-            </div>
           </div>
 
-          <div class="dark-card schem" aria-label="">
+          <!-- <div class="dark-card schem" aria-label="">
             <img id="schematic-image" src="" alt="">
-          </div>
+          </div> -->
         </div>
 
         <!-- Plot -->
         <div>
           <svg id="plot" viewBox="0 0 760 320" aria-label=""></svg>
-          <div class="note" id="plot-note">{Insert some plot notes here}</div>
+          <div class="note" id="plot-note"></div>
         </div>
       </div>
 
       <div class="card">
         <h3>Inputs & Outputs</h3>
-        <div class="controls">
-          <div>
-            <label>{Insert Dropdown Variable}</label>
-            <select id="">
-              <option value="" selected>{Insert dropdown option}</option>
-            </select>
-            <div class="note">{Insert dropdown notes here}</div>
-          </div>
+        <div id="controls">
+        </div>
 
-          <div class="rowflex">
-            <div>
-              <label>{Insert Input Variable}</label>
-              <input id="" class="num-sm" type="number" step="" min="" value="" />
-            </div>
-            <div>
-              <label>{Insert Slider Dropdown Variable}</label>
-              <div class="inline">
-                <input id="" class="num-sm" type="number" step="" min="" value="" />
-                <select id="" aria-label="">
-                  <option value="" selected></option>
-                </select>
-              </div>
-              <input id="" class="slider" type="range" min="" max="" step="" value="">
-            </div>
+        <div>
+          <label></label>
+          <div class="kpi">
           </div>
-
-          <div>
-            <label></label>
-            <div class="kpi">
-              <div><div class="lab"></div><div id="" class="val"></div></div>
-              <div><div class="lab"></div><div id="" class="val"></div></div>
-              <div><div class="lab"></div><div id="" class="val"></div></div>
-            </div>
-          </div>
-
-          <p class="note">Some more notes</p>
         </div>
       </div>
     </section>
@@ -104,5 +64,7 @@
       <a href="../index.html" class="back-home"><span class="chev"></span></a>
     </div>
   </footer>
+
+  <script src="../templates/renderer.js"></script>
 </body>
 </html>

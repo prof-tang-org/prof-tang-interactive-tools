@@ -134,26 +134,32 @@ const pageData = {
             }
         ]
     },
-    "plots": [
-        {
-            "y": "mach-number",
-            "x": "velocity",
-            "yLabel": "Mach number",
-            "xLabel": "Velocity (m/s)",
-            "xMin": 0,
-            "xMax": 1000,
-            "yMin": 0,
-            "yMax": [1.5, 4]  // once it becomes greater than 1.5, it jumps to 4 
-        },
-        {
-            "y": "mach-number",
-            "x": "temperature",
-            "yLabel": "Mach number",
-            "xLabel": "Temperature (K)",
-            "xMin": 200,
-            "xMax": 1000,
-            "yMin": 0,
-            "yMax": [1.5, 4]
-        }
-    ]
+    "plots": {
+        "settings": [
+            {
+                "y": "mach-number",
+                "x": "velocity",
+                "yLabel": "Ma",
+                "xLabel": "Velocity (m/s)",
+                "xMin": 0,
+                "xMax": 1000,
+                "yMin": 0,
+                "yMax": [1.5, 4],  // once it becomes greater than 1.5, it jumps to 4 
+                "yTickInterval": [0.3, 0.5]
+            },
+            {
+                "y": "mach-number",
+                "x": "temperature",
+                "yLabel": "Ma",
+                "xLabel": "Temperature (K)",
+                "xMin": 200,
+                "xMax": 1000,
+                "yMin": 0,
+                "yMax": [1.5, 4],
+                // link tick interval in renderer
+                "yTickInterval": [0.3, 0.5]
+            },
+        ],
+        "text": "Adjust velocity on the left plot and temperature on the right plot independently. Note, changing one changes the behavior of the other!"
+    }
 }
