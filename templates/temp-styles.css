@@ -24,7 +24,26 @@ html,body{
 html{scroll-behavior:smooth}
 
 /* layout container */
-.container{max-width:1100px;margin:0 auto;padding:0 16px}
+.container{
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 16px;
+
+  /* Temporary transition for dynamic loading */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.container.active {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.hidden {
+  display: none !important;
+}
 
 /* ---------- header & footer ---------- */
 .site-header{
@@ -46,18 +65,16 @@ html{scroll-behavior:smooth}
 }
 
 /* ---------- generic cards & grids (original) ---------- */
-.card{
+.card {
   background:var(--card); border:1px solid var(--line);
   border-radius:var(--r-lg); padding:14px; box-shadow:var(--shadow-sm);
 }
-.grid{
-  display:grid; gap:16px;
-  /* two-up on wide screens, collapses to one column on narrow */
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.card.float {
+  height: fit-content;
+  position: sticky; 
+  top: 30%;
 }
-@media (max-width: 820px){
-  .grid{ grid-template-columns: 1fr; }
-}
+
 
 /* “link-card” hover lift used on the old index */
 .link-card{display:block;text-decoration:none;color:inherit;transition:transform .06s, box-shadow .2s}
@@ -88,7 +105,12 @@ html{scroll-behavior:smooth}
   margin: 6px 0;
 }
 
-.kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(2,minmax(120px,1fr))}
+.kpi{
+  display:grid;
+  gap:10px;
+  margin-top:10px;
+  grid-template-columns:repeat(2,minmax(120px,1fr))
+}
 .kpi .lab{font-size:12px;color:#555}
 .kpi .val{font-size:16px;font-weight:600}
 
@@ -177,6 +199,11 @@ svg{width:100%;height:auto;display:block}
   font-size:13px;color:#4b5563; margin-top:8px
 }
 
+.note ul {
+  margin-top: 4px;
+  padding-left: 20px;
+}
+
 .symgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin-top:8px}
 .symgrid ul{margin:0 0 0 20px;padding:0}
 .symcol{columns:2;column-gap:24px;margin-top:6px}
@@ -198,8 +225,12 @@ svg .axis-title{ font-size:18px; fill:#111; }
 /* ---------- Template/Simulation Specific Additions ---------- */
 /* Extracted to unify styling across interactive tool pages */
 
-.top-grid { display: grid; gap: 12px; }
-@media (min-width: 1024px) { .top-grid { grid-template-columns: 1.5fr 0.9fr; } }
+.grid { 
+  display: grid; 
+  gap: 12px; 
+  margin-bottom: 12px;
+}
+@media (min-width: 1024px) { .grid { grid-template-columns: 1.5fr 0.9fr; } }
 
 .eq-schem { display: grid; gap: 12px; }
 @media (min-width: 900px) { .eq-schem { grid-template-columns: 1.2fr 0.8fr; } }

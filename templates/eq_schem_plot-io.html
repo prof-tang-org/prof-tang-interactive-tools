@@ -27,17 +27,19 @@
       <a href="../index.html" class="back-home" aria-label=""><span class="chev">←</span> Home</a>
     </nav>
 
-    <section class="top-grid">
+    <section class="grid">
       <div class="card">
-        <div id="equation-container">
-          <div class="dark-card">
+        <!-- Adds class="eq-schem" here if schematic enabled -->
+        <div id="eqschem-container">
+          <div id="equation-container"> 
+
           </div>
-
-          <!-- <div class="dark-card schem" aria-label="">
-            <img id="schematic-image" src="" alt="">
-          </div> -->
+          <!-- Schematic hidden unless enabled -->
+          <div class="dark-card schem hidden" id="schematic-image-container" aria-label="">
+            <img src="" alt="">
+          </div>
         </div>
-
+        
         <!-- Plot -->
         <div>
           <svg id="plot" viewBox="0 0 760 320" aria-label=""></svg>
@@ -45,7 +47,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card float">
         <h3>Inputs & Outputs</h3>
         <div id="controls">
         </div>
@@ -61,7 +63,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <a href="../index.html" class="back-home"><span class="chev"></span></a>
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
     </div>
   </footer>
 

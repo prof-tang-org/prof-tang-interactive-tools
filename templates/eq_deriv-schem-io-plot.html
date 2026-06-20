@@ -27,45 +27,43 @@
       <a href="../index.html" class="back-home" aria-label=""><span class="chev">←</span> Home</a>
     </nav>
 
-    <section class="top-grid">
+    <section class="grid">
       <div class="card">
-        <div id="equation-container">
-          <div class="dark-card">
-          </div>
+        <div id="equation-container"> 
+        </div>
+      </div>
 
-          <!-- <div class="dark-card schem" aria-label="">
-            <img id="schematic-image" src="" alt="">
-          </div> -->
+      <div class="card schem float" id="schematic-image-container" aria-label="">
+        <img src="" alt="">
+      </div>
+    </section>
+
+    <section class="grid">
+        <div class="card">
+            <h3>Inputs & Outputs</h3>
+            <div id="controls">
+            </div>
+
+            <div>
+                <label></label>
+                <div class="kpi">
+                </div>
+            </div>
         </div>
 
-        <!-- Plot -->
-        <div>
+        <div class="card">
           <svg id="plot" viewBox="0 0 760 320" aria-label=""></svg>
           <div class="note" id="plot-note"></div>
         </div>
-      </div>
-
-      <div class="card">
-        <h3>Inputs & Outputs</h3>
-        <div id="controls">
-        </div>
-
-        <div>
-          <label></label>
-          <div class="kpi">
-          </div>
-        </div>
-      </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="container">
-      <a href="../index.html" class="back-home"><span class="chev"></span></a>
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
     </div>
   </footer>
 
-  <script src="11.48-eq.js"></script>
   <script src="../templates/renderer.js"></script>
 </body>
 </html>
