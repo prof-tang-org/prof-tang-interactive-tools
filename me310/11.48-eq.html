@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../templates/temp-styles.css" />
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
+  <script defer src="../analytics.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-row">
+        <h1 id="header-title"></h1>
+        <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="back-row">
+      <a href="../index.html" class="back-home" aria-label=""><span class="chev">←</span> Home</a>
+    </nav>
+
+    <section class="top-grid">
+      <div class="card">
+        <div id="equation-container">
+          <div class="dark-card">
+          </div>
+
+          <!-- <div class="dark-card schem" aria-label="">
+            <img id="schematic-image" src="" alt="">
+          </div> -->
+        </div>
+
+        <!-- Plot -->
+        <div>
+          <svg id="plot" viewBox="0 0 760 320" aria-label=""></svg>
+          <div class="note" id="plot-note"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Inputs & Outputs</h3>
+        <div id="controls">
+        </div>
+
+        <div>
+          <label></label>
+          <div class="kpi">
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a href="../index.html" class="back-home"><span class="chev"></span></a>
+    </div>
+  </footer>
+
+  <script src="11.48-eq.js"></script>
+  <script src="../templates/renderer.js"></script>
+</body>
+</html>
