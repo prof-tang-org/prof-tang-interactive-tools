@@ -4,63 +4,172 @@
  */
 
 // ---------------------------------------------------------
-// SECTION A: Equation Elements
-// ---------------------------------------------------------
-function parseMarkdown(text) {
-    if (!text) return '';
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+// SECTION 0: Layout Configuration
+function configLayout(layout) {
+    if (!layout || !layout.grid) return;
+
+    gridEls = document.getElementsByClassName('grid');
+    if (gridEls.length !== layout.grid.length) {
+        console.warn(`Layout grid definition length (${layout.grid.length}) does not match number of grid elements in the DOM (${gridEls.length}).`);
+    }
+    for (let i = 0; i < gridEls.length; i++) {
+        const gridDef = layout.grid[i];
+        if (gridDef) {
+            const isMobile = window.matchMedia(`(max-width: ${layout.breakpoint || '768px'})`).matches;
+
+            if (isMobile) {
+                gridEls[i].style.gridTemplateColumns = gridDef.mobile || '100%';
+            } else {
+                gridEls[i].style.gridTemplateColumns = gridDef.desktop || '1.5fr 0.9fr';
+            }
+        } else {
+            console.warn(`No grid definition found for grid element index ${i}.`);
+        }
+    }
 }
 
-function renderEquations(data) {
-    const container = document.getElementById('equation-container');
-    if (!container) return;
+// ---------------------------------------------------------
+// SECTION A: Equation Elements
+// ---------------------------------------------------------
+function parseText(text) {
+    if (!text) return '';
+
+    // 1. Escape HTML characters first to prevent layout breakages
+    let parsed = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    // 2. Handle Block LaTeX: $$ equation $$ -> \[ equation \]
+    // Using [^$]*? or \s\S*? to safely match across multiple blocks non-greedily
+    parsed = parsed.replace(/\$\$([\s\S]*?)\$\$/g, '\\[ $1 \\]');
+
+    // 3. Handle Inline LaTeX: $ equation $ -> \( equation \)
+    // Lookbehind/lookahead ensures we don't accidentally match half of a block equation
+    parsed = parsed.replace(/(?<!\$)\$([^$]+?)\$(?!\$)/g, '\\( $1 \\)');
+
+    // 4. Handle Basic Markdown Formatting
+    parsed = parsed
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold: **text**
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italics: *text*
+        .replace(/__(.*?)__/g, '<u>$1</u>');              // Underline: __text__
+
+    return parsed;
+}
+
+function renderContent(data, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`Container with ID '${containerId}' not found.`);
+        return;
+    }
 
     // Isolate the dark-card that holds the equations to preserve schematic layout
-    const eqCard = container.querySelector('.dark-card:not(.schem)');
-    if (eqCard) {
-        eqCard.innerHTML = ''; // Clear filler
+    // const eqCard = container.querySelector('.dark-card:not(.schem)');
+    const card = document.createElement('div'); // Create a new div to hold content within container
+    card.className = 'dark-card';
+
+    if (card) {
+        // 1. Safe, efficient way to clear filler content without innerHTML
+        card.textContent = ''; 
 
         data.forEach(item => {
             if (item.type === 'header') {
                 const h3 = document.createElement('h3');
-                h3.innerHTML = parseMarkdown(item.text);
-                eqCard.appendChild(h3);
+                // Safely inject parsed markdown tags
+                h3.insertAdjacentHTML('beforeend', parseText(item.text));
+                card.appendChild(h3);
             } else if (item.type === 'equation') {
                 const div = document.createElement('div');
                 div.className = 'eqbig';
-                div.innerHTML = `\\( ${item.text} \\)`;
-                eqCard.appendChild(div);
+                // Pure text wrapper for MathJax string literals
+                div.textContent = `\\( ${item.text} \\)`;
+                card.appendChild(div);
+
             } else if (item.type === 'note') {
                 const div = document.createElement('div');
                 div.className = 'note';
-                div.innerHTML = parseMarkdown(item.text);
-                eqCard.appendChild(div);
-            } else if (item.type === 'symbols') {
+                div.insertAdjacentHTML('beforeend', parseText(item.text));
+                card.appendChild(div);
+
+            } else if (item.type === 'list') {
                 const div = document.createElement('div');
                 div.className = 'note';
-                div.innerHTML = '<b>Symbols</b>';
+                
+                // Replaced <b> innerHTML template string with a safe element structure
+                const b = document.createElement('b');
+                b.textContent = item.header;
+                div.appendChild(b);
+
                 const ul = document.createElement('ul');
                 item.content.forEach(sym => {
                     const li = document.createElement('li');
-                    const rawSym = sym.symbol.replace(/\$/g, '');
-                    li.innerHTML = `\\( ${rawSym} \\) — ${parseMarkdown(sym.text)}`;
+                    li.insertAdjacentHTML('beforeend', parseText(sym.text));
                     ul.appendChild(li);
                 });
+                
                 div.appendChild(ul);
-                eqCard.appendChild(div);
+                card.appendChild(div);
+            } else if (item.type === 'schematic') {
+                const equationSchematicContainer = document.getElementById('eqschem-container');
+                const schematicContainer = document.getElementById('schematic-image-container');
+                if (equationSchematicContainer && schematicContainer) {
+                    const schematic = schematicContainer.querySelector('img');
+                    if (schematic) {
+                        schematic.src = item.src;
+                        schematic.alt = item.alt;
+                        schematicContainer.classList.remove('hidden'); // Show schematic container
+                        equationSchematicContainer.classList.add('eq-schem'); // Add class to equation-schematic container for layout adjustment
+                    }
+                } else {
+                    console.warn(`${equationSchematicContainer ? 'Schematic' : 'Equation'} image element not found in the DOM.`);
+                }
+            } else {
+                console.warn(`Unknown equation element type: ${item.type}`);
             }
         });
 
+        container.appendChild(card);
+
         // Trigger MathJax if ready
         if (window.MathJax && window.MathJax.typesetPromise) {
-            window.MathJax.typesetPromise([eqCard]).catch(err => console.error(err));
+            window.MathJax.typesetPromise([card]).catch(err => console.error(err));
         }
+    } else {
+        console.error("Failed to create card to render content.");
+    }
+}
+
+function renderSchematic(schematic) {
+    const container = document.getElementById('schematic-image-container');
+    if (!container) {
+        console.error("Schematic image container not found.");
+        return;
+    }
+    const img = container.querySelector('img');
+    if (img) {
+        img.src = schematic.src;
+        img.alt = schematic.alt;
+    } else {
+        console.error("Schematic image element not found in the container.");
     }
 }
 
 // ---------------------------------------------------------
 // SECTION B: Controls & Inputs
 // ---------------------------------------------------------
+
+function clampInputValue(e, inputDef) {
+    let val = parseFloat(e.target.value);
+    if (!isNaN(val)) {
+        if (inputDef.min !== undefined) val = Math.max(inputDef.min, val);
+        if (inputDef.max !== undefined) val = Math.min(inputDef.max, val);
+        e.target.value = val; // Forces the input box value to snap visually on change
+        return val;
+    }
+    return null;
+}
+
 function renderControls(inputs) {
     const container = document.getElementById('controls');
     if (!container) return;
@@ -70,7 +179,7 @@ function renderControls(inputs) {
         const wrapper = document.createElement('div');
         
         const label = document.createElement('label');
-        label.innerHTML = parseMarkdown(input.text || input.id);
+        label.innerHTML = parseText(input.text || input.id);
         wrapper.appendChild(label);
 
         if (input.type === 'dropdown') {
@@ -122,6 +231,8 @@ function renderControls(inputs) {
 
             // 2-way data binding
             num.addEventListener('input', e => { range.value = e.target.value; });
+            num.addEventListener('change', e => { clampInputValue(e, input); });
+
             range.addEventListener('input', e => { num.value = e.target.value; });
 
             inline.appendChild(num);
@@ -165,6 +276,7 @@ function renderControls(inputs) {
             if (input.initialValue !== undefined) range.value = input.initialValue;
             
             num.addEventListener('input', e => { range.value = e.target.value; });
+            num.addEventListener('change', e => { clampInputValue(e, input); });
             range.addEventListener('input', e => { num.value = e.target.value; });
             
             wrapper.appendChild(range);
@@ -177,14 +289,15 @@ function renderControls(inputs) {
 function renderOutputs(outputs) {
     const kpiContainer = document.querySelector('.kpi');
     if (!kpiContainer) return;
-    kpiContainer.innerHTML = '';
+    kpiContainer.textContent = '';
+    kpiContainer.style.gridTemplateColumns = `repeat(${outputs.length}, minmax(60px, 1fr))`;
     
     outputs.forEach(output => {
         const div = document.createElement('div');
         
         const lab = document.createElement('div');
         lab.className = 'lab';
-        lab.innerHTML = parseMarkdown(output.text);
+        lab.textContent = parseText(output.text);
         
         const val = document.createElement('div');
         val.className = 'val';
@@ -417,7 +530,7 @@ function injectPlots(state, pageData) {
 
         svg.append('path').attr('class', 'curve')
            .attr('clip-path', `url(#${clipId})`)
-           .attr('d', d3.line()(lineData));
+           .attr('d', d3.line().defined(d => !isNaN(d[1]))(lineData));
         
         // Draw Current Point
         const currentXVal = state[plotConfig.x];
@@ -436,7 +549,23 @@ function injectPlots(state, pageData) {
                 const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
                 if (inputDef && inputDef.step) {
                     newX = Math.round(newX / inputDef.step) * inputDef.step;
+
+                    // Round to same amount of decimals as step
+                    const stepStr = inputDef.step.toString();
+                    const decimalPlaces = stepStr.includes('.') ? stepStr.split('.')[1].length : 0;
+                    newX = parseFloat(newX.toFixed(decimalPlaces));
                 }
+
+                // Clamp between absolute min/max bounds (from plot config and input config)
+                let absoluteMin = plotConfig.xMin;
+                let absoluteMax = plotConfig.xMax;
+
+                if (inputDef) {
+                    if (inputDef.min !== undefined) absoluteMin = Math.max(absoluteMin, inputDef.min);
+                    if (inputDef.max !== undefined) absoluteMax = Math.min(absoluteMax, inputDef.max);
+                }
+
+                newX = Math.max(absoluteMin, Math.min(absoluteMax, newX));
                 
                 // Sync Input DOM Elements
                 const elNum = document.getElementById(`input_${plotConfig.x}_num`);
@@ -454,22 +583,29 @@ function injectPlots(state, pageData) {
     });
 
     const plotNote = document.getElementById("plot-note");
-    plotNote.innerHTML = parseMarkdown(pageData.plots.text);
+    plotNote.innerHTML = parseText(pageData.plots.text);
 }
 
 // ---------------------------------------------------------
 // Main Initialization Hook
 // ---------------------------------------------------------
 window.addEventListener('load', async () => {
+    const pathname = window.location.pathname;
+    if (!/^\/templates?\/.+/.test(pathname)) {
+        console.error(`Unexpected URL path: ${pathname}. Expected /templates/...`);
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const course = urlParams.get('course');
     const topic = urlParams.get('topic');
+
+    
 
     // Temporary dynamic loading using url parameters
     if (course && topic) {
         const dataScript = document.createElement('script');
         dataScript.src = `../${course}/${topic}.js`
-        console.log(dataScript.src)
 
         const scriptLoadPromise = new Promise((resolve, reject) => {
             dataScript.onload = () => {
@@ -489,13 +625,24 @@ window.addEventListener('load', async () => {
             console.error(error);
             return; // Halt execution if the file doesn't exist
         }
+
+        for (let containerEl of document.getElementsByClassName('container')) {
+            containerEl.classList.add('active');
+        }
     }
 
     if (typeof pageData !== 'undefined') {
         const titleEl = document.getElementById("header-title");
         if (titleEl) titleEl.textContent = pageData.title;
         
-        renderEquations(pageData.equationElements);
+        configLayout(pageData.layout);
+        renderContent(pageData.equationElements, 'equation-container');
+        if (pageData.derivationElements) {
+            renderContent(pageData.derivationElements, 'equation-container');
+        }
+        if (pageData.schematic) {
+            renderSchematic(pageData.schematic);
+        }
         renderControls(pageData.inputOutput.inputs);
         renderOutputs(pageData.inputOutput.outputs);
         

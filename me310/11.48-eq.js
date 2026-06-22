@@ -14,31 +14,26 @@ const pageData = {
             "text": "Ma = \\frac{v}{c} =  \\frac{v}{\\sqrt{kRT}}, \\text{where } R = \\frac{ \\bar{R}}{M}"
         },
         {
-            "type": "symbols",
+            "type": "list",
+            "header": "Symbols",
             "content": [
                 {
-                    "symbol": "Ma",
-                    "text": "Mach number"
+                    "text": "$Ma$ — Mach number"
                 }, 
                 {
-                    "symbol": "v",
-                    "text": "Velocity of the gas"
+                    "text": "$v$ — Velocity of the gas"
                 },
                 {
-                    "symbol": "c",
-                    "text": "Speed of sound in the gas"
+                    "text": "$c$ — Speed of sound in the gas"
                 },
                 {
-                    "symbol": "k",
-                    "text": "Specific heat ratio"
+                    "text": "$k$ — Specific heat ratio"
                 },
                 {
-                    "symbol": "R",
-                    "text": "Gas constant"
+                    "text": "$R$ — Gas constant"
                 },
                 {
-                    "symbol": "$$T$$",
-                    "text": "Absolute temperature"
+                    "text": "$T$ — Absolute temperature"
                 }
             ]
         }

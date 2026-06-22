@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 620 300"
+   width="100%"
+   height="100%"
+   version="1.1"
+   id="svg3978"
+   sodipodi:docname="10.26-eq.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3980"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="2.1129032"
+     inkscape:cx="291.54198"
+     inkscape:cy="178.19084"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="1911"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3978" />
+  <defs
+     id="defs3864">
+    <pattern
+       id="grid"
+       width="20"
+       height="20"
+       patternUnits="userSpaceOnUse">
+      <path
+         d="M 20 0 L 0 0 0 20"
+         fill="none"
+         stroke="#e2f0fd"
+         stroke-width="1"
+         id="path3855" />
+    </pattern>
+    <marker
+       id="arrow"
+       viewBox="0 0 10 10"
+       refX="3"
+       refY="5"
+       markerWidth="4"
+       markerHeight="4"
+       orient="auto-start-reverse">
+      <path
+         d="M 0,1.5 6,5 0,8.5 Z"
+         fill="#0091ff"
+         id="path3858" />
+    </marker>
+    <marker
+       id="black-arrow"
+       viewBox="0 0 10 10"
+       refX="0"
+       refY="5"
+       markerWidth="6"
+       markerHeight="6"
+       orient="auto-start-reverse">
+      <path
+         d="M 0,1.5 6,5 0,8.5 Z"
+         fill="#000000"
+         id="path3861" />
+    </marker>
+  </defs>
+  <path
+     d="M 20,40 L 190,40 C 210,40 225,55 255,55 L 580,55"
+     fill="none"
+     stroke="#e52d2d"
+     stroke-width="3"
+     stroke-dasharray="10,6"
+     id="path3868" />
+  <text
+     x="490.7023"
+     y="42.099236"
+     font-family="sans-serif"
+     font-size="18px"
+     font-weight="bold"
+     fill="#e52d2d"
+     id="text3870"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, '"
+       id="tspan5126">Energy Line</tspan></text>
+  <line
+     x1="200.23665"
+     y1="39.526718"
+     x2="285.23663"
+     y2="39.526718"
+     stroke="#008000"
+     stroke-width="2"
+     id="line3872"
+     style="stroke-dasharray:8,2;stroke-dashoffset:0" />
+  <g
+     stroke="#008000"
+     stroke-width="2"
+     id="g3880">
+    <line
+       x1="270"
+       y1="40.515266"
+       x2="270"
+       y2="53.020592"
+       id="line3876"
+       style="stroke-width:2.35753" />
+    <path
+       d="M 266.30338,44.583036 270,39.962255 l 3.69662,4.620781 m -7.39324,4.620781 3.69662,4.62078 3.69662,-4.62078"
+       fill="none"
+       id="path3878"
+       style="stroke-width:1.84832" />
+  </g>
+  <text
+     x="290.4733"
+     y="45.847328"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#008000"
+     id="text3882"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5158">h</tspan><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:65%;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold';baseline-shift:sub"
+       id="tspan5156">L</tspan></text>
+  <line
+     x1="20"
+     y1="240"
+     x2="580"
+     y2="240"
+     stroke="#000000"
+     stroke-width="4"
+     stroke-linecap="round"
+     id="line3884" />
+  <path
+     d="M 20,195 L 180,195 C 210,195 240,110 275,110 L 580,110"
+     fill="none"
+     stroke="#000000"
+     stroke-width="3"
+     stroke-linecap="round"
+     id="path3886" />
+  <g
+     transform="translate(459.749,95.970118)"
+     stroke="#000000"
+     stroke-width="1.5"
+     fill="none"
+     id="g3894"
+     style="stroke-width:2;stroke-dasharray:none">
+    <polygon
+       points="14,0 7,12 0,0 "
+       id="polygon3888"
+       style="stroke-width:2;stroke-dasharray:none" />
+    <line
+       x1="2.0418327"
+       y1="19.141432"
+       x2="12.041833"
+       y2="19.141432"
+       id="line3890"
+       style="stroke-width:2;stroke-dasharray:none" />
+    <line
+       x1="4.0418324"
+       y1="22.141432"
+       x2="10.041833"
+       y2="22.141432"
+       id="line3892"
+       style="stroke-width:2;stroke-dasharray:none" />
+  </g>
+  <g
+     stroke="#008000"
+     stroke-width="2"
+     id="g3900">
+    <line
+       x1="65"
+       y1="198"
+       x2="65"
+       y2="237"
+       id="line3896" />
+    <path
+       d="M 61,203 L 65,195 L 69,203 M 61,232 L 65,240 L 69,232"
+       fill="none"
+       id="path3898" />
+  </g>
+  <text
+     x="73.709923"
+     y="220.16031"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#008000"
+     id="text3902"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5152">y<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan5154">1</tspan></tspan></text>
+  <text
+     x="100.67939"
+     y="265.78625"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#000000"
+     id="text3904"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5194">(1)</tspan></text>
+  <g
+     fill="none"
+     stroke="#0091ff"
+     stroke-width="2"
+     id="g3916"
+     transform="translate(14.892425,-0.16733061)">
+    <line
+       x1="100"
+       y1="204"
+       x2="137"
+       y2="204"
+       marker-end="url(#arrow)"
+       id="line3906" />
+    <line
+       x1="100"
+       y1="211"
+       x2="137"
+       y2="211"
+       marker-end="url(#arrow)"
+       id="line3908" />
+    <line
+       x1="100"
+       y1="218"
+       x2="137"
+       y2="218"
+       marker-end="url(#arrow)"
+       id="line3910" />
+    <line
+       x1="100"
+       y1="225"
+       x2="137"
+       y2="225"
+       marker-end="url(#arrow)"
+       id="line3912" />
+    <line
+       x1="100"
+       y1="232"
+       x2="137"
+       y2="232"
+       marker-end="url(#arrow)"
+       id="line3914" />
+  </g>
+  <text
+     x="159.45801"
+     y="222.38931"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#0091ff"
+     id="text3918"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5148">V<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan5150">1</tspan></tspan></text>
+  <g
+     fill="none"
+     stroke="#000000"
+     stroke-width="1.5"
+     stroke-linecap="round"
+     id="g3928">
+    <path
+       d="m 231.91384,210.20611 c 15,-20 0,-35 -15,-25"
+       marker-end="url(#black-arrow)"
+       id="path3920" />
+    <path
+       d="m 252.57252,171.00763 c -5,-30 10,-40 25,-32"
+       marker-end="url(#black-arrow)"
+       id="path3922" />
+    <path
+       d="m 264.25954,197.9313 c 15,0 22,-12 35,-12"
+       marker-end="url(#black-arrow)"
+       id="path3924" />
+    <path
+       d="M 255,228 C 270,220 278,223 292,215"
+       marker-end="url(#black-arrow)"
+       id="path3926" />
+  </g>
+  <g
+     stroke="#008000"
+     stroke-width="2"
+     id="g3934">
+    <line
+       x1="390"
+       y1="113"
+       x2="390"
+       y2="237"
+       id="line3930" />
+    <path
+       d="M 386,118 L 390,110 L 394,118 M 386,232 L 390,240 L 394,232"
+       fill="none"
+       id="path3932" />
+  </g>
+  <text
+     x="400"
+     y="175"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#008000"
+     id="text3936"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5144">y<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan5146">2</tspan></tspan></text>
+  <text
+     x="362.71756"
+     y="263.10687"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#000000"
+     id="text3938"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5192">(2)</tspan></text>
+  <g
+     fill="none"
+     stroke="#0091ff"
+     stroke-width="2"
+     id="g3958"
+     transform="translate(0,-1.6564886)">
+    <line
+       x1="345"
+       y1="122"
+       x2="362"
+       y2="122"
+       marker-end="url(#arrow)"
+       id="line3940" />
+    <line
+       x1="345"
+       y1="136"
+       x2="362"
+       y2="136"
+       marker-end="url(#arrow)"
+       id="line3942" />
+    <line
+       x1="345"
+       y1="150"
+       x2="362"
+       y2="150"
+       marker-end="url(#arrow)"
+       id="line3944" />
+    <line
+       x1="345"
+       y1="164"
+       x2="362"
+       y2="164"
+       marker-end="url(#arrow)"
+       id="line3946" />
+    <line
+       x1="345"
+       y1="178"
+       x2="362"
+       y2="178"
+       marker-end="url(#arrow)"
+       id="line3948" />
+    <line
+       x1="345"
+       y1="192"
+       x2="362"
+       y2="192"
+       marker-end="url(#arrow)"
+       id="line3950" />
+    <line
+       x1="345"
+       y1="206"
+       x2="362"
+       y2="206"
+       marker-end="url(#arrow)"
+       id="line3952" />
+    <line
+       x1="345"
+       y1="220"
+       x2="362"
+       y2="220"
+       marker-end="url(#arrow)"
+       id="line3954" />
+    <line
+       x1="345"
+       y1="233"
+       x2="362"
+       y2="233"
+       marker-end="url(#arrow)"
+       id="line3956" />
+  </g>
+  <text
+     x="318.57251"
+     y="178.01526"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#0091ff"
+     id="text3960"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5140">V<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan5142">2</tspan></tspan></text>
+  <g
+     stroke="#000000"
+     stroke-width="2.5"
+     fill="none"
+     id="g3970"
+     style="display:none">
+    <rect
+       x="500"
+       y="200"
+       width="30"
+       height="40"
+       id="rect3962" />
+    <line
+       x1="500"
+       y1="240"
+       x2="530"
+       y2="200"
+       id="line3964" />
+    <line
+       x1="508"
+       y1="240"
+       x2="530"
+       y2="210"
+       id="line3966" />
+    <line
+       x1="500"
+       y1="230"
+       x2="522"
+       y2="200"
+       id="line3968" />
+  </g>
+  <g
+     stroke="#000000"
+     stroke-width="2"
+     id="g3974">
+    <line
+       x1="545"
+       y1="240"
+       x2="575"
+       y2="240"
+       marker-end="url(#black-arrow)"
+       id="line3972" />
+  </g>
+  <text
+     x="590.37451"
+     y="244.99602"
+     font-family="serif"
+     font-style="italic"
+     font-size="18px"
+     font-weight="bold"
+     fill="#000000"
+     id="text3976">x</text>
+</svg>
