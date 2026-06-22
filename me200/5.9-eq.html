@@ -169,16 +169,8 @@
       <div>
         <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
           <div>
-            <div class="lab">η at T<sub>C</sub> = input</div>
+            <div class="lab">η (-)</div>
             <div class="val"><span id="eta-kpi">—</span></div>
-          </div>
-          <div>
-            <div class="lab">η at T<sub>C</sub> = 250 K</div>
-            <div class="val"><span id="eta-250">—</span></div>
-          </div>
-          <div>
-            <div class="lab">η at T<sub>C</sub> = 350 K</div>
-            <div class="val"><span id="eta-350">—</span></div>
           </div>
         </div>
       </div>
@@ -197,7 +189,7 @@
       <svg id="plot" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      Each curve shows η vs T<sub>H</sub> for a certain T<sub>C</sub>. Each dot marks the current operating point for each T<sub>C</sub> curve — drag it or use the sliders above to see how η changes.
+      The plot shows η vs T<sub>H</sub> for different T<sub>C</sub> values. The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point for the input T<sub>C</sub> value's curve — drag it or use the T<sub>H</sub> slider above to see how η changes as T<sub>H</sub> changes at the current input T<sub>C</sub> value.
     </div>
   </section>
 </main>
@@ -240,8 +232,6 @@ function setVal(p, v){
 function compute(){
   const eta = calcEta(S.TH, S.TC);
   document.getElementById('eta-kpi').textContent = eta.toFixed(4);
-  document.getElementById('eta-250').textContent = S.TH > 250 ? calcEta(S.TH, 250).toFixed(4) : '—';
-  document.getElementById('eta-350').textContent = S.TH > 350 ? calcEta(S.TH, 350).toFixed(4) : '—';
   drawPlot();
 }
 
@@ -297,8 +287,8 @@ function drawPlot(){
 
   const curves = [
     { TC: S.TC,  color: '#3b82f6', dashed: false },  // input (blue)
-    { TC: 250,   color: '#f97316', dashed: false },   // orange
-    { TC: 350,   color: '#22c55e', dashed: false },   // green
+    { TC: 250,   color: '#f97316', dashed: true },   // orange
+    { TC: 350,   color: '#22c55e', dashed: true },   // green
   ];
 
   curves.forEach(c => {
@@ -311,22 +301,14 @@ function drawPlot(){
   });
 
   // Operating point on the input curve
-  const dotCurves = [
-    { TC: S.TC, color: '#3b82f6' },
-    { TC: 250,  color: '#f97316' },
-    { TC: 350,  color: '#22c55e' },
-  ];
-
-  dotCurves.forEach(c => {
-    if(S.TH > c.TC){
-      svg.append('circle')
-         .attr('class','dragpt')
-         .attr('cx', xSc(S.TH))
-         .attr('cy', ySc(calcEta(S.TH, c.TC)))
-         .attr('r', 5)
-         .style('fill', c.color);
-    }
-  });
+  if(S.TH > S.TC){
+     svg.append('circle')
+        .attr('class','dragpt')
+        .attr('cx', xSc(S.TH))
+        .attr('cy', ySc(calcEta(S.TH, S.TC)))
+        .attr('r', 5)
+        .style('fill', '#ef4444');
+  }
 
   // Drag on plot area
   const hitRect = svg.append('rect')

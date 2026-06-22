@@ -168,16 +168,8 @@
       <div>
         <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
           <div>
-            <div class="lab">&beta; at T<sub>H</sub> = input</div>
+            <div class="lab">&beta; (-)</div>
             <div class="val"><span id="beta-kpi">—</span></div>
-          </div>
-          <div>
-            <div class="lab">&beta; at T<sub>H</sub> = 250 K</div>
-            <div class="val"><span id="beta-250">—</span></div>
-          </div>
-          <div>
-            <div class="lab">&beta; at T<sub>H</sub> = 350 K</div>
-            <div class="val"><span id="beta-350">—</span></div>
           </div>
         </div>
       </div>
@@ -196,7 +188,7 @@
       <svg id="plot" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      Each curve shows &beta; vs T<sub>C</sub> for a certain T<sub>H</sub>. Each dot marks the current operating point for each T<sub>H</sub> curve — drag it or use the sliders above to see how &beta; changes.
+      The plot shows &beta; vs T<sub>C</sub> for different T<sub>H</sub> values. The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point for the input T<sub>H</sub> value's curve — drag it or use the T<sub>C</sub> slider above to see how &beta; changes as T<sub>C</sub> changes at the current input T<sub>H</sub> value.
     </div>
   </section>
 </main>
@@ -242,8 +234,6 @@ function setVal(p, v){
 /* ─── compute output ─── */
 function compute(){
   document.getElementById('beta-kpi').textContent = calcBeta(S.TH, S.TC).toFixed(4);
-  document.getElementById('beta-250').textContent = calcBeta(250,   S.TC).toFixed(4);
-  document.getElementById('beta-350').textContent = calcBeta(350,   S.TC).toFixed(4);
   drawPlot();
 }
 
@@ -290,9 +280,9 @@ function drawPlot(){
     .y(d => ySc(calcBeta(TH, d)));
 
   const curves = [
-    { TH: S.TH,  color: '#3b82f6' },   // input (blue)
-    { TH: 250,   color: '#f97316' },    // orange
-    { TH: 350,   color: '#22c55e' },    // green
+    { TH: S.TH,  color: '#3b82f6', dashed: false },   // input (blue)
+    { TH: 250,   color: '#f97316', dashed: true },    // orange
+    { TH: 350,   color: '#22c55e', dashed: true },    // green
   ];
 
   curves.forEach(c => {
@@ -300,21 +290,20 @@ function drawPlot(){
        .datum(pts)
        .attr('class','curve')
        .style('stroke', c.color)
+       .style('stroke-dasharray', c.dashed ? '6 3' : null)
        .attr('d', lineFn(c.TH)(pts));
   });
 
   // Operating point on each curve at the current TC
-  curves.forEach(c => {
-    const b = calcBeta(c.TH, S.TC);
-    if(b <= 40 && S.TC <= c.TH - 10){
-      svg.append('circle')
-         .attr('class','dragpt')
-         .attr('cx', xSc(S.TC))
-         .attr('cy', ySc(b))
-         .attr('r', 5)
-         .style('fill', c.color);
-    }
-  });
+  const b = calcBeta(S.TH, S.TC);
+   if(b <= 40 && S.TC <= S.TH - 10){
+     svg.append('circle')
+        .attr('class','dragpt')
+        .attr('cx', xSc(S.TC))
+        .attr('cy', ySc(b))
+        .attr('r', 5)
+        .style('fill', '#ef4444');
+  } 
 
   // Drag on plot area
   const hitRect = svg.append('rect')
