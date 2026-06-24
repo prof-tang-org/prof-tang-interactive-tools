@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coefficient of Performance of Reversible Heat Pump Cycles</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* ─── variables ─── */
+    :root{
+      --ink:#1f2937;--ink2:#374151;
+      --bg:#f6f7fb;--card:#fff;--line:#e5e7eb;
+      --accent:#0ea5e9;
+      --ok:#10b981;--warn:#f59e0b;--danger:#ef4444;
+      --r-sm:10px;--r-md:12px;--r-lg:14px;
+      --shadow-sm:0 6px 16px rgba(0,0,0,.04);
+      --shadow-md:0 10px 22px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45;background:var(--bg);color:var(--ink)}
+    html{scroll-behavior:smooth}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    /* header / footer */
+    .site-header{background:linear-gradient(135deg,var(--ink),var(--ink2));color:#fff;padding:28px 0}
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .header-row h1{font-size:clamp(1.4rem,2.1vw,2rem);line-height:1.12;margin:0}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none;cursor:pointer;font-size:14px}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.primary:hover{filter:brightness(1.06)}
+    .site-footer{border-top:1px solid var(--line);background:#fff;padding:16px 0;margin-top:28px}
+    .back-row{display:flex;align-items:center;margin:12px 0 14px}
+    .back-home{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#0ea5e9;text-decoration:none;font-size:14px}
+    .back-home:hover{background:#f0f9ff}
+    .back-home .chev{font-size:16px;line-height:1}
+
+    /* cards */
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:var(--r-md);background:#fcfcff;margin-bottom:10px;overflow-x:auto}
+    .eqbig{font-size:1.05em;margin-bottom:8px}
+    .title-xl{font-size:18px;line-height:1.22;color:#111;margin-bottom:10px}
+    .note{font-size:13px;color:#4b5563;margin-bottom:6px}
+
+    /* top two-column grid */
+    .top-grid{display:grid;gap:12px}
+    @media(min-width:1024px){.top-grid{grid-template-columns:1.2fr 0.9fr}}
+
+    /* schematic box */
+    .schem{min-height:260px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
+           display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+
+    /* controls / inputs */
+    .inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    input[type="number"]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;
+                         background:#fff;color:inherit;width:88px;text-align:right}
+    input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
+    input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
+    label{font-size:13px;color:#4b5563}
+    select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
+
+    /* two-column inputs / output layout */
+    .inputs-two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media(max-width:760px){.inputs-two{grid-template-columns:1fr}}
+
+    /* KPI strip */
+    .kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(2,minmax(120px,1fr));
+         background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    /* plot */
+    .viz{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px;margin-top:12px}
+    svg{width:100%;height:auto;display:block}
+    .axis text{font-size:10px;fill:#111}
+    .axis-title{font-size:11px;fill:#111}
+    .curve{fill:none;stroke-width:2}
+    .dragpt{stroke:#111;stroke-width:1.2;cursor:ew-resize}
+    .hit{fill:transparent;cursor:ew-resize}
+
+    /* legend */
+    .legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#374151;padding:4px 8px 2px}
+    .legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="header-row">
+      <h1>Coefficient of Performance of Reversible Heat Pump Cycles</h1>
+      <a class="btn primary" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="back-row">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </nav>
+
+  <!-- ── TOP GRID: equation card + schematic ── -->
+  <section class="top-grid">
+
+    <div class="ctl">
+      <!-- Equation + Symbols in unified gray box -->
+      <div style="background:#fafcff;border:1px solid var(--line);border-radius:10px;padding:16px 18px">
+        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:12px">Coefficient of performance of reversible heat pump cycles working between given hot and cold reservoirs</div>
+        \(\displaystyle \gamma = \frac{Q_H}{W_R} = \frac{Q_H}{Q_H - Q_C} = \frac{T_H}{T_H - T_C}\)
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:16px;margin-bottom:4px">Symbols</div>
+        <ul style="margin:8px 0 0 0;padding-left:38px">
+          <li>\(\gamma\) — coefficient of performance of reversible heat pump cycle</li>
+          <li>\(Q_H\) — heat absorption from hot reservoir</li>
+          <li>\(Q_C\) — heat rejection to cold reservoir</li>
+          <li>\(W_R\) — work input to reversible power cycle</li>
+          <li>\(T_H\) — thermodynamic temperature of the hot reservoir</li>
+          <li>\(T_C\) — thermodynamic temperature of the cold reservoir</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Schematic -->
+    <div>
+      <div class="ctl" style="position:sticky;top:20px">
+        <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
+        <div class="schem" aria-label="Reversible heat pump cycle schematic">
+          <img src="../assets/me200/5.11-eq.png" alt="Reversible heat pump cycle schematic" style="max-height:240px; width:100%; object-fit:contain" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INPUTS & OUTPUTS ── -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Inputs &amp; Outputs</h2>
+
+    <div class="inputs-two">
+      <!-- Left: inputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="ctl">
+          <label>\(T_C\) — cold reservoir temperature (K)</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="TC-out" min="250" max="350" step="1" value="298"
+                   onchange="syncInput('TC',this)" />
+            <input type="range" id="TC-in" min="250" max="350" step="1" value="298"
+                   oninput="syncInput('TC',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>\(T_H\) — hot reservoir temperature (K)</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="TH-out" min="251" max="500" step="1" value="400"
+                   onchange="syncInput('TH',this)" />
+            <input type="range" id="TH-in" min="251" max="500" step="1" value="400"
+                   oninput="syncInput('TH',this)" style="flex:1" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: output -->
+      <div>
+        <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div>
+            <div class="lab">&gamma; (-)</div>
+            <div class="val"><span id="gamma-kpi">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PLOT ── -->
+  <section class="viz" style="margin-top:14px">
+    <h2 style="margin:4px 0 6px;font-size:1.25rem">Plot</h2>
+    <div class="viz">
+      <div class="legend-row">
+        <span><span class="legend-dot" style="background:#3b82f6"></span>T<sub>C</sub> = input</span>
+        <span><span class="legend-dot" style="background:#f97316"></span>T<sub>C</sub> = 250 K</span>
+        <span><span class="legend-dot" style="background:#22c55e"></span>T<sub>C</sub> = 350 K</span>
+      </div>
+      <svg id="plot" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:#6b7280">
+      The plot shows &gamma; vs T<sub>H</sub> for different T<sub>C</sub> values. The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point for the input T<sub>C</sub> value's curve — drag it or use the T<sub>H</sub> slider above to see how &gamma; changes as T<sub>H</sub> changes at the current input T<sub>C</sub> value.
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </div>
+</footer>
+
+<script>
+/* ─── state ─── */
+const S = { TC: 298, TH: 400 };
+
+function calcGamma(TH, TC){ return TH > TC ? TH / (TH - TC) : 0; }
+
+/* ─── sync number ↔ range ─── */
+function syncInput(p, el){
+  let v = parseFloat(el.value);
+  if(isNaN(v)) return;
+  if(p === 'TC'){
+    v = Math.max(250, Math.min(350, v));
+    S.TC = v;
+    // Ensure TH > TC (TH must be at least TC + 10)
+    if(S.TH <= S.TC + 10){ S.TH = S.TC + 10; setVal('TH', S.TH); }
+    // Update TH slider min
+    document.getElementById('TH-out').min = S.TC + 10;
+    document.getElementById('TH-in').min  = S.TC + 10;
+  } else {
+    v = Math.max(S.TC + 10, Math.min(500, v));
+    S.TH = v;
+  }
+  setVal(p, S[p]);
+  compute();
+}
+
+function setVal(p, v){
+  document.getElementById(p+'-out').value = v;
+  document.getElementById(p+'-in').value  = v;
+}
+
+/* ─── compute output ─── */
+function compute(){
+  const gamma = calcGamma(S.TH, S.TC);
+  document.getElementById('gamma-kpi').textContent = gamma.toFixed(4);
+  drawPlot();
+}
+
+/* ─── draw plot ─── */
+function drawPlot(){
+  const svg = d3.select('#plot');
+  svg.selectAll('*').remove();
+
+  const W = 860, H = 300;
+  const mg = { top: 22, right: 24, bottom: 46, left: 52 };
+  const pW = W - mg.left - mg.right;
+  const pH = H - mg.top - mg.bottom;
+
+  // x-axis: T_H from 250 to 500 K; y-axis: γ from 0 to 40
+  const xSc = d3.scaleLinear().domain([250, 500]).range([mg.left, mg.left + pW]);
+  const ySc = d3.scaleLinear().domain([0, 40]).range([mg.top + pH, mg.top]);
+
+  // Axes
+  const xAxis = d3.axisBottom(xSc)
+    .tickValues([250, 300, 350, 400, 450, 500])
+    .tickFormat(d3.format('d'));
+  const yAxis = d3.axisLeft(ySc)
+    .tickValues([0, 5, 10, 15, 20, 25, 30, 35, 40])
+    .tickFormat(d3.format('d'));
+
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(0,${mg.top+pH})`)
+     .call(xAxis);
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(${mg.left},0)`)
+     .call(yAxis);
+
+  // Axis labels
+  svg.append('text').attr('class','axis-title')
+     .attr('transform','rotate(-90)')
+     .attr('x', -(mg.top + pH/2)).attr('y', 14)
+     .attr('text-anchor','middle')
+     .text('γ  (−)');
+
+  const xLabel = svg.append('text').attr('class','axis-title')
+     .attr('x', mg.left + pW/2).attr('y', H - 8)
+     .attr('text-anchor','middle');
+  xLabel.append('tspan').text('T');
+  xLabel.append('tspan').attr('baseline-shift','sub').attr('font-size','9').text('H');
+  xLabel.append('tspan').text('  (K)');
+
+  // Curve generator — TH on x-axis, TC is the parameter
+  const pts = d3.range(250, 501, 1);
+
+  const lineFn = (TC) => d3.line()
+    .defined(d => d > TC && calcGamma(d, TC) <= 40)
+    .x(d => xSc(d))
+    .y(d => ySc(calcGamma(d, TC)));
+
+  const curves = [
+    { TC: S.TC,  color: '#3b82f6', dashed: false },  // input (blue)
+    { TC: 250,   color: '#f97316', dashed: true  },  // orange
+    { TC: 350,   color: '#22c55e', dashed: true  },  // green
+  ];
+
+  curves.forEach(c => {
+    svg.append('path')
+       .datum(pts)
+       .attr('class','curve')
+       .style('stroke', c.color)
+       .style('stroke-dasharray', c.dashed ? '6 3' : null)
+       .attr('d', lineFn(c.TC)(pts));
+  });
+
+  // Operating point on the input curve
+  const g = calcGamma(S.TH, S.TC);
+  if(S.TH > S.TC && g <= 40){
+    svg.append('circle')
+       .attr('class','dragpt')
+       .attr('cx', xSc(S.TH))
+       .attr('cy', ySc(g))
+       .attr('r', 5)
+       .style('fill', '#ef4444');
+  }
+
+  // Drag on plot area
+  const hitRect = svg.append('rect')
+    .attr('class','hit')
+    .attr('x', mg.left).attr('y', mg.top)
+    .attr('width', pW).attr('height', pH);
+
+  hitRect.call(d3.drag().on('start drag end', function(event){
+    const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
+    let   val = Math.round(xSc.invert(xm));
+    val = Math.max(S.TC + 10, Math.min(500, val));
+    S.TH = val;
+    setVal('TH', val);
+    compute();
+  }));
+}
+
+/* ─── init ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  // Set TH slider min to TC+10 on init
+  document.getElementById('TH-out').min = S.TC + 10;
+  document.getElementById('TH-in').min  = S.TC + 10;
+  compute();
+  window.addEventListener('resize', compute);
+});
+</script>
+
+</body>
+</html>
