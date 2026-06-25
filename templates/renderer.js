@@ -89,9 +89,16 @@ function renderContent(data, containerId) {
             } else if (item.type === 'note') {
                 const div = document.createElement('div');
                 div.className = 'note';
-                div.insertAdjacentHTML('beforeend', parseText(item.text));
+                if (item.text instanceof Array) {
+                    item.text.forEach(line => {
+                        const p = document.createElement('p');
+                        p.insertAdjacentHTML('beforeend', parseText(line));
+                        div.appendChild(p);
+                    });
+                } else {
+                    div.insertAdjacentHTML('beforeend', parseText(item.text));
+                }
                 card.appendChild(div);
-
             } else if (item.type === 'list') {
                 const div = document.createElement('div');
                 div.className = 'note';
@@ -173,7 +180,6 @@ function clampInputValue(e, inputDef) {
 function renderControls(inputs) {
     const container = document.getElementById('controls');
     if (!container) return;
-    container.innerHTML = ''; // Clear filler HTML
 
     inputs.forEach(input => {
         const wrapper = document.createElement('div');
@@ -280,33 +286,36 @@ function renderControls(inputs) {
             range.addEventListener('input', e => { num.value = e.target.value; });
             
             wrapper.appendChild(range);
-        }
+        } 
         
         container.appendChild(wrapper);
     });
 }
 
-function renderOutputs(outputs) {
-    const kpiContainer = document.querySelector('.kpi');
-    if (!kpiContainer) return;
-    kpiContainer.textContent = '';
-    kpiContainer.style.gridTemplateColumns = `repeat(${outputs.length}, minmax(60px, 1fr))`;
-    
-    outputs.forEach(output => {
+function renderGroup(values, containerId) {
+    if (values === undefined || values.length === 0) return;
+
+    const container = document.getElementById(containerId);
+    if (!container) return; 
+    container.textContent = '';
+    container.style.gridTemplateColumns = `repeat(${values.length}, minmax(60px, 1fr))`;
+    container.classList.remove('hidden');
+
+    values.forEach(value => {
         const div = document.createElement('div');
         
         const lab = document.createElement('div');
         lab.className = 'lab';
-        lab.textContent = parseText(output.text);
+        lab.textContent = parseText(value.text);
         
         const val = document.createElement('div');
         val.className = 'val';
-        val.id = `kpi_${output.id}`;
-        val.textContent = '—';
+        val.id = `value_${value.id}`;
+        val.textContent = formatNumber(value.value);
         
         div.appendChild(lab);
         div.appendChild(val);
-        kpiContainer.appendChild(div);
+        container.appendChild(div);
     });
 }
 
@@ -369,6 +378,11 @@ function setupCalculationEngine(pageData) {
                 }
             }
         });
+        if (pageData.inputOutput.fixedInputs) {
+            pageData.inputOutput.fixedInputs.forEach(input => {
+                state[input.id] = input.value;
+            });
+        }
         return state;
     }
 
@@ -390,7 +404,7 @@ function setupCalculationEngine(pageData) {
             
             state[output.id] = val;
             
-            const el = document.getElementById(`kpi_${output.id}`);
+            const el = document.getElementById(`value_${output.id}`);
             if (el) {
                 el.textContent = (typeof val === 'number') ? formatNumber(val) : val;
             }
@@ -436,7 +450,7 @@ function injectPlots(state, pageData) {
     if (svg.empty()) return;
     svg.selectAll('*').remove(); // Clear previous plot
     
-    const W = 760, H = 320, m = { l: 64, r: 30, t: 14, b: 54 };
+    const W = 760, H = 320, m = { l: 70, r: 40, t: 14, b: 54 };
     const gap = 80;
     const numPlots = pageData.plots.settings.length;
     const totalGap = gap * (numPlots - 1);
@@ -491,7 +505,7 @@ function injectPlots(state, pageData) {
             yAxis.tickValues(ticks);
             yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
-        svg.append('g').attr('class', 'axis')
+        const yAxisG = svg.append('g').attr('class', 'axis')
            .attr('transform', `translate(${plot_x_offset},0)`)
            .call(yAxis);
         
@@ -500,8 +514,11 @@ function injectPlots(state, pageData) {
            .attr('x', plot_x_offset + iw/2).attr('y', H - 10)
            .attr('text-anchor', 'middle').text(plotConfig.xLabel);
            
+        const yAxisBBox = yAxisG.node().getBBox();
+        console.log(yAxisBBox.width);
+
         svg.append('text').attr('class', 'axis-title')
-           .attr('x', -(m.t + ih/2)).attr('y', plot_x_offset - 45)
+           .attr('x', -(m.t + ih/2)).attr('y', plot_x_offset - yAxisBBox.width - 5)
            .attr('text-anchor', 'middle').attr('transform', 'rotate(-90)')
            .text(plotConfig.yLabel);
         
@@ -600,8 +617,6 @@ window.addEventListener('load', async () => {
     const course = urlParams.get('course');
     const topic = urlParams.get('topic');
 
-    
-
     // Temporary dynamic loading using url parameters
     if (course && topic) {
         const dataScript = document.createElement('script');
@@ -643,8 +658,9 @@ window.addEventListener('load', async () => {
         if (pageData.schematic) {
             renderSchematic(pageData.schematic);
         }
+        renderGroup(pageData.inputOutput.fixedInputs, 'fixed-inputs');
         renderControls(pageData.inputOutput.inputs);
-        renderOutputs(pageData.inputOutput.outputs);
+        renderGroup(pageData.inputOutput.outputs, 'outputs');
         
         setupCalculationEngine(pageData);
     } else {

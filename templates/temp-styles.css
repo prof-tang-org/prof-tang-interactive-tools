@@ -12,6 +12,8 @@
 
   /* me310 / cards */
   --thumb-ratio: 16/9;     /* fixed media box ratio */
+
+  --gap: 12px; --gap-lg: 20px;
 }
 
 *{box-sizing:border-box}
@@ -105,14 +107,18 @@ html{scroll-behavior:smooth}
   margin: 6px 0;
 }
 
-.kpi{
+.value-group{
   display:grid;
   gap:10px;
   margin-top:10px;
-  grid-template-columns:repeat(2,minmax(120px,1fr))
+  grid-template-columns:repeat(2,minmax(120px,1fr));
+  background: #fcfcff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
 }
-.kpi .lab{font-size:12px;color:#555}
-.kpi .val{font-size:16px;font-weight:600}
+.value-group .lab{font-size:12px;color:#555}
+.value-group .val{font-size:16px;font-weight:600}
 
 /* ---------- me310 (restored original behavior) ---------- */
 /* A fixed aspect-ratio box that NEVER resizes the card height to fit the image.
@@ -227,12 +233,15 @@ svg .axis-title{ font-size:18px; fill:#111; }
 
 .grid { 
   display: grid; 
-  gap: 12px; 
-  margin-bottom: 12px;
+  gap: var(--gap); 
 }
 @media (min-width: 1024px) { .grid { grid-template-columns: 1.5fr 0.9fr; } }
 
-.eq-schem { display: grid; gap: 12px; }
+section {
+  margin-bottom: var(--gap);
+}
+
+.eq-schem { display: grid; gap: var(--gap); }
 @media (min-width: 900px) { .eq-schem { grid-template-columns: 1.2fr 0.8fr; } }
 
 .schem {
