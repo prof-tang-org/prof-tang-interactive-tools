@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Thermal Efficiency of Reversible Power Cycles</title>
+  <title>Coefficient of Performance of Reversible Heat Pump Cycles</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -92,7 +92,7 @@
 <header class="site-header">
   <div class="container">
     <div class="header-row">
-      <h1>Thermal Efficiency of Reversible Power Cycles</h1>
+      <h1>Coefficient of Performance of Reversible Heat Pump Cycles</h1>
       <a class="btn primary" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
     </div>
   </div>
@@ -109,27 +109,26 @@
     <div class="ctl">
       <!-- Equation + Symbols in unified gray box -->
       <div style="background:#fafcff;border:1px solid var(--line);border-radius:10px;padding:16px 18px">
-        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:12px">Thermal efficiency of reversible power cycles working between given hot and cold reservoirs, i.e., Carnot efficiency</div>
-        \(\displaystyle \eta = \frac{W_R}{Q_H} = \frac{Q_H - Q_C}{Q_H} = \frac{T_H - T_C}{T_H} = 1 - \frac{T_C}{T_H}\)
+        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:12px">Coefficient of performance of reversible heat pump cycles working between given hot and cold reservoirs</div>
+        \(\displaystyle \gamma = \frac{Q_H}{W_R} = \frac{Q_H}{Q_H - Q_C} = \frac{T_H}{T_H - T_C}\)
         <div style="font-size:13px;font-weight:600;color:#111;margin-top:16px;margin-bottom:4px">Symbols</div>
         <ul style="margin:8px 0 0 0;padding-left:38px">
-          <li>\(\eta\) — thermal efficiency of reversible power cycle</li>
+          <li>\(\gamma\) — coefficient of performance of reversible heat pump cycle</li>
           <li>\(Q_H\) — heat absorption from hot reservoir</li>
           <li>\(Q_C\) — heat rejection to cold reservoir</li>
-          <li>\(W_R\) — work output of reversible power cycle</li>
+          <li>\(W_R\) — work input to reversible power cycle</li>
           <li>\(T_H\) — thermodynamic temperature of the hot reservoir</li>
           <li>\(T_C\) — thermodynamic temperature of the cold reservoir</li>
         </ul>
       </div>
-
     </div>
 
     <!-- Schematic -->
     <div>
       <div class="ctl" style="position:sticky;top:20px">
         <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
-        <div class="schem" aria-label="Carnot power cycle schematic">
-          <img src="../assets/me200/5.9-eq.png" alt="Carnot power cycle schematic" style="max-height:240px; width:100%; object-fit:contain" />
+        <div class="schem" aria-label="Reversible heat pump cycle schematic">
+          <img src="../assets/me200/5.11-eq.png" alt="Reversible heat pump cycle schematic" style="max-height:240px; width:100%; object-fit:contain" />
         </div>
       </div>
     </div>
@@ -156,9 +155,9 @@
         <div class="ctl">
           <label>\(T_H\) — hot reservoir temperature (K)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="TH-out" min="251" max="2000" step="1" value="1000"
+            <input type="number" id="TH-out" min="251" max="500" step="1" value="400"
                    onchange="syncInput('TH',this)" />
-            <input type="range" id="TH-in" min="251" max="2000" step="1" value="1000"
+            <input type="range" id="TH-in" min="251" max="500" step="1" value="400"
                    oninput="syncInput('TH',this)" style="flex:1" />
           </div>
         </div>
@@ -169,8 +168,8 @@
       <div>
         <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
           <div>
-            <div class="lab">η (-)</div>
-            <div class="val"><span id="eta-kpi">—</span></div>
+            <div class="lab">&gamma; (-)</div>
+            <div class="val"><span id="gamma-kpi">—</span></div>
           </div>
         </div>
       </div>
@@ -189,7 +188,7 @@
       <svg id="plot" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      The plot shows η vs T<sub>H</sub> for different T<sub>C</sub> values. The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point for the input T<sub>C</sub> value's curve — drag it or use the T<sub>H</sub> slider above to see how η changes as T<sub>H</sub> changes at the current input T<sub>C</sub> value.
+      The plot shows &gamma; vs T<sub>H</sub> for different T<sub>C</sub> values. The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current operating point for the input T<sub>C</sub> value's curve — drag it or use the T<sub>H</sub> slider above to see how &gamma; changes as T<sub>H</sub> changes at the current input T<sub>C</sub> value.
     </div>
   </section>
 </main>
@@ -202,9 +201,9 @@
 
 <script>
 /* ─── state ─── */
-const S = { TC: 298, TH: 1000 };
+const S = { TC: 298, TH: 400 };
 
-function calcEta(TH, TC){ return TH > TC ? (TH - TC) / TH : 0; }
+function calcGamma(TH, TC){ return TH > TC ? TH / (TH - TC) : 0; }
 
 /* ─── sync number ↔ range ─── */
 function syncInput(p, el){
@@ -213,10 +212,13 @@ function syncInput(p, el){
   if(p === 'TC'){
     v = Math.max(250, Math.min(350, v));
     S.TC = v;
-    // Ensure TH > TC
-    if(S.TH <= S.TC){ S.TH = S.TC + 1; setVal('TH', S.TH); }
+    // Ensure TH > TC (TH must be at least TC + 10)
+    if(S.TH <= S.TC + 10){ S.TH = S.TC + 10; setVal('TH', S.TH); }
+    // Update TH slider min
+    document.getElementById('TH-out').min = S.TC + 10;
+    document.getElementById('TH-in').min  = S.TC + 10;
   } else {
-    v = Math.max(S.TC + 1, Math.min(2000, v));
+    v = Math.max(S.TC + 10, Math.min(500, v));
     S.TH = v;
   }
   setVal(p, S[p]);
@@ -230,8 +232,8 @@ function setVal(p, v){
 
 /* ─── compute output ─── */
 function compute(){
-  const eta = calcEta(S.TH, S.TC);
-  document.getElementById('eta-kpi').textContent = eta.toFixed(4);
+  const gamma = calcGamma(S.TH, S.TC);
+  document.getElementById('gamma-kpi').textContent = gamma.toFixed(4);
   drawPlot();
 }
 
@@ -245,12 +247,17 @@ function drawPlot(){
   const pW = W - mg.left - mg.right;
   const pH = H - mg.top - mg.bottom;
 
-  const xSc = d3.scaleLinear().domain([0, 2000]).range([mg.left, mg.left + pW]);
-  const ySc = d3.scaleLinear().domain([0, 1]).range([mg.top + pH, mg.top]);
+  // x-axis: T_H from 250 to 500 K; y-axis: γ from 0 to 40
+  const xSc = d3.scaleLinear().domain([250, 500]).range([mg.left, mg.left + pW]);
+  const ySc = d3.scaleLinear().domain([0, 40]).range([mg.top + pH, mg.top]);
 
   // Axes
-  const xAxis = d3.axisBottom(xSc).tickValues([0,250,500,750,1000,1250,1500,1750,2000]).tickFormat(d3.format('d'));
-  const yAxis = d3.axisLeft(ySc).ticks(5).tickFormat(d3.format('~g'));
+  const xAxis = d3.axisBottom(xSc)
+    .tickValues([250, 300, 350, 400, 450, 500])
+    .tickFormat(d3.format('d'));
+  const yAxis = d3.axisLeft(ySc)
+    .tickValues([0, 5, 10, 15, 20, 25, 30, 35, 40])
+    .tickFormat(d3.format('d'));
 
   svg.append('g').attr('class','axis')
      .attr('transform',`translate(0,${mg.top+pH})`)
@@ -264,7 +271,8 @@ function drawPlot(){
      .attr('transform','rotate(-90)')
      .attr('x', -(mg.top + pH/2)).attr('y', 14)
      .attr('text-anchor','middle')
-     .text('η  (−)');
+     .text('γ  (−)');
+
   const xLabel = svg.append('text').attr('class','axis-title')
      .attr('x', mg.left + pW/2).attr('y', H - 8)
      .attr('text-anchor','middle');
@@ -272,23 +280,18 @@ function drawPlot(){
   xLabel.append('tspan').attr('baseline-shift','sub').attr('font-size','9').text('H');
   xLabel.append('tspan').text('  (K)');
 
-  // Arrow marker
-  svg.append('defs').html(`
-    <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-      <path d="M1 2L9 5L1 8" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </marker>`);
+  // Curve generator — TH on x-axis, TC is the parameter
+  const pts = d3.range(250, 501, 1);
 
-  // Curve generator
-  const pts = d3.range(1, 2001, 5);
   const lineFn = (TC) => d3.line()
-    .defined(d => d > TC)
+    .defined(d => d > TC && calcGamma(d, TC) <= 40)
     .x(d => xSc(d))
-    .y(d => ySc(calcEta(d, TC)));
+    .y(d => ySc(calcGamma(d, TC)));
 
   const curves = [
     { TC: S.TC,  color: '#3b82f6', dashed: false },  // input (blue)
-    { TC: 250,   color: '#f97316', dashed: true },   // orange
-    { TC: 350,   color: '#22c55e', dashed: true },   // green
+    { TC: 250,   color: '#f97316', dashed: true  },  // orange
+    { TC: 350,   color: '#22c55e', dashed: true  },  // green
   ];
 
   curves.forEach(c => {
@@ -301,13 +304,14 @@ function drawPlot(){
   });
 
   // Operating point on the input curve
-  if(S.TH > S.TC){
-     svg.append('circle')
-        .attr('class','dragpt')
-        .attr('cx', xSc(S.TH))
-        .attr('cy', ySc(calcEta(S.TH, S.TC)))
-        .attr('r', 5)
-        .style('fill', '#ef4444');
+  const g = calcGamma(S.TH, S.TC);
+  if(S.TH > S.TC && g <= 40){
+    svg.append('circle')
+       .attr('class','dragpt')
+       .attr('cx', xSc(S.TH))
+       .attr('cy', ySc(g))
+       .attr('r', 5)
+       .style('fill', '#ef4444');
   }
 
   // Drag on plot area
@@ -319,7 +323,7 @@ function drawPlot(){
   hitRect.call(d3.drag().on('start drag end', function(event){
     const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
     let   val = Math.round(xSc.invert(xm));
-    val = Math.max(S.TC + 1, Math.min(2000, val));
+    val = Math.max(S.TC + 10, Math.min(500, val));
     S.TH = val;
     setVal('TH', val);
     compute();
@@ -328,6 +332,9 @@ function drawPlot(){
 
 /* ─── init ─── */
 window.addEventListener('DOMContentLoaded', () => {
+  // Set TH slider min to TC+10 on init
+  document.getElementById('TH-out').min = S.TC + 10;
+  document.getElementById('TH-in').min  = S.TC + 10;
   compute();
   window.addEventListener('resize', compute);
 });
