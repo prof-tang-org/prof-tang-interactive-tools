@@ -567,9 +567,27 @@ function injectPlots(state, pageData) {
         
         // Generate Curve
         const steps = 100;
-        const xVals = d3.range(plotConfig.xMin, plotConfig.xMax + (plotConfig.xMax - plotConfig.xMin)/steps, (plotConfig.xMax - plotConfig.xMin)/steps);
+        let xVals = d3.range(plotConfig.xMin, plotConfig.xMax + (plotConfig.xMax - plotConfig.xMin)/steps, (plotConfig.xMax - plotConfig.xMin)/steps);
         
-        const lineData = xVals.map(xVal => {
+        const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
+        const accMin = (inputDef && inputDef.min !== undefined) ? inputDef.min : plotConfig.xMin;
+        const accMax = (inputDef && inputDef.max !== undefined) ? inputDef.max : plotConfig.xMax;
+        
+        // Ensure input min and max are exact points in our xVals array if within bounds
+        if (inputDef) {
+            if (inputDef.min !== undefined && inputDef.min > plotConfig.xMin && inputDef.min < plotConfig.xMax) {
+                xVals.push(inputDef.min);
+            }
+            if (inputDef.max !== undefined && inputDef.max > plotConfig.xMin && inputDef.max < plotConfig.xMax) {
+                xVals.push(inputDef.max);
+            }
+        }
+        
+        xVals.sort((a, b) => a - b);
+        // Remove duplicates
+        xVals = xVals.filter((v, idx) => xVals.indexOf(v) === idx);
+        
+        const getPoint = (xVal) => {
             const tempState = { ...state };
             tempState[plotConfig.x] = xVal;
             
@@ -580,7 +598,15 @@ function injectPlots(state, pageData) {
             });
             
             return [ x(xVal), y(tempState[plotConfig.y]) ];
-        });
+        };
+        
+        const leftVals = xVals.filter(v => v <= accMin);
+        const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
+        const rightVals = xVals.filter(v => v >= accMax);
+        
+        const leftData = leftVals.map(getPoint);
+        const accessibleData = accessibleVals.map(getPoint);
+        const rightData = rightVals.map(getPoint);
         
         // Add clip path for the plot
         const clipId = `clip-${i}`;
@@ -588,9 +614,30 @@ function injectPlots(state, pageData) {
            .append('rect').attr('x', plot_x_offset).attr('y', m.t)
            .attr('width', iw).attr('height', ih);
 
-        svg.append('path').attr('class', 'curve')
-           .attr('clip-path', `url(#${clipId})`)
-           .attr('d', d3.line().defined(d => !isNaN(d[1]))(lineData));
+        // Draw left inaccessible curve (dotted)
+        if (leftData.length >= 2) {
+            svg.append('path').attr('class', 'curve')
+               .attr('clip-path', `url(#${clipId})`)
+               .style('stroke-dasharray', '4 4')
+               .style('opacity', '0.6')
+               .attr('d', d3.line().defined(d => !isNaN(d[1]))(leftData));
+        }
+
+        // Draw main accessible curve (solid)
+        if (accessibleData.length >= 2) {
+            svg.append('path').attr('class', 'curve')
+               .attr('clip-path', `url(#${clipId})`)
+               .attr('d', d3.line().defined(d => !isNaN(d[1]))(accessibleData));
+        }
+
+        // Draw right inaccessible curve (dotted)
+        if (rightData.length >= 2) {
+            svg.append('path').attr('class', 'curve')
+               .attr('clip-path', `url(#${clipId})`)
+               .style('stroke-dasharray', '4 4')
+               .style('opacity', '0.6')
+               .attr('d', d3.line().defined(d => !isNaN(d[1]))(rightData));
+        }
         
         // Draw Current Point
         const currentXVal = state[plotConfig.x];
@@ -709,4 +756,4 @@ window.addEventListener('load', async () => {
     } else {
         console.error("pageData is not defined. Ensure the data script is loaded before renderer.js.");
     }
-});z
+});
