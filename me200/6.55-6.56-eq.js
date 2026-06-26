@@ -198,6 +198,6 @@ const pageData = {
                 "yTickInterval": 100
             }
         ],
-        "text": "Drag the red dots to analyze the influence of pressure ratios on the exit state and the specific flow work done under different polytropic modes"
+        "text": "Drag the red dots to analyze the influence of pressure ratios on the exit state and the specific flow work done under different polytropic modes."
     }
 };

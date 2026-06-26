@@ -189,6 +189,8 @@ function renderControls(inputs) {
         wrapper.appendChild(label);
 
         if (input.type === 'dropdown') {
+            wrapper.classList.add('inline');
+
             const select = document.createElement('select');
             select.id = `input_${input.id}`;
             input.choices.forEach(choice => {
@@ -342,11 +344,12 @@ function renderGroup(values, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return; 
     container.textContent = '';
-    container.style.gridTemplateColumns = `repeat(${values.length}, minmax(60px, 1fr))`;
+    container.style.gridTemplateColumns = `repeat(${Math.min(values.length, 5)}, minmax(60px, 1fr))`;
     container.classList.remove('hidden');
 
     values.forEach(value => {
         const div = document.createElement('div');
+        div.classList.add('value-container');
         
         const lab = document.createElement('div');
         lab.className = 'lab';
