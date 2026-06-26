@@ -99,12 +99,23 @@ html{scroll-behavior:smooth}
 #controls input[type="number"],
 #controls input[type="text"],
 #controls select{
-  width:100%; padding:6px 8px; border:1px solid var(--line); background:#fff; color:inherit;
+  padding:6px 8px; border:1px solid var(--line); background:#fff; color:inherit;
 }
 
 #controls input[type="range"] {
   width:100%;
   margin: 6px 0;
+}
+
+.range-labels-container {
+  flex-grow: 1;
+}
+
+.min-max-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  color: #6b7280;
 }
 
 .value-group{
@@ -272,3 +283,4 @@ h3 { font-size: 18px; line-height: 1.22; color: #111; }
 .dragpt { fill: #ef4444; stroke: #111; stroke-width: 1.2; }
 .zeroline { stroke: #000; stroke-opacity: 0.35; stroke-dasharray: 6 6; }
 .hit { fill: transparent; cursor: ew-resize; }
+.curve.dotted { stroke-dasharray: 4, 4; }

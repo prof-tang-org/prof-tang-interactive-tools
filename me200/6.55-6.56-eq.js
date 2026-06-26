@@ -131,31 +131,31 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "Gas Constant R [J/(kg·K)]",
+                "text": "Gas Constant R (J/(kg·K))",
                 "id": "gas-constant-R",
                 "type": "calculation",
                 "value": "universal-R / molar-mass"
             },
             {
-                "text": "Inlet Spec. Volume v₁ [m³/kg]",
+                "text": "Inlet Spec. Volume v₁ (m³/kg)",
                 "id": "volume-1",
                 "type": "calculation",
                 "value": "(gas-constant-R * temp-1) / (pressure-1 * 1000)"
             },
             {
-                "text": "Exit Temperature T₂ [K]",
+                "text": "Exit Temperature T₂ (K)",
                 "id": "temp-2",
                 "type": "calculation",
                 "value": "temp-1 * pow(pressure-2 / pressure-1, (polytropic-n - 1) / polytropic-n)"
             },
             {
-                "text": "Exit Spec. Volume v₂ [m³/kg]",
+                "text": "Exit Spec. Volume v₂ (m³/kg)",
                 "id": "volume-2",
                 "type": "calculation",
                 "value": "(gas-constant-R * temp-2) / (pressure-2 * 1000)"
             },
             {
-                "text": "Specific Work w_cv [kJ/kg]",
+                "text": "Specific Work w_cv (kJ/kg)",
                 "id": "specific-work",
                 "type": "calculation",
                 "value": "abs(polytropic-n - 1.0) < 1e-4 ? (-gas-constant-R * temp-1 * log(pressure-2 / pressure-1) / 1000) : (-(polytropic-n * gas-constant-R * temp-1) / (polytropic-n - 1) * (pow(pressure-2 / pressure-1, (polytropic-n - 1) / polytropic-n) - 1) / 1000)"

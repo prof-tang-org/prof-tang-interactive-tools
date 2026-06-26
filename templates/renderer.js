@@ -241,9 +241,34 @@ function renderControls(inputs) {
 
             range.addEventListener('input', e => { num.value = e.target.value; });
 
-            inline.appendChild(num);
-            inline.appendChild(range);
-            wrapper.appendChild(inline);
+            inline.appendChild(num); // Number input is still in 'inline'
+
+            const rangeAndLabelsContainer = document.createElement('div'); // New container for range and labels
+            rangeAndLabelsContainer.className = 'range-labels-container'; // New class for styling
+
+            rangeAndLabelsContainer.appendChild(range); // Range is now in the new container
+
+            // min/max labels for slider
+            const minMaxLabels = document.createElement('div');
+            minMaxLabels.className = 'min-max-labels';
+
+            if (input.min !== undefined) {
+                const minLabel = document.createElement('span');
+                minLabel.className = 'min-label';
+                minLabel.textContent = formatNumber(input.min);
+                minMaxLabels.appendChild(minLabel);
+            }
+
+            if (input.max !== undefined) {
+                const maxLabel = document.createElement('span');
+                maxLabel.className = 'max-label';
+                maxLabel.textContent = formatNumber(input.max);
+                minMaxLabels.appendChild(maxLabel);
+            }
+            rangeAndLabelsContainer.appendChild(minMaxLabels); // minMaxLabels is also in the new container
+
+            inline.appendChild(rangeAndLabelsContainer); // The new container is appended to 'inline'
+            wrapper.appendChild(inline); // 'inline' (with number and new container) is appended to 'wrapper'
             
         } else if (input.type === 'slider-dropdown') {
             const inline = document.createElement('div');
@@ -286,6 +311,25 @@ function renderControls(inputs) {
             range.addEventListener('input', e => { num.value = e.target.value; });
             
             wrapper.appendChild(range);
+            
+            // min/max labels for slider
+            const minMaxLabels = document.createElement('div');
+            minMaxLabels.className = 'min-max-labels';
+
+            if (input.min !== undefined) {
+                const minLabel = document.createElement('span');
+                minLabel.className = 'min-label';
+                minLabel.textContent = formatNumber(input.min);
+                minMaxLabels.appendChild(minLabel);
+            }
+
+            if (input.max !== undefined) {
+                const maxLabel = document.createElement('span');
+                maxLabel.className = 'max-label';
+                maxLabel.textContent = formatNumber(input.max);
+                minMaxLabels.appendChild(maxLabel);
+            }
+            wrapper.appendChild(minMaxLabels);
         } 
         
         container.appendChild(wrapper);
@@ -515,7 +559,6 @@ function injectPlots(state, pageData) {
            .attr('text-anchor', 'middle').text(plotConfig.xLabel);
            
         const yAxisBBox = yAxisG.node().getBBox();
-        console.log(yAxisBBox.width);
 
         svg.append('text').attr('class', 'axis-title')
            .attr('x', -(m.t + ih/2)).attr('y', plot_x_offset - yAxisBBox.width - 5)
@@ -666,4 +709,4 @@ window.addEventListener('load', async () => {
     } else {
         console.error("pageData is not defined. Ensure the data script is loaded before renderer.js.");
     }
-});
+});z
