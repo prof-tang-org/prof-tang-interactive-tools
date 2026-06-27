@@ -83,7 +83,7 @@ function renderContent(data, containerId) {
                 const div = document.createElement('div');
                 div.className = 'eqbig';
                 // Pure text wrapper for MathJax string literals
-                div.textContent = `\\( ${item.text} \\)`;
+                div.textContent = `\\( \\displaystyle ${item.text} \\)`;
                 card.appendChild(div);
 
             } else if (item.type === 'note') {
@@ -189,7 +189,8 @@ function renderControls(inputs) {
         wrapper.appendChild(label);
 
         if (input.type === 'dropdown') {
-            wrapper.classList.add('inline');
+            const inline = document.createElement('div');
+            inline.className = 'inline';
 
             const select = document.createElement('select');
             select.id = `input_${input.id}`;
@@ -199,7 +200,42 @@ function renderControls(inputs) {
                 opt.textContent = choice.text;
                 select.appendChild(opt);
             });
-            wrapper.appendChild(select);
+            inline.appendChild(select);
+            
+            if (input.choices && input.choices.some(c => c.value === 'custom')) {
+                const customInput = document.createElement('input');
+                customInput.type = 'number';
+                customInput.id = `input_${input.id}_custom`;
+                customInput.className = 'num-sm hidden';
+                if (input.min !== undefined) customInput.min = input.min;
+                if (input.max !== undefined) customInput.max = input.max;
+                if (input.step !== undefined) customInput.step = input.step;
+                if (input.initialCustomValue !== undefined) customInput.value = input.initialCustomValue;
+                
+                customInput.addEventListener('change', e => {
+                    let val = parseFloat(e.target.value);
+                    if (!isNaN(val)) {
+                        if (input.min !== undefined) val = Math.max(input.min, val);
+                        if (input.max !== undefined) val = Math.min(input.max, val);
+                        e.target.value = val;
+                    }
+                });
+                
+                select.addEventListener('change', e => {
+                    if (e.target.value === 'custom') {
+                        customInput.classList.remove('hidden');
+                        if (!customInput.value) {
+                            customInput.value = input.initialCustomValue || input.min || 0.01;
+                        }
+                    } else {
+                        customInput.classList.add('hidden');
+                    }
+                });
+                
+                inline.appendChild(customInput);
+            }
+            
+            wrapper.appendChild(inline);
             
             if (input.notes) {
                 const note = document.createElement('div');
@@ -257,6 +293,7 @@ function renderControls(inputs) {
             if (input.min !== undefined) {
                 const minLabel = document.createElement('span');
                 minLabel.className = 'min-label';
+                minLabel.id = `label_${input.id}_min`;
                 minLabel.textContent = formatNumber(input.min);
                 minMaxLabels.appendChild(minLabel);
             }
@@ -264,6 +301,7 @@ function renderControls(inputs) {
             if (input.max !== undefined) {
                 const maxLabel = document.createElement('span');
                 maxLabel.className = 'max-label';
+                maxLabel.id = `label_${input.id}_max`;
                 maxLabel.textContent = formatNumber(input.max);
                 minMaxLabels.appendChild(maxLabel);
             }
@@ -321,6 +359,7 @@ function renderControls(inputs) {
             if (input.min !== undefined) {
                 const minLabel = document.createElement('span');
                 minLabel.className = 'min-label';
+                minLabel.id = `label_${input.id}_min`;
                 minLabel.textContent = formatNumber(input.min);
                 minMaxLabels.appendChild(minLabel);
             }
@@ -328,6 +367,7 @@ function renderControls(inputs) {
             if (input.max !== undefined) {
                 const maxLabel = document.createElement('span');
                 maxLabel.className = 'max-label';
+                maxLabel.id = `label_${input.id}_max`;
                 maxLabel.textContent = formatNumber(input.max);
                 minMaxLabels.appendChild(maxLabel);
             }
@@ -419,10 +459,21 @@ function setupCalculationEngine(pageData) {
             const el = document.getElementById(`input_${input.id}`);
             if (el) {
                 if (input.type === 'dropdown') {
-                    state[input.id] = el.value;
+                    if (el.value === 'custom') {
+                        const customEl = document.getElementById(`input_${input.id}_custom`);
+                        state[input.id] = customEl ? parseFloat(customEl.value) : 0;
+                    } else {
+                        const parsedVal = parseFloat(el.value);
+                        state[input.id] = isNaN(parsedVal) ? el.value : parsedVal;
+                    }
                 } else {
                     state[input.id] = parseFloat(el.value);
                 }
+            }
+            // Gather units for slider-dropdown
+            const unitEl = document.getElementById(`input_${input.id}_unit`);
+            if (unitEl) {
+                state[`${input.id}_unit`] = unitEl.value;
             }
         });
         if (pageData.inputOutput.fixedInputs) {
@@ -431,6 +482,47 @@ function setupCalculationEngine(pageData) {
             });
         }
         return state;
+    }
+
+    function updateInputBounds(state) {
+        pageData.inputOutput.inputs.forEach(input => {
+            if (input.type === 'slider' || input.type === 'number' || input.type === 'slider-dropdown') {
+                const minVal = typeof input.min === 'string' ? evaluateFormula(input.min, state) : input.min;
+                const maxVal = typeof input.max === 'string' ? evaluateFormula(input.max, state) : input.max;
+                const stepVal = typeof input.step === 'string' ? evaluateFormula(input.step, state) : input.step;
+
+                const primaryEl = document.getElementById(`input_${input.id}`);
+                const numEl = document.getElementById(`input_${input.id}_num`);
+
+                [primaryEl, numEl].forEach(el => {
+                    if (el) {
+                        if (minVal !== undefined) el.min = minVal;
+                        if (maxVal !== undefined) el.max = maxVal;
+                        if (stepVal !== undefined) el.step = stepVal;
+                    }
+                });
+
+                if (primaryEl) {
+                    let currentVal = parseFloat(primaryEl.value);
+                    if (!isNaN(currentVal)) {
+                        let clampedVal = currentVal;
+                        if (minVal !== undefined) clampedVal = Math.max(minVal, clampedVal);
+                        if (maxVal !== undefined) clampedVal = Math.min(maxVal, clampedVal);
+                        if (clampedVal !== currentVal) {
+                            primaryEl.value = clampedVal;
+                            if (numEl) numEl.value = clampedVal;
+                            state[input.id] = clampedVal;
+                        }
+                    }
+                }
+
+                const minLabel = document.getElementById(`label_${input.id}_min`);
+                if (minLabel && minVal !== undefined) minLabel.textContent = formatNumber(minVal);
+
+                const maxLabel = document.getElementById(`label_${input.id}_max`);
+                if (maxLabel && maxVal !== undefined) maxLabel.textContent = formatNumber(maxVal);
+            }
+        });
     }
 
     function calculateOutputs(state) {
@@ -468,6 +560,7 @@ function setupCalculationEngine(pageData) {
         }
         
         const state = gatherInputs();
+        updateInputBounds(state);
         calculateOutputs(state);
         
         injectPlots(state, pageData);
@@ -524,17 +617,23 @@ function injectPlots(state, pageData) {
             }
         }
         
-        const x = d3.scaleLinear().domain([plotConfig.xMin, plotConfig.xMax]).range([plot_x_offset, plot_x_offset + iw]);
+        const xMinVal = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
+        const xMaxVal = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
+        
+        let xTickIntervalVal = plotConfig.xTickInterval;
+        if (typeof xTickIntervalVal === 'string') {
+            xTickIntervalVal = evaluateFormula(xTickIntervalVal, state);
+        } else if (Array.isArray(xTickIntervalVal)) {
+            xTickIntervalVal = xTickIntervalVal[0];
+        }
+
+        const x = d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
         const y = d3.scaleLinear().domain([plotConfig.yMin, yMax]).range([m.t + ih, m.t]);
         
         // Axes
         const xAxis = d3.axisBottom(x).ticks(5);
-        if (plotConfig.xTickInterval !== undefined) {
-            let xTickInterval = plotConfig.xTickInterval;
-            if (Array.isArray(xTickInterval)) {
-                xTickInterval = xTickInterval[0];
-            }
-            const ticks = d3.range(plotConfig.xMin, plotConfig.xMax + xTickInterval / 2, xTickInterval);
+        if (xTickIntervalVal !== undefined) {
+            const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
             xAxis.tickValues(ticks);
             xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
@@ -570,19 +669,23 @@ function injectPlots(state, pageData) {
         
         // Generate Curve
         const steps = 100;
-        let xVals = d3.range(plotConfig.xMin, plotConfig.xMax + (plotConfig.xMax - plotConfig.xMin)/steps, (plotConfig.xMax - plotConfig.xMin)/steps);
+        let xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal)/steps, (xMaxVal - xMinVal)/steps);
         
         const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
-        const accMin = (inputDef && inputDef.min !== undefined) ? inputDef.min : plotConfig.xMin;
-        const accMax = (inputDef && inputDef.max !== undefined) ? inputDef.max : plotConfig.xMax;
+        
+        const inpMinVal = (inputDef && typeof inputDef.min === 'string') ? evaluateFormula(inputDef.min, state) : (inputDef ? inputDef.min : undefined);
+        const inpMaxVal = (inputDef && typeof inputDef.max === 'string') ? evaluateFormula(inputDef.max, state) : (inputDef ? inputDef.max : undefined);
+
+        const accMin = (inpMinVal !== undefined) ? inpMinVal : xMinVal;
+        const accMax = (inpMaxVal !== undefined) ? inpMaxVal : xMaxVal;
         
         // Ensure input min and max are exact points in our xVals array if within bounds
         if (inputDef) {
-            if (inputDef.min !== undefined && inputDef.min > plotConfig.xMin && inputDef.min < plotConfig.xMax) {
-                xVals.push(inputDef.min);
+            if (inpMinVal !== undefined && inpMinVal > xMinVal && inpMinVal < xMaxVal) {
+                xVals.push(inpMinVal);
             }
-            if (inputDef.max !== undefined && inputDef.max > plotConfig.xMin && inputDef.max < plotConfig.xMax) {
-                xVals.push(inputDef.max);
+            if (inpMaxVal !== undefined && inpMaxVal > xMinVal && inpMaxVal < xMaxVal) {
+                xVals.push(inpMaxVal);
             }
         }
         
@@ -654,34 +757,85 @@ function injectPlots(state, pageData) {
             
         const drag = d3.drag()
             .on('start drag', (event) => {
-                let newX = Math.max(plotConfig.xMin, Math.min(plotConfig.xMax, x.invert(event.x)));
+                const elPrimary = document.getElementById(`input_${plotConfig.x}`);
+                const elNum = document.getElementById(`input_${plotConfig.x}_num`);
+                const customEl = document.getElementById(`input_${plotConfig.x}_custom`);
+
+                let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
+                let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
+                let newX = Math.max(xMinValDrag, Math.min(xMaxValDrag, x.invert(event.x)));
                 
                 const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
-                if (inputDef && inputDef.step) {
-                    newX = Math.round(newX / inputDef.step) * inputDef.step;
+                let dropdownChoiceVal = null;
 
-                    // Round to same amount of decimals as step
-                    const stepStr = inputDef.step.toString();
-                    const decimalPlaces = stepStr.includes('.') ? stepStr.split('.')[1].length : 0;
-                    newX = parseFloat(newX.toFixed(decimalPlaces));
+                if (inputDef && inputDef.type === 'dropdown') {
+                    const hasCustom = inputDef.choices && inputDef.choices.some(c => c.value === 'custom');
+                    if (hasCustom) {
+                        if (elPrimary) elPrimary.value = 'custom';
+                        if (customEl) {
+                            customEl.classList.remove('hidden');
+                            let clampedX = newX;
+                            if (inputDef.min !== undefined) clampedX = Math.max(inputDef.min, clampedX);
+                            if (inputDef.max !== undefined) clampedX = Math.min(inputDef.max, clampedX);
+                            customEl.value = clampedX;
+                            newX = clampedX;
+                        }
+                    } else if (inputDef.choices) {
+                        let closestChoice = inputDef.choices[0];
+                        let minDiff = Infinity;
+                        inputDef.choices.forEach(choice => {
+                            const val = parseFloat(choice.value);
+                            if (!isNaN(val)) {
+                                const diff = Math.abs(val - newX);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    closestChoice = choice;
+                                }
+                            }
+                        });
+                        newX = parseFloat(closestChoice.value);
+                        dropdownChoiceVal = closestChoice.value;
+                    }
+                } else {
+                    const inpStepVal = (inputDef && typeof inputDef.step === 'string') ? evaluateFormula(inputDef.step, state) : (inputDef ? inputDef.step : undefined);
+                    if (inputDef && inpStepVal) {
+                        newX = Math.round(newX / inpStepVal) * inpStepVal;
+
+                        // Round to same amount of decimals as step
+                        const stepStr = inpStepVal.toString();
+                        const decimalPlaces = stepStr.includes('.') ? stepStr.split('.')[1].length : 0;
+                        newX = parseFloat(newX.toFixed(decimalPlaces));
+                    }
                 }
 
                 // Clamp between absolute min/max bounds (from plot config and input config)
-                let absoluteMin = plotConfig.xMin;
-                let absoluteMax = plotConfig.xMax;
+                let absoluteMin = xMinValDrag;
+                let absoluteMax = xMaxValDrag;
 
                 if (inputDef) {
-                    if (inputDef.min !== undefined) absoluteMin = Math.max(absoluteMin, inputDef.min);
-                    if (inputDef.max !== undefined) absoluteMax = Math.min(absoluteMax, inputDef.max);
+                    const inpMinVal = typeof inputDef.min === 'string' ? evaluateFormula(inputDef.min, state) : inputDef.min;
+                    const inpMaxVal = typeof inputDef.max === 'string' ? evaluateFormula(inputDef.max, state) : inputDef.max;
+                    if (inpMinVal !== undefined) absoluteMin = Math.max(absoluteMin, inpMinVal);
+                    if (inpMaxVal !== undefined) absoluteMax = Math.min(absoluteMax, inpMaxVal);
                 }
 
                 newX = Math.max(absoluteMin, Math.min(absoluteMax, newX));
                 
                 // Sync Input DOM Elements
-                const elNum = document.getElementById(`input_${plotConfig.x}_num`);
-                const elPrimary = document.getElementById(`input_${plotConfig.x}`);
                 if (elNum) elNum.value = newX;
-                if (elPrimary) elPrimary.value = newX;
+                if (elPrimary) {
+                    if (inputDef && inputDef.type === 'dropdown') {
+                        if (inputDef.choices && inputDef.choices.some(c => c.value === 'custom')) {
+                            elPrimary.value = 'custom';
+                        } else if (dropdownChoiceVal !== null) {
+                            elPrimary.value = dropdownChoiceVal;
+                        } else {
+                            elPrimary.value = newX;
+                        }
+                    } else {
+                        elPrimary.value = newX;
+                    }
+                }
                 
                 // Recompute
                 if (window.forceCompute) {

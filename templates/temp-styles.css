@@ -189,7 +189,17 @@ section {
 }
 .schem img { display: block; width: 100%; height: 100%; object-fit: contain; padding: 0.375rem; }
 
-.inline { display: flex; align-items: center; gap: 0.5rem; }
+.inline { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
+
+#controls .inline select:first-child {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+#controls .inline select:first-child + input.num-sm {
+  width: 5.5rem;
+  flex: 0 0 5.5rem;
+  min-width: 0;
+}
 
 .num-sm { width: 10.625rem; }
 input:disabled { background: #f3f4f6 !important; color: #6b7280 !important; cursor: not-allowed; opacity: 1; }
