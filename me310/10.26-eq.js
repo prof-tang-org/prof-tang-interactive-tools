@@ -22,16 +22,16 @@ const pageData = {
             "header": "Assumptions",
             "content": [
                 {
-                    "text": "The open channel is horizontal and rectangular with constant width $b$"
+                    "text": "The open channel is horizontal and rectangular with constant width $b$."
                 },
                 {
-                    "text": "The flow is steady, uniform, and one-dimensional before the jump (section 1) and after the jump (section 2)"
+                    "text": "The flow is steady, uniform, and one-dimensional before the jump (section 1) and after the jump (section 2)."
                 },
                 {
-                    "text": "Shear stress caused by wall friction is negligible ($\\tau_w = 0$)"
+                    "text": "Shear stress caused by wall friction is negligible ($\\tau_w = 0$)."
                 },
                 {
-                    "text": "Chaotic flow in the jump region leads to head loss ($h_L$)"
+                    "text": "Chaotic flow in the jump region leads to head loss ($h_L$)."
                 }
             ]
         },
