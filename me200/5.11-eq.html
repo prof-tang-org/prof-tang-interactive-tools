@@ -145,9 +145,9 @@
         <div class="ctl">
           <label>\(T_C\) — cold reservoir temperature (K)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="TC-out" min="250" max="350" step="1" value="298"
+            <input type="number" id="TC-out" min="275" max="325" step="1" value="298"
                    onchange="syncInput('TC',this)" />
-            <input type="range" id="TC-in" min="250" max="350" step="1" value="298"
+            <input type="range" id="TC-in" min="275" max="325" step="1" value="298"
                    oninput="syncInput('TC',this)" style="flex:1" />
           </div>
         </div>
@@ -155,9 +155,9 @@
         <div class="ctl">
           <label>\(T_H\) — hot reservoir temperature (K)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="TH-out" min="251" max="500" step="1" value="400"
+            <input type="number" id="TH-out" min="335" max="500" step="1" value="400"
                    onchange="syncInput('TH',this)" />
-            <input type="range" id="TH-in" min="251" max="500" step="1" value="400"
+            <input type="range" id="TH-in" min="335" max="500" step="1" value="400"
                    oninput="syncInput('TH',this)" style="flex:1" />
           </div>
         </div>
@@ -210,15 +210,15 @@ function syncInput(p, el){
   let v = parseFloat(el.value);
   if(isNaN(v)) return;
   if(p === 'TC'){
-    v = Math.max(250, Math.min(350, v));
+    v = Math.max(275, Math.min(325, v));
     S.TC = v;
     // Ensure TH > TC (TH must be at least TC + 10)
     if(S.TH <= S.TC + 10){ S.TH = S.TC + 10; setVal('TH', S.TH); }
     // Update TH slider min
-    document.getElementById('TH-out').min = S.TC + 10;
-    document.getElementById('TH-in').min  = S.TC + 10;
+    document.getElementById('TH-out').min = Math.max(335, S.TC + 10);
+    document.getElementById('TH-in').min  = Math.max(335, S.TC + 10);
   } else {
-    v = Math.max(S.TC + 10, Math.min(500, v));
+    v = Math.max(Math.max(335, S.TC + 10), Math.min(500, v));
     S.TH = v;
   }
   setVal(p, S[p]);
@@ -247,13 +247,13 @@ function drawPlot(){
   const pW = W - mg.left - mg.right;
   const pH = H - mg.top - mg.bottom;
 
-  // x-axis: T_H from 250 to 500 K; y-axis: γ from 0 to 40
-  const xSc = d3.scaleLinear().domain([250, 500]).range([mg.left, mg.left + pW]);
+  // x-axis: T_H from 300 to 500 K; y-axis: γ from 0 to 40
+  const xSc = d3.scaleLinear().domain([300, 500]).range([mg.left, mg.left + pW]);
   const ySc = d3.scaleLinear().domain([0, 40]).range([mg.top + pH, mg.top]);
 
   // Axes
   const xAxis = d3.axisBottom(xSc)
-    .tickValues([250, 300, 350, 400, 450, 500])
+    .tickValues([300, 350, 400, 450, 500])
     .tickFormat(d3.format('d'));
   const yAxis = d3.axisLeft(ySc)
     .tickValues([0, 5, 10, 15, 20, 25, 30, 35, 40])
@@ -281,7 +281,7 @@ function drawPlot(){
   xLabel.append('tspan').text('  (K)');
 
   // Curve generator — TH on x-axis, TC is the parameter
-  const pts = d3.range(250, 501, 1);
+  const pts = d3.range(300, 501, 1);
 
   const lineFn = (TC) => d3.line()
     .defined(d => d > TC && calcGamma(d, TC) <= 40)
@@ -333,8 +333,8 @@ function drawPlot(){
 /* ─── init ─── */
 window.addEventListener('DOMContentLoaded', () => {
   // Set TH slider min to TC+10 on init
-  document.getElementById('TH-out').min = S.TC + 10;
-  document.getElementById('TH-in').min  = S.TC + 10;
+  document.getElementById('TH-out').min = Math.max(335, S.TC + 10);
+  document.getElementById('TH-in').min  = Math.max(335, S.TC + 10);
   compute();
   window.addEventListener('resize', compute);
 });

@@ -146,9 +146,9 @@
         <div class="ctl">
           <label>\(T_C\) — cold reservoir temperature (K)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="TC-out" min="250" max="350" step="1" value="298"
+            <input type="number" id="TC-out" min="275" max="325" step="1" value="298"
                    onchange="syncInput('TC',this)" />
-            <input type="range" id="TC-in" min="250" max="350" step="1" value="298"
+            <input type="range" id="TC-in" min="275" max="325" step="1" value="298"
                    oninput="syncInput('TC',this)" style="flex:1" />
           </div>
         </div>
@@ -156,9 +156,9 @@
         <div class="ctl">
           <label>\(T_H\) — hot reservoir temperature (K)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="TH-out" min="251" max="2000" step="1" value="1000"
+            <input type="number" id="TH-out" min="325" max="2000" step="1" value="1000"
                    onchange="syncInput('TH',this)" />
-            <input type="range" id="TH-in" min="251" max="2000" step="1" value="1000"
+            <input type="range" id="TH-in" min="325" max="2000" step="1" value="1000"
                    oninput="syncInput('TH',this)" style="flex:1" />
           </div>
         </div>
@@ -211,7 +211,7 @@ function syncInput(p, el){
   let v = parseFloat(el.value);
   if(isNaN(v)) return;
   if(p === 'TC'){
-    v = Math.max(250, Math.min(350, v));
+    v = Math.max(275, Math.min(325, v));
     S.TC = v;
     // Ensure TH > TC
     if(S.TH <= S.TC){ S.TH = S.TC + 1; setVal('TH', S.TH); }

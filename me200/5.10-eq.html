@@ -145,9 +145,9 @@
         <div class="ctl">
           <label>\(T_H\) — hot reservoir temperature (K)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="TH-out" min="251" max="350" step="1" value="298"
+            <input type="number" id="TH-out" min="275" max="325" step="1" value="298"
                    onchange="syncInput('TH',this)" />
-            <input type="range" id="TH-in" min="251" max="350" step="1" value="298"
+            <input type="range" id="TH-in" min="275" max="325" step="1" value="298"
                    oninput="syncInput('TH',this)" style="flex:1" />
           </div>
         </div>
@@ -155,9 +155,9 @@
         <div class="ctl">
           <label>\(T_C\) — cold reservoir temperature (K)</label>
           <div class="inline" style="margin-top:6px">
-            <input type="number" id="TC-out" min="1" max="268" step="1" value="200"
+            <input type="number" id="TC-out" min="0" max="265" step="1" value="200"
                    onchange="syncInput('TC',this)" />
-            <input type="range" id="TC-in" min="1" max="268" step="1" value="200"
+            <input type="range" id="TC-in" min="0" max="265" step="1" value="200"
                    oninput="syncInput('TC',this)" style="flex:1" />
           </div>
         </div>
@@ -210,7 +210,7 @@ function syncInput(p, el){
   let v = parseFloat(el.value);
   if(isNaN(v)) return;
   if(p === 'TH'){
-    v = Math.max(251, Math.min(350, v));
+    v = Math.max(275, Math.min(325, v));
     S.TH = v;
     // If TC is now above TH-10, clamp it
     if(S.TC > S.TH - 10){ S.TC = S.TH - 10; }
@@ -219,7 +219,7 @@ function syncInput(p, el){
     document.getElementById('TC-in').max  = S.TH - 10;
     setVal('TC', S.TC);
   } else {
-    v = Math.max(1, Math.min(S.TH - 10, v));
+    v = Math.max(0, Math.min(S.TH - 10, v));
     S.TC = v;
   }
   setVal(p, S[p]);
@@ -247,11 +247,11 @@ function drawPlot(){
   const pW = W - mg.left - mg.right;
   const pH = H - mg.top - mg.bottom;
 
-  const xSc = d3.scaleLinear().domain([0, 350]).range([mg.left, mg.left + pW]);
+  const xSc = d3.scaleLinear().domain([0, 300]).range([mg.left, mg.left + pW]);
   const ySc = d3.scaleLinear().domain([0, 40]).range([mg.top + pH, mg.top]);
 
   // Axes
-  const xAxis = d3.axisBottom(xSc).tickValues([0,50,100,150,200,250,300,350]).tickFormat(d3.format('d'));
+  const xAxis = d3.axisBottom(xSc).tickValues([0,50,100,150,200,250,300]).tickFormat(d3.format('d'));
   const yAxis = d3.axisLeft(ySc).tickValues([0,5,10,15,20,25,30,35,40]).tickFormat(d3.format('d'));
 
   svg.append('g').attr('class','axis')
@@ -273,7 +273,7 @@ function drawPlot(){
      .html('T<tspan baseline-shift="sub" font-size="9">C</tspan>  (K)');
 
   // Curve generator — TC on x-axis, TH is the parameter
-  const pts = d3.range(1, 351, 1);
+  const pts = d3.range(0, 301, 1);
   const lineFn = (TH) => d3.line()
     .defined(d => d <= TH - 10 && calcBeta(TH, d) <= 40)
     .x(d => xSc(d))
