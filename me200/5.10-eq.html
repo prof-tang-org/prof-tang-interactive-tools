@@ -180,11 +180,6 @@
   <section class="viz" style="margin-top:14px">
     <h2 style="margin:4px 0 6px;font-size:1.25rem">Plot</h2>
     <div class="viz">
-      <div class="legend-row">
-        <span><span class="legend-dot" style="background:#3b82f6"></span>T<sub>H</sub> = input</span>
-        <span><span class="legend-dot" style="background:#f97316"></span>T<sub>H</sub> = 250 K</span>
-        <span><span class="legend-dot" style="background:#22c55e"></span>T<sub>H</sub> = 350 K</span>
-      </div>
       <svg id="plot" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
@@ -280,9 +275,9 @@ function drawPlot(){
     .y(d => ySc(calcBeta(TH, d)));
 
   const curves = [
-    { TH: S.TH,  color: '#3b82f6', dashed: false },   // input (blue)
-    { TH: 250,   color: '#f97316', dashed: true },    // orange
-    { TH: 350,   color: '#22c55e', dashed: true },    // green
+    { TH: S.TH,  color: '#3b82f6', dashed: false, labelTC: 260,  labelOffset: -38 },  // input (blue)
+    { TH: 250,   color: '#f97316', dashed: true,  labelTC: 200, labelOffset: -14 },  // orange
+    { TH: 350,   color: '#22c55e', dashed: true,  labelTC: 270, labelOffset:  14 },  // green, below curve
   ];
 
   curves.forEach(c => {
@@ -293,6 +288,19 @@ function drawPlot(){
        .style('stroke-dasharray', c.dashed ? '6 3' : null)
        .attr('d', lineFn(c.TH)(pts));
   });
+  curves.forEach(c => {
+  const b = calcBeta(c.TH, c.labelTC);
+  if (c.labelTC <= c.TH - 10 && b <= 40) {
+    svg.append('text')
+       .attr('x', xSc(c.labelTC))
+       .attr('y', ySc(b) + c.labelOffset)
+       .attr('text-anchor', 'middle')
+       .style('font-size', '11px')
+       .style('font-weight', '600')
+       .style('fill', c.color)
+       .text(c.TH === S.TH ? `T_H = input (${c.TH} K)` : `T_H = ${c.TH} K`);
+  }
+});
 
   // Operating point on each curve at the current TC
   const b = calcBeta(S.TH, S.TC);

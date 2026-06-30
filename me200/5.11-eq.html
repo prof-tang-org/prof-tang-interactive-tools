@@ -180,11 +180,6 @@
   <section class="viz" style="margin-top:14px">
     <h2 style="margin:4px 0 6px;font-size:1.25rem">Plot</h2>
     <div class="viz">
-      <div class="legend-row">
-        <span><span class="legend-dot" style="background:#3b82f6"></span>T<sub>C</sub> = input</span>
-        <span><span class="legend-dot" style="background:#f97316"></span>T<sub>C</sub> = 250 K</span>
-        <span><span class="legend-dot" style="background:#22c55e"></span>T<sub>C</sub> = 350 K</span>
-      </div>
       <svg id="plot" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
@@ -289,9 +284,9 @@ function drawPlot(){
     .y(d => ySc(calcGamma(d, TC)));
 
   const curves = [
-    { TC: S.TC,  color: '#3b82f6', dashed: false },  // input (blue)
-    { TC: 250,   color: '#f97316', dashed: true  },  // orange
-    { TC: 350,   color: '#22c55e', dashed: true  },  // green
+    { TC: S.TC,  color: '#3b82f6', dashed: false, labelTH: 340, labelOffset: -20 },  // input (blue)
+    { TC: 250,   color: '#f97316', dashed: true,  labelTH: 370, labelOffset: 12 },  // orange
+    { TC: 350,   color: '#22c55e', dashed: true,  labelTH: 460, labelOffset:  -12 },  // green, below curve
   ];
 
   curves.forEach(c => {
@@ -302,6 +297,20 @@ function drawPlot(){
        .style('stroke-dasharray', c.dashed ? '6 3' : null)
        .attr('d', lineFn(c.TC)(pts));
   });
+
+  curves.forEach(c => {
+    const g = calcGamma(c.labelTH, c.TC);
+    if (c.labelTH > c.TC && g <= 40) {
+      svg.append('text')
+        .attr('x', xSc(c.labelTH))
+        .attr('y', ySc(g) + c.labelOffset)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '11px')
+        .style('font-weight', '600')
+        .style('fill', c.color)
+        .text(c.TC === S.TC ? `T_C = input (${c.TC} K)` : `T_C = ${c.TC} K`);
+    }
+ });
 
   // Operating point on the input curve
   const g = calcGamma(S.TH, S.TC);
