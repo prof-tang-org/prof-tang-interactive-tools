@@ -50,6 +50,12 @@
     input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
     label{font-size:13px;color:#4b5563}
     select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
+    select:disabled{
+      background:#f3f4f6;
+      color:#9ca3af;
+      border-color:var(--line);
+      cursor:not-allowed;
+    }
 
     .inputs-two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
     @media(max-width:760px){.inputs-two{grid-template-columns:1fr}}
@@ -92,32 +98,32 @@
   <section class="top-grid">
     <div class="ctl">
       <div class="eqwrap">
-        <div class="title-xl"><b>Vapor Quality and Two-Phase Mixture Properties</b></div>
+        <div class="title-xl"><b>Quality (or Vapor Quality) and Two-Phase Mixture Properties</b></div>
         <div class="eqbig">
           \(\displaystyle x = \frac{m_{\text{g}}}{m_{\text{f}} + m_{\text{g}}}\)
         </div>
         <div class="eqbig" style="margin-top:10px">
-          \(\displaystyle v = v_f + x(v_g - v_f)\)
+          \(\displaystyle v = (1-x)v_f + xv_g = v_f + x(v_g - v_f)\)
         </div>
         <div class="eqbig">
-          \(\displaystyle u = u_f + x(u_g - u_f)\)
+          \(\displaystyle u = (1-x)u_f + xu_g = u_f + x(u_g - u_f)\)
         </div>
         <div class="eqbig">
-          \(\displaystyle h = h_f + x(h_g - h_f)\)
+          \(\displaystyle h = (1-x)h_f + xh_g = h_f + x(h_g - h_f)\)
         </div>
         <div class="eqbig">
-          \(\displaystyle s = s_f + x(s_g - s_f)\)
+          \(\displaystyle s = (1-x)s_f + xs_g = s_f + x(s_g - s_f)\)
         </div>
         <div style="font-size:13px;font-weight:600;color:#111;margin-top:10px;margin-bottom:4px">Symbols</div>
         <ul style="margin:8px 0 0 0;padding-left:40px">
-          <li>\(x\) — vapor quality</li>
+          <li>\(x\) — quality (or vapor quality)</li>
           <li>\(m\) — mass</li>
           <li>\(v\) — specific volume</li>
           <li>\(u\) — specific internal energy</li>
           <li>\(h\) — specific enthalpy</li>
           <li>\(s\) — specific entropy</li>
-          <li>\(_{f}\) — saturated liquid state</li>
-          <li>\(_{g}\) — saturated vapor state</li>
+          <li>subscript \(f\) — saturated liquid state</li>
+          <li>subscript \(g\) — saturated vapor state</li>
         </ul>
       </div>
     </div>
@@ -141,6 +147,13 @@
       <div style="display:flex;flex-direction:column;gap:10px">
 
         <div class="ctl">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Fluid</label>
+          <select disabled style="width:100%;max-width:360px">
+            <option selected>Water</option>
+          </select>
+        </div>
+        
+        <div class="ctl">
           <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Temperature</label>
           <select id="temp-select" onchange="onTempChange(this)" style="width:100%;max-width:360px">
             <option value="50">50 °C</option>
@@ -151,7 +164,7 @@
         </div>
 
         <div class="ctl">
-          <label>Vapor quality \(x\) &nbsp;<span style="font-size:11px;color:#6b7280">[0, 1]</span></label>
+          <label>Quality \(x\) &nbsp;<span style="font-size:11px;color:#6b7280">[0, 1]</span></label>
           <div class="inline" style="margin-top:6px">
             <input type="number" id="x-out" min="0" max="1" step="0.01" value="0.6"
                    onchange="syncX(this,'num')" />
@@ -171,23 +184,19 @@
         </div>
         <div class="kpi" style="grid-template-columns:1fr 1fr 1fr;margin-top:8px">
           <div>
-            <div class="lab">Specific volume \(v\)</div>
-            <div class="val"><span id="kpi-v">—</span> m³/kg</div>
-          </div>
-          <div>
             <div class="lab">Sat. liquid \(v_f\)</div>
             <div class="val"><span id="kpi-vf">—</span> m³/kg</div>
           </div>
           <div>
             <div class="lab">Sat. vapor \(v_g\)</div>
             <div class="val"><span id="kpi-vg">—</span> m³/kg</div>
-            </div>
+          </div>
+          <div>
+            <div class="lab">Specific volume \(v\)</div>
+            <div class="val"><span id="kpi-v">—</span> m³/kg</div>
+          </div>
         </div>
         <div class="kpi" style="grid-template-columns:1fr 1fr 1fr;margin-top:8px">
-          <div>
-            <div class="lab">Specific int. energy \(u\)</div>
-            <div class="val"><span id="kpi-u">—</span> kJ/kg</div>
-          </div>
           <div>
             <div class="lab">Sat. liquid \(u_f\)</div>
             <div class="val"><span id="kpi-uf">—</span> kJ/kg</div>
@@ -196,12 +205,12 @@
             <div class="lab">Sat. vapor \(u_g\)</div>
             <div class="val"><span id="kpi-ug">—</span> kJ/kg</div>
           </div>
+          <div>
+            <div class="lab">Specific int. energy \(u\)</div>
+            <div class="val"><span id="kpi-u">—</span> kJ/kg</div>
+          </div>
         </div>
         <div class="kpi" style="grid-template-columns:1fr 1fr 1fr;margin-top:8px">
-          <div>
-            <div class="lab">Specific enthalpy \(h\)</div>
-            <div class="val"><span id="kpi-h">—</span> kJ/kg</div>
-          </div>
           <div>
             <div class="lab">Sat. liquid \(h_f\)</div>
             <div class="val"><span id="kpi-hf">—</span> kJ/kg</div>
@@ -210,12 +219,12 @@
             <div class="lab">Sat. vapor \(h_g\)</div>
             <div class="val"><span id="kpi-hg">—</span> kJ/kg</div>
           </div>
+          <div>
+            <div class="lab">Specific enthalpy \(h\)</div>
+            <div class="val"><span id="kpi-h">—</span> kJ/kg</div>
+          </div>
         </div>
         <div class="kpi" style="grid-template-columns:1fr 1fr 1fr;margin-top:8px">
-          <div>
-            <div class="lab">Specific entropy \(s\)</div>
-            <div class="val"><span id="kpi-s">—</span> kJ/(kg·K)</div>
-          </div>
           <div>
             <div class="lab">Sat. liquid \(s_f\)</div>
             <div class="val"><span id="kpi-sf">—</span> kJ/(kg·K)</div>
@@ -223,6 +232,10 @@
           <div>
             <div class="lab">Sat. vapor \(s_g\)</div>
             <div class="val"><span id="kpi-sg">—</span> kJ/(kg·K)</div>
+          </div>
+          <div>
+            <div class="lab">Specific entropy \(s\)</div>
+            <div class="val"><span id="kpi-s">—</span> kJ/(kg·K)</div>
           </div>
         </div>
       </div>  
@@ -236,7 +249,7 @@
       <svg id="plot" viewBox="0 0 960 640" aria-label="Two-phase property diagrams"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the state point for the current temperature and vapor quality.
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the state point for the current temperature and quality.
       Use the inputs above to move it, or drag it directly on any of the plots.
     </div>
   </section>
@@ -490,7 +503,7 @@ function drawPlots() {
     // Axes
     const xAxis = panel.logX
       ? d3.axisBottom(xSc).tickValues([0.001,0.01,0.1,1,10,100]).tickFormat(d3.format('~g'))
-      : d3.axisBottom(xSc).ticks(6);
+      : d3.axisBottom(xSc).ticks(6).tickFormat(d3.format('d'));
     const yAxis = d3.axisLeft(ySc).ticks(6);
 
     svg.append('g').attr('class','axis')
