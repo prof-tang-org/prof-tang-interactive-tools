@@ -528,8 +528,8 @@
       const pct = (1.0 - nMin) / (nMax - nMin);
       $('n-marker').style.left = `calc(${pct * 100}% - ${pct * 16}px + 8px)`;
 
-      handleNInput($('n-in')); // this also calls compute()
       window.addEventListener('resize', compute);
+      handleNInput($('n-in')); // this also calls compute()
     }
     window.addEventListener('DOMContentLoaded', init);
   </script>

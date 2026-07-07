@@ -375,6 +375,10 @@ function renderControls(inputs) {
         } 
         
         container.appendChild(wrapper);
+
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise([wrapper]).catch(err => console.error(err));
+        }
     });
 }
 
@@ -403,6 +407,10 @@ function renderGroup(values, containerId) {
         div.appendChild(lab);
         div.appendChild(val);
         container.appendChild(div);
+
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise([div]).catch(err => console.error(err));
+        }
     });
 }
 
@@ -590,7 +598,7 @@ function injectPlots(state, pageData) {
     if (svg.empty()) return;
     svg.selectAll('*').remove(); // Clear previous plot
     
-    const W = 760, H = 320, m = { l: 70, r: 40, t: 14, b: 54 };
+    const W = 760, H = 320, m = { l: 100, r: 40, t: 14, b: 54 };
     const gap = 80;
     const numPlots = pageData.plots.settings.length;
     const totalGap = gap * (numPlots - 1);
@@ -656,17 +664,29 @@ function injectPlots(state, pageData) {
            .call(yAxis);
         
         // Labels
-        svg.append('text').attr('class', 'axis-title')
-           .attr('x', plot_x_offset + iw/2).attr('y', H - 10)
-           .attr('text-anchor', 'middle').text(plotConfig.xLabel);
-           
-        const yAxisBBox = yAxisG.node().getBBox();
+        // Use foreignObject for x-axis to allow HTML (MathJax) rendering
+        const xLabelFO = svg.append('foreignObject')
+            .attr('x', plot_x_offset).attr('y', H - 40)
+            .attr('width', iw).attr('height', 40);
+        xLabelFO.append('xhtml:div')
+            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', '18px')
+            .html(parseText(plotConfig.xLabel));
 
-        svg.append('text').attr('class', 'axis-title')
-           .attr('x', -(m.t + ih/2)).attr('y', plot_x_offset - yAxisBBox.width - 5)
-           .attr('text-anchor', 'middle').attr('transform', 'rotate(-90)')
-           .text(plotConfig.yLabel);
+        const yAxisBBox = yAxisG.node().getBBox(); // BBox of the axis ticks/numbers
+
+        // Use foreignObject for y-axis to allow HTML (MathJax) rendering
+        const yLabelFO = svg.append('foreignObject')
+            .attr('width', ih) // The width of the object is the height of the plot area
+            .attr('height', 50) // The height of the object is the space for the label
+            // 1. Translate to final position, then 2. Rotate around the top-left corner of the object
+            .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 45}, ${m.t + ih}) rotate(-90)`);
         
+        // The inner div uses flexbox to perfectly center the content.
+        yLabelFO.append('xhtml:div')
+            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
+            .style('width', '100%').style('height', '100%').style('font-size', '18px')
+            .html(parseText(plotConfig.yLabel));
+
         // Generate Curve
         const steps = 100;
         let xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal)/steps, (xMaxVal - xMinVal)/steps);
@@ -848,6 +868,11 @@ function injectPlots(state, pageData) {
 
     const plotNote = document.getElementById("plot-note");
     plotNote.innerHTML = parseText(pageData.plots.text);
+
+    // Re-typeset the plot with MathJax to render LaTeX in axis titles
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([svg.node()]).catch(err => console.error("MathJax typesetting error on plot:", err));
+    }
 }
 
 // ---------------------------------------------------------

@@ -90,30 +90,30 @@ const pageData = {
         "fixedInputs": [
             {
                 "id": "pressure-1",
-                "text": "Inlet Pressure p₁ (kPa)",
+                "text": "Inlet Pressure $P_1$ [kPa]",
                 "value": 500
             },
             {
                 "id": "temp-1",
-                "text": "Inlet Temperature T₁ (K)",
+                "text": "Inlet Temperature $T_1$ [K]",
                 "value": 300
             },
             {
                 "id": "molar-mass",
-                "text": "Molar Mass M (kg/kmol)",
+                "text": "Molar Mass $M$ [kg/kmol]",
                 "value": 28.97
             },
             {
                 "id": "universal-R",
-                "text": "Universal Gas Constant R (J/(kmol·K))",
+                "text": "Universal Gas Constant $\\bar{R}$ [J/(kmol·K)]",
                 "value": 8314
             },
         ],
-        "inputs": [
+        "inputs": [ 
             {
                 "type": "slider",
                 "id": "polytropic-n",
-                "text": "Polytropic Index (n)",
+                "text": "Polytropic Index $n$",
                 "min": 0.5,
                 "max": 2.0,
                 "initialValue": 1.4,
@@ -122,7 +122,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "pressure-2",
-                "text": "Exit Pressure p₂ (kPa)",
+                "text": "Exit Pressure $p_2$ [kPa]",
                 "min": 100,
                 "max": 1000,
                 "initialValue": 100,
@@ -131,31 +131,31 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "Gas Constant R (J/(kg·K))",
+                "text": "Gas Constant $R$ [J/(kg·K)]",
                 "id": "gas-constant-R",
                 "type": "calculation",
                 "value": "universal-R / molar-mass"
             },
             {
-                "text": "Inlet Spec. Volume v₁ (m³/kg)",
+                "text": "Inlet Spec. Volume $v_1$ [m³/kg]",
                 "id": "volume-1",
                 "type": "calculation",
                 "value": "(gas-constant-R * temp-1) / (pressure-1 * 1000)"
             },
             {
-                "text": "Exit Temperature T₂ (K)",
+                "text": "Exit Temperature $T_2$ [K]",
                 "id": "temp-2",
                 "type": "calculation",
                 "value": "temp-1 * pow(pressure-2 / pressure-1, (polytropic-n - 1) / polytropic-n)"
             },
             {
-                "text": "Exit Spec. Volume v₂ (m³/kg)",
+                "text": "Exit Spec. Volume $v_2$ [m³/kg]",
                 "id": "volume-2",
                 "type": "calculation",
                 "value": "(gas-constant-R * temp-2) / (pressure-2 * 1000)"
             },
             {
-                "text": "Specific Work w_cv (kJ/kg)",
+                "text": "Work per Unit Mass $\\frac{\\dot{W}_{cv}}{\\dot{m}}$ [kJ/kg]",
                 "id": "specific-work",
                 "type": "calculation",
                 "value": "abs(polytropic-n - 1.0) < 1e-4 ? (-gas-constant-R * temp-1 * log(pressure-2 / pressure-1) / 1000) : (-(polytropic-n * gas-constant-R * temp-1) / (polytropic-n - 1) * (pow(pressure-2 / pressure-1, (polytropic-n - 1) / polytropic-n) - 1) / 1000)"
@@ -167,8 +167,8 @@ const pageData = {
             {
                 "y": "temp-2",
                 "x": "pressure-2",
-                "yLabel": "Exit Temperature T₂ (K)",
-                "xLabel": "Exit Pressure p₂ (kPa)",
+                "yLabel": "$T_2 \\text{ [K]}$",
+                "xLabel": "$p_2 \\text{ [kPa]}$",
                 "xMin": 0,
                 "xMax": 1000,
                 "yMin": 0,
@@ -178,8 +178,8 @@ const pageData = {
             {
                 "y": "volume-2",
                 "x": "pressure-2",
-                "yLabel": "Exit Spec. Volume v₂ (m³/kg)",
-                "xLabel": "Exit Pressure p₂ (kPa)",
+                "yLabel": "$v_2 \\text{ [m^3/kg]}$",
+                "xLabel": "$p_2 \\text{ [kPa]}$",
                 "xMin": 0,
                 "xMax": 1000,
                 "yMin": 0,
@@ -189,8 +189,8 @@ const pageData = {
             {
                 "y": "specific-work",
                 "x": "pressure-2",
-                "yLabel": "Specific Work w_cv (kJ/kg)",
-                "xLabel": "Exit Pressure p₂ (kPa)",
+                "yLabel": "$\\left(\\frac{\\dot{W}_{cv}}{\\dot{m}}\\right)_{\\text{int. rev.}} \\text{ [kJ/kg]}$",
+                "xLabel": "$p_2 \\text{ [kPa]}$",
                 "xMin": 0,
                 "xMax": 1000,
                 "yMin": -100,
