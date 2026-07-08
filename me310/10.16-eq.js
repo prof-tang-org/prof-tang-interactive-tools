@@ -128,8 +128,8 @@ const pageData = {
             {
                 "x": "hydraulic-radius",
                 "y": "velocity",
-                "xLabel": "Hydraulic Radius R_h",
-                "yLabel": "Velocity V",
+                "xLabel": "$R_h$",
+                "yLabel": "$v \\text{ [m/s]}$",
                 "xMin": 0,
                 "xMax": "conversion-factor == 1.0 ? 5.0 : 15.0",
                 "xTickInterval": "conversion-factor == 1.0 ? 1.0 : 3.0",
@@ -140,8 +140,8 @@ const pageData = {
             {
                 "x": "bottom-slope",
                 "y": "velocity",
-                "xLabel": "Bottom Slope s_0",
-                "yLabel": "Velocity V",
+                "xLabel": "$s_0$",
+                "yLabel": "$v \\text{ [m/s]}$",
                 "xMin": 0,
                 "xMax": 0.01,
                 "xTickInterval": 0.002,
@@ -153,8 +153,8 @@ const pageData = {
             {
                 "x": "manning",
                 "y": "velocity",
-                "xLabel": "Manning Roughness n",
-                "yLabel": "Velocity V",
+                "xLabel": "$n$",
+                "yLabel": "$v \\text{ [m/s]}$",
                 "xMin": 0.01,
                 "xMax": 0.08,
                 "xTickInterval": 0.01,

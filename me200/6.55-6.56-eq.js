@@ -178,7 +178,7 @@ const pageData = {
             {
                 "y": "volume-2",
                 "x": "pressure-2",
-                "yLabel": "$v_2 \\text{ [m^3/kg]}$",
+                "yLabel": "$v_2 \\text{ [}\\text{m}^\\text{3}\\text{/kg]}$",
                 "xLabel": "$p_2 \\text{ [kPa]}$",
                 "xMin": 0,
                 "xMax": 1000,

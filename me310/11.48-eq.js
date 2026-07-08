@@ -96,14 +96,14 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "k",
+                "text": "$k$",
                 "id": "specific-heat-ratio",
                 "type": "map",
                 "value": [1.4, 1.4, 1.4, 1.4, 1.67, 1.67, 1.67],
                 "key": "gas"
             },
             {
-                "text": "M (kg/kmol)",
+                "text": "$M (kg/kmol)$",
                 "id": "molar-mass",
                 "type": "map",
                 "value": [28.97, 32, 28.01, 2.016, 4.003, 20.18, 39.95],
@@ -134,8 +134,8 @@ const pageData = {
             {
                 "y": "mach-number",
                 "x": "velocity",
-                "yLabel": "Ma",
-                "xLabel": "Velocity (m/s)",
+                "yLabel": "$Ma$",
+                "xLabel": "$v \\text{ [m/s]}$",
                 "xMin": 0,
                 "xMax": 1000,
                 "yMin": 0,
@@ -145,8 +145,8 @@ const pageData = {
             {
                 "y": "mach-number",
                 "x": "temperature",
-                "yLabel": "Ma",
-                "xLabel": "Temperature (K)",
+                "yLabel": "$Ma$",
+                "xLabel": "$T \\text{ [K]}$",
                 "xMin": 200,
                 "xMax": 1000,
                 "yMin": 0,

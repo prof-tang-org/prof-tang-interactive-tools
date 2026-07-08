@@ -605,6 +605,10 @@ function injectPlots(state, pageData) {
     const iw = (W - m.l - m.r - totalGap) / numPlots;
     const ih = H - m.t - m.b;
     
+    // Anti-scaling for text
+    const renderedWidth = svg.node() ? svg.node().getBoundingClientRect().width : W;
+    const scale = (renderedWidth > 0) ? W / renderedWidth : 1;
+    
     pageData.plots.settings.forEach((plotConfig, i) => {
         const plot_x_offset = m.l + i * (iw + gap);
         
@@ -645,9 +649,10 @@ function injectPlots(state, pageData) {
             xAxis.tickValues(ticks);
             xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
-        svg.append('g').attr('class', 'axis')
-           .attr('transform', `translate(0,${m.t + ih})`)
-           .call(xAxis);
+        const xAxisG = svg.append('g').attr('class', 'axis')
+           .attr('transform', `translate(0,${m.t + ih})`);
+        xAxisG.call(xAxis);
+        xAxisG.selectAll('text').style('font-size', `${1 * scale}rem`);
            
         const yAxis = d3.axisLeft(y).ticks(5);
         if (plotConfig.yTickInterval !== undefined) {
@@ -660,16 +665,17 @@ function injectPlots(state, pageData) {
             yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
         const yAxisG = svg.append('g').attr('class', 'axis')
-           .attr('transform', `translate(${plot_x_offset},0)`)
-           .call(yAxis);
+           .attr('transform', `translate(${plot_x_offset},0)`);
+        yAxisG.call(yAxis);
+        yAxisG.selectAll('text').style('font-size', `${1 * scale}rem`);
         
         // Labels
         // Use foreignObject for x-axis to allow HTML (MathJax) rendering
         const xLabelFO = svg.append('foreignObject')
-            .attr('x', plot_x_offset).attr('y', H - 40)
+            .attr('x', plot_x_offset).attr('y', H - 35 / scale)
             .attr('width', iw).attr('height', 40);
         xLabelFO.append('xhtml:div')
-            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', '18px')
+            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', `${1.125 * scale}rem`)
             .html(parseText(plotConfig.xLabel));
 
         const yAxisBBox = yAxisG.node().getBBox(); // BBox of the axis ticks/numbers
@@ -679,12 +685,12 @@ function injectPlots(state, pageData) {
             .attr('width', ih) // The width of the object is the height of the plot area
             .attr('height', 50) // The height of the object is the space for the label
             // 1. Translate to final position, then 2. Rotate around the top-left corner of the object
-            .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 45}, ${m.t + ih}) rotate(-90)`);
+            .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${m.t + ih}) rotate(-90)`);
         
         // The inner div uses flexbox to perfectly center the content.
         yLabelFO.append('xhtml:div')
             .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
-            .style('width', '100%').style('height', '100%').style('font-size', '18px')
+            .style('width', '100%').style('height', '100%').style('font-size', `${1.125 * scale}rem`)
             .html(parseText(plotConfig.yLabel));
 
         // Generate Curve
@@ -740,14 +746,14 @@ function injectPlots(state, pageData) {
            .append('rect').attr('x', plot_x_offset).attr('y', m.t)
            .attr('width', iw).attr('height', ih);
 
-        // Draw left inaccessible curve (dotted)
-        if (leftData.length >= 2) {
-            svg.append('path').attr('class', 'curve')
-               .attr('clip-path', `url(#${clipId})`)
-               .style('stroke-dasharray', '4 4')
-               .style('opacity', '0.6')
-               .attr('d', d3.line().defined(d => !isNaN(d[1]))(leftData));
-        }
+        // // Draw left inaccessible curve (dotted)
+        // if (leftData.length >= 2) {
+        //     svg.append('path').attr('class', 'curve')
+        //        .attr('clip-path', `url(#${clipId})`)
+        //        .style('stroke-dasharray', '4 4')
+        //        .style('opacity', '0.6')
+        //        .attr('d', d3.line().defined(d => !isNaN(d[1]))(leftData));
+        // }
 
         // Draw main accessible curve (solid)
         if (accessibleData.length >= 2) {
@@ -756,14 +762,14 @@ function injectPlots(state, pageData) {
                .attr('d', d3.line().defined(d => !isNaN(d[1]))(accessibleData));
         }
 
-        // Draw right inaccessible curve (dotted)
-        if (rightData.length >= 2) {
-            svg.append('path').attr('class', 'curve')
-               .attr('clip-path', `url(#${clipId})`)
-               .style('stroke-dasharray', '4 4')
-               .style('opacity', '0.6')
-               .attr('d', d3.line().defined(d => !isNaN(d[1]))(rightData));
-        }
+        // // Draw right inaccessible curve (dotted)
+        // if (rightData.length >= 2) {
+        //     svg.append('path').attr('class', 'curve')
+        //        .attr('clip-path', `url(#${clipId})`)
+        //        .style('stroke-dasharray', '4 4')
+        //        .style('opacity', '0.6')
+        //        .attr('d', d3.line().defined(d => !isNaN(d[1]))(rightData));
+        // }
         
         // Draw Current Point
         const currentXVal = state[plotConfig.x];
