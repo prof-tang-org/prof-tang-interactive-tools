@@ -163,6 +163,16 @@ const pageData = {
         ]
     },
     "plots": {
+        "reference-settings": [
+            {
+                "polytropic-n": 0.5,
+                "text": "$n = 0.5$"
+            },
+            {
+                "polytropic-n": 2,
+                "text": "$n = 2$"
+            }
+        ],
         "settings": [
             {
                 "y": "temp-2",

@@ -591,6 +591,18 @@ function setupCalculationEngine(pageData) {
 // SECTION D: Plot Integration
 // ---------------------------------------------------------
 
+function _calculateState(baseState, xVal, plotConfig, pageData) {
+    const tempState = { ...baseState };
+    tempState[plotConfig.x] = xVal;
+
+    pageData.inputOutput.outputs.forEach(output => {
+        if (output.type === 'calculation') {
+            tempState[output.id] = evaluateFormula(output.value, tempState);
+        }
+    });
+    return tempState;
+}
+
 function injectPlots(state, pageData) {
     if (!pageData.plots || pageData.plots.settings.length === 0 || typeof d3 === 'undefined') return;
     
@@ -719,41 +731,19 @@ function injectPlots(state, pageData) {
         // Remove duplicates
         xVals = xVals.filter((v, idx) => xVals.indexOf(v) === idx);
         
-        const getPoint = (xVal) => {
-            const tempState = { ...state };
-            tempState[plotConfig.x] = xVal;
-            
-            pageData.inputOutput.outputs.forEach(output => {
-                if (output.type === 'calculation') {
-                    tempState[output.id] = evaluateFormula(output.value, tempState);
-                }
-            });
-            
-            return [ x(xVal), y(tempState[plotConfig.y]) ];
+        const getPoint = (xVal, baseState) => {
+            const fullState = _calculateState(baseState, xVal, plotConfig, pageData);
+            return [x(xVal), y(fullState[plotConfig.y])];
         };
         
-        const leftVals = xVals.filter(v => v <= accMin);
         const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
-        const rightVals = xVals.filter(v => v >= accMax);
-        
-        const leftData = leftVals.map(getPoint);
-        const accessibleData = accessibleVals.map(getPoint);
-        const rightData = rightVals.map(getPoint);
+        const accessibleData = accessibleVals.map(v => getPoint(v, state));
         
         // Add clip path for the plot
         const clipId = `clip-${i}`;
         svg.append('clipPath').attr('id', clipId)
            .append('rect').attr('x', plot_x_offset).attr('y', m.t)
            .attr('width', iw).attr('height', ih);
-
-        // // Draw left inaccessible curve (dotted)
-        // if (leftData.length >= 2) {
-        //     svg.append('path').attr('class', 'curve')
-        //        .attr('clip-path', `url(#${clipId})`)
-        //        .style('stroke-dasharray', '4 4')
-        //        .style('opacity', '0.6')
-        //        .attr('d', d3.line().defined(d => !isNaN(d[1]))(leftData));
-        // }
 
         // Draw main accessible curve (solid)
         if (accessibleData.length >= 2) {
@@ -762,14 +752,45 @@ function injectPlots(state, pageData) {
                .attr('d', d3.line().defined(d => !isNaN(d[1]))(accessibleData));
         }
 
-        // // Draw right inaccessible curve (dotted)
-        // if (rightData.length >= 2) {
-        //     svg.append('path').attr('class', 'curve')
-        //        .attr('clip-path', `url(#${clipId})`)
-        //        .style('stroke-dasharray', '4 4')
-        //        .style('opacity', '0.6')
-        //        .attr('d', d3.line().defined(d => !isNaN(d[1]))(rightData));
-        // }
+        // Draw reference lines
+        if (pageData.plots['reference-settings']) {
+            pageData.plots['reference-settings'].forEach(refSetting => {
+                const refState = { ...state, ...refSetting };
+                const refData = accessibleVals.map(v => getPoint(v, refState));
+
+                svg.append('path').attr('class', 'curve-reference')
+                   .attr('clip-path', `url(#${clipId})`)
+                   .style('stroke-dasharray', '4 4')
+                   .style('opacity', '0.6')
+                   .style('stroke', 'gray')
+                   .style('fill', 'none')
+                   .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
+
+                if (refSetting.text) {
+                    let lastPoint = null;
+                    for (let i = refData.length - 1; i >= 0; i--) {
+                        if (refData[i] && !isNaN(refData[i][1])) {
+                            lastPoint = refData[i];
+                            break;
+                        }
+                    }
+
+                    if (lastPoint) {
+                        const fo = svg.append('foreignObject')
+                            .attr('x', lastPoint[0] + 5)
+                            .attr('y', lastPoint[1] - 14 * scale) // Vertically center based on font size
+                            .attr('width', 200 * scale) // Generous width
+                            .attr('height', 30 * scale)
+                            .style('overflow', 'visible');
+
+                        fo.append('xhtml:div')
+                            .style('font-size', `${.875 * scale}rem`)
+                            .style('color', 'gray')
+                            .html(parseText(refSetting.text));
+                    }
+                }
+            });
+        }
         
         // Draw Current Point
         const currentXVal = state[plotConfig.x];
