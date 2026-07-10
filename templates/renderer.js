@@ -735,9 +735,19 @@ function injectPlots(state, pageData) {
             const fullState = _calculateState(baseState, xVal, plotConfig, pageData);
             return [x(xVal), y(fullState[plotConfig.y])];
         };
-        
+
         const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
         const accessibleData = accessibleVals.map(v => getPoint(v, state));
+
+        const dottedMin = plotConfig.dottedMin;
+        const dottedMax = plotConfig.dottedMax;
+
+        if (dottedMin !== undefined && dottedMax !== undefined) {
+            const dottedVals = xVals.filter(v => v >= dottedMin && v <= dottedMax);
+            const dottedData = dottedVals.map(v => getPoint(v, state));
+
+            
+        }
         
         // Add clip path for the plot
         const clipId = `clip-${i}`;
