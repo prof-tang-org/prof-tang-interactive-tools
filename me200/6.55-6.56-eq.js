@@ -22,7 +22,7 @@ const pageData = {
             "header": "Assumptions",
             "content": [
                 {
-                    "text": "The open system operates under steady flow conditions with one inlet and one exit."
+                    "text": "The open system operates under steady flow conditions with one inlet and one outlet."
                 },
                 {
                     "text": "The process is internally reversible."
@@ -38,10 +38,6 @@ const pageData = {
         {
             "type": "note",
             "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "T_2 = T_1 \\left( \\frac{p_2}{p_1} \\right)^{\\frac{n-1}{n}}"
         },
         {
             "type": "equation",
@@ -87,6 +83,9 @@ const pageData = {
         "alt": "Schematic of an open system control volume (turbine/compressor) undergoing a steady, internally reversible polytropic gas flow process."
     },
     "inputOutput": {
+        "note": {
+            "text": "The air as an ideal gas passes through a turbine (or compressor) undergoes a steady, internally reversible polytropic process. The inlet pressure and temperature are fixed, while the exit pressure and polytropic index can be varied. The exit temperature, exit specific volume, and specific work done are calculated based on the inputs."
+        },
         "fixedInputs": [
             {
                 "id": "pressure-1",
@@ -208,6 +207,6 @@ const pageData = {
                 "yTickInterval": 100
             }
         ],
-        "text": "Drag the red dots to analyze the influence of pressure ratios on the exit state and the specific flow work done under different polytropic modes."
+        "text": "Drag the red dots to analyze the influence of exit pressure on the specific flow work done under different polytropic modes."
     }
 };

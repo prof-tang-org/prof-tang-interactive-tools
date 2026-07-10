@@ -18,8 +18,16 @@ const pageData = {
             "text": "Manning Equation"
         },
         {
+            "type": "note",
+            "text": "**Equation**"
+        },
+        {
+            "type": "equation",
+            "text": "V = \\frac{k}{n} R_h^{\\frac{2}{3}} s_0^{\\frac{1}{2}}"
+        },
+        {
             "type": "list",
-            "header": "Variable Definitions",
+            "header": "Variables",
             "content": [
                 {
                     "text": "$V$ — velocity (m/s or ft/s)"
@@ -37,14 +45,6 @@ const pageData = {
                     "text": "$k$ — unit conversion factor ($1$ for metric, $1.49$ for imperial)"
                 }
             ]
-        },
-        {
-            "type": "note",
-            "text": "**Equation**"
-        },
-        {
-            "type": "equation",
-            "text": "V = \\frac{k}{n} R_h^{\\frac{2}{3}} s_0^{\\frac{1}{2}}"
         }
     ],
     "schematic": {
