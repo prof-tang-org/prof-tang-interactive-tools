@@ -940,6 +940,18 @@ function injectPlots(state, pageData) {
     }
 }
 
+function renderInputOutput(inputOutput) {
+    renderGroup(inputOutput.fixedInputs, 'fixed-inputs');
+    renderControls(inputOutput.inputs);
+    renderGroup(inputOutput.outputs, 'outputs');
+    if (inputOutput.outputColumns !== undefined) {
+        const outputContainer = document.getElementById('outputs');
+        if (outputContainer) {
+            outputContainer.style.gridTemplateColumns = `repeat(${inputOutput.outputColumns}, 1fr)`;
+        }
+    }
+}
+
 // ---------------------------------------------------------
 // Main Initialization Hook
 // ---------------------------------------------------------
@@ -995,9 +1007,7 @@ window.addEventListener('load', async () => {
         if (pageData.schematic) {
             renderSchematic(pageData.schematic);
         }
-        renderGroup(pageData.inputOutput.fixedInputs, 'fixed-inputs');
-        renderControls(pageData.inputOutput.inputs);
-        renderGroup(pageData.inputOutput.outputs, 'outputs');
+        renderInputOutput(pageData.inputOutput);
         
         setupCalculationEngine(pageData);
     } else {

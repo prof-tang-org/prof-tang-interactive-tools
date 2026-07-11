@@ -56,7 +56,7 @@ const pageData = {
             {
                 "type": "dropdown",
                 "id": "conversion-factor",
-                "text": "Unit System (k)",
+                "text": "Unit System ($k$)",
                 "choices": [
                     {
                         "text": "Metric (k = 1.0)",
@@ -99,7 +99,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "hydraulic-radius",
-                "text": "Hydraulic Radius (R_h)",
+                "text": "Hydraulic Radius ($R_h$)",
                 "min": 0.1,
                 "max": "conversion-factor == 1.0 ? 5.0 : 15.0",
                 "initialValue": 1,
@@ -108,7 +108,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "bottom-slope",
-                "text": "Bottom Slope (s_0)",
+                "text": "Bottom Slope ($s_0$)",
                 "min": 0.0001,
                 "max": 0.01,
                 "initialValue": 0.005,
@@ -117,7 +117,7 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "Velocity (V)",
+                "text": "Velocity ($V$)",
                 "id": "velocity",
                 "type": "calculation",
                 "value": "conversion-factor / manning * pow(hydraulic-radius, 2/3) * sqrt(bottom-slope)"

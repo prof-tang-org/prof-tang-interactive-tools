@@ -103,31 +103,32 @@ const pageData = {
                 "key": "gas"
             },
             {
-                "text": "$M (kg/kmol)$",
+                "text": "$M \\text{ [kg/kmol]}$",
                 "id": "molar-mass",
                 "type": "map",
                 "value": [28.97, 32, 28.01, 2.016, 4.003, 20.18, 39.95],
                 "key": "gas"
             },
             {
-                "text": "R (kJ/(kg⋅K))",
+                "text": "$R \\text{ [kJ/(kg⋅K)]}$",
                 "id": "gas-constant",
                 "type": "calculation",
                 "value": "8314 / molar-mass"
             },
             {
-                "text": "c (m/s)",
+                "text": "$c \\text{ [m/s]}$",
                 "id": "sound-speed",
                 "type": "calculation",
                 "value": "sqrt(specific-heat-ratio * gas-constant * temperature)"
             },
             {
-                "text": "Ma",
+                "text": "$Ma$",
                 "id": "mach-number",
                 "type": "calculation",
                 "value": "velocity / sound-speed"
             }
-        ]
+        ],
+        "outputColumns": 3
     },
     "plots": {
         "settings": [

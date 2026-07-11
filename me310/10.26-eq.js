@@ -92,7 +92,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "froude-1",
-                "text": "Upstream Froude Number (Fr₁)",
+                "text": "Upstream Froude Number ($Fr_1$)",
                 "min": 0.35,
                 "max": 4,
                 "initialValue": 2,
@@ -101,19 +101,19 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "y₂ / y₁",
+                "text": "$y_2 / y_1$",
                 "id": "depth-ratio",
                 "type": "calculation",
                 "value": "0.5 * (-1 + sqrt(1 + 8 * (froude-1 * froude-1)))"
             },
             {
-                "text": "h_L / y₁",
+                "text": "$h_L / y_1$",
                 "id": "head-loss-ratio",
                 "type": "calculation",
                 "value": "1 - depth-ratio + 0.5 * (froude-1 * froude-1) * (1 - (1 / (depth-ratio * depth-ratio)))"
             },
             {
-                "text": "Fr₂",
+                "text": "$Fr_2$",
                 "id": "froude-2",
                 "type": "calculation",
                 "value": "froude-1 * pow(1 / depth-ratio, 1.5)"
@@ -125,8 +125,8 @@ const pageData = {
             {
                 "y": "depth-ratio",
                 "x": "froude-1",
-                "yLabel": "y₂ / y₁",
-                "xLabel": "Fr₁",
+                "yLabel": "$y_2 / y_1$",
+                "xLabel": "$Fr_1$",
                 "xMin": 0.01,
                 "xMax": 4,
                 "yMin": -1,
@@ -138,8 +138,8 @@ const pageData = {
             {
                 "y": "head-loss-ratio",
                 "x": "froude-1",
-                "yLabel": "h_L / y₁",
-                "xLabel": "Fr₁",
+                "yLabel": "$h_L / y_1$",
+                "xLabel": "$Fr_1$",
                 "xMin": 0.01,
                 "xMax": 4,
                 "yMin": -1,
@@ -151,8 +151,8 @@ const pageData = {
             {
                 "y": "froude-2",
                 "x": "froude-1",
-                "yLabel": "Fr₂",
-                "xLabel": "Fr₁",
+                "yLabel": "$Fr_2$",
+                "xLabel": "$Fr_1$",
                 "xMin": 0.01,
                 "xMax": 4,
                 "yMin": -1,
