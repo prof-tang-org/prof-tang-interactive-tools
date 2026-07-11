@@ -200,6 +200,9 @@ function renderControls(inputs) {
                 opt.textContent = choice.text;
                 select.appendChild(opt);
             });
+
+            select.selectedIndex = input.initialChoiceIndex || 0;
+
             inline.appendChild(select);
             
             if (input.choices && input.choices.some(c => c.value === 'custom')) {
