@@ -200,6 +200,9 @@ function renderControls(inputs) {
                 opt.textContent = choice.text;
                 select.appendChild(opt);
             });
+
+            select.selectedIndex = input.initialChoiceIndex || 0;
+
             inline.appendChild(select);
             
             if (input.choices && input.choices.some(c => c.value === 'custom')) {
@@ -603,6 +606,19 @@ function _calculateState(baseState, xVal, plotConfig, pageData) {
     return tempState;
 }
 
+function _plot(refData, clipId=0, name='', dashed=false, opacity=1, stroke='black') {
+    const svg = d3.select('#plot');
+    if (svg.empty()) return;
+
+    svg.append('path').attr('class', 'curve' + (name ? `-${name}` : ''))
+        .attr('clip-path', `url(clip-${clipId}`)
+        .style('stroke-dasharray', dashed ? '4 4' : null)
+        .style('opacity', `${opacity}`)
+        .style('stroke', stroke)
+        .style('fill', 'none')
+        .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
+}
+
 function injectPlots(state, pageData) {
     if (!pageData.plots || pageData.plots.settings.length === 0 || typeof d3 === 'undefined') return;
     
@@ -736,17 +752,28 @@ function injectPlots(state, pageData) {
             return [x(xVal), y(fullState[plotConfig.y])];
         };
 
-        const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
-        const accessibleData = accessibleVals.map(v => getPoint(v, state));
-
         const dottedMin = plotConfig.dottedMin;
         const dottedMax = plotConfig.dottedMax;
-
+        
+        const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
+        
+        let solidData = [];
+        let dottedData = [];
+        
         if (dottedMin !== undefined && dottedMax !== undefined) {
-            const dottedVals = xVals.filter(v => v >= dottedMin && v <= dottedMax);
-            const dottedData = dottedVals.map(v => getPoint(v, state));
-
-            
+            const solidVals = [];
+            const dottedVals = [];
+            accessibleVals.forEach(v => {
+                if (v >= dottedMin && v <= dottedMax) {
+                    dottedVals.push(v);
+                } else {
+                    solidVals.push(v);
+                }
+            });
+            solidData = solidVals.map(v => getPoint(v, state));
+            dottedData = dottedVals.map(v => getPoint(v, state));
+        } else {
+            solidData = accessibleVals.map(v => getPoint(v, state));
         }
         
         // Add clip path for the plot
@@ -754,12 +781,13 @@ function injectPlots(state, pageData) {
         svg.append('clipPath').attr('id', clipId)
            .append('rect').attr('x', plot_x_offset).attr('y', m.t)
            .attr('width', iw).attr('height', ih);
-
-        // Draw main accessible curve (solid)
-        if (accessibleData.length >= 2) {
-            svg.append('path').attr('class', 'curve')
-               .attr('clip-path', `url(#${clipId})`)
-               .attr('d', d3.line().defined(d => !isNaN(d[1]))(accessibleData));
+        
+        // Draw solid and dotted parts of the curve
+        if (solidData.length > 0) {
+            _plot(solidData, i, 'solid', false, 1, 'black');
+        }
+        if (dottedData.length > 0) {
+            _plot(dottedData, i, 'dotted', true, 0.7, 'gray');
         }
 
         // Draw reference lines

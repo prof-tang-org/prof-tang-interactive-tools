@@ -75,8 +75,13 @@ const pageData = {
                 "min": 0.01,
                 "max": 0.08,
                 "step": 0.001,
-                "initialCustomValue": 0.035,
+                "initialCustomValue": 0.012,
+                "initialChoiceIndex": 1,
                 "choices": [
+                    {
+                        "text": "Custom...",
+                        "value": "custom"
+                    },
                     {
                         "text": "Concrete, finished (n = 0.012)",
                         "value": "0.012"
@@ -89,10 +94,6 @@ const pageData = {
                         "text": "Heavily brushed flood-plains (n = 0.075)",
                         "value": "0.075"
                     },
-                    {
-                        "text": "Custom...",
-                        "value": "custom"
-                    }
                 ]
             },
             {

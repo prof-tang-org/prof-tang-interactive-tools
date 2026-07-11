@@ -131,7 +131,9 @@ const pageData = {
                 "xMax": 4,
                 "yMin": -1,
                 "yMax": 6,
-                "yTickInterval": 1
+                "yTickInterval": 1,
+                "dottedMin": 0,
+                "dottedMax": 1
             },
             {
                 "y": "head-loss-ratio",
@@ -142,7 +144,9 @@ const pageData = {
                 "xMax": 4,
                 "yMin": -1,
                 "yMax": 4,
-                "yTickInterval": 1
+                "yTickInterval": 1,
+                "dottedMin": 0,
+                "dottedMax": 1
             },
             {
                 "y": "froude-2",
@@ -158,6 +162,8 @@ const pageData = {
                 "dottedMax": 1
             }
         ],
-        "text": "Adjust the upstream Froude number (Fr₁) on the input panel to dynamically view the changes in depth ratio, relative energy head loss, and downstream subcritical Froude status across the hydraulic jump."
+        "text": "Adjust the upstream Froude number (Fr₁) on the input panel to dynamically " 
+        + "view the changes across the hydraulic jump. Note that the plot for Fr₁ < 1 is dashed " 
+        + "because flow must be supercritical for a hydraulic jump to occur!"
     }
 };
