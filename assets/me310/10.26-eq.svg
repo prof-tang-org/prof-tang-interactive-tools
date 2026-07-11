@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   viewBox="0 0 620 300"
-   width="100%"
-   height="100%"
+   viewBox="0 0 500 300"
+   width="500"
+   height="300"
    version="1.1"
    id="svg3978"
    sodipodi:docname="10.26-eq.svg"
@@ -21,15 +21,16 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
-     inkscape:zoom="2.1129032"
-     inkscape:cx="291.54198"
-     inkscape:cy="178.19084"
-     inkscape:window-width="2560"
-     inkscape:window-height="1351"
-     inkscape:window-x="1911"
-     inkscape:window-y="-9"
+     inkscape:zoom="1.4940482"
+     inkscape:cx="229.24294"
+     inkscape:cy="134.86848"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="350"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg3978" />
+     inkscape:current-layer="svg3978"
+     showguides="true" />
   <defs
      id="defs3864">
     <pattern
@@ -72,14 +73,15 @@
     </marker>
   </defs>
   <path
-     d="M 20,40 L 190,40 C 210,40 225,55 255,55 L 580,55"
+     d="m 14.64542,40.540817 h 157.74149 c 18.55782,0 32.47619,13.918366 60.31292,13.918366 h 232.61735"
      fill="none"
      stroke="#e52d2d"
-     stroke-width="3"
-     stroke-dasharray="10,6"
-     id="path3868" />
+     stroke-width="2.78367"
+     stroke-dasharray="10, 6"
+     id="path3868"
+     sodipodi:nodetypes="cssc" />
   <text
-     x="490.7023"
+     x="377.85349"
      y="42.099236"
      font-family="sans-serif"
      font-size="18px"
@@ -89,18 +91,19 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, '"
        id="tspan5126">Energy Line</tspan></text>
   <line
-     x1="200.23665"
+     x1="194.88206"
      y1="39.526718"
-     x2="285.23663"
+     x2="279.88205"
      y2="39.526718"
      stroke="#008000"
      stroke-width="2"
      id="line3872"
-     style="stroke-dasharray:8,2;stroke-dashoffset:0" />
+     style="stroke-dasharray:8, 2;stroke-dashoffset:0" />
   <g
      stroke="#008000"
      stroke-width="2"
-     id="g3880">
+     id="g3880"
+     transform="translate(-5.3545797)">
     <line
        x1="270"
        y1="40.515266"
@@ -115,7 +118,7 @@
        style="stroke-width:1.84832" />
   </g>
   <text
-     x="290.4733"
+     x="285.11871"
      y="45.847328"
      font-family="sans-serif"
      font-size="16px"
@@ -127,30 +130,32 @@
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:65%;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold';baseline-shift:sub"
        id="tspan5156">L</tspan></text>
   <line
-     x1="20"
-     y1="240"
-     x2="580"
-     y2="240"
+     x1="14.271704"
+     y1="239.6263"
+     x2="464.91559"
+     y2="239.6263"
      stroke="#000000"
-     stroke-width="4"
+     stroke-width="3.7247"
      stroke-linecap="round"
-     id="line3884" />
+     id="line3884"
+     style="stroke-width:2.8901;stroke-dasharray:none" />
   <path
-     d="M 20,195 L 180,195 C 210,195 240,110 275,110 L 580,110"
+     d="m 14.64542,195 h 160 c 30,0 60,-85 95,-85 h 195.43512"
      fill="none"
      stroke="#000000"
      stroke-width="3"
      stroke-linecap="round"
-     id="path3886" />
+     id="path3886"
+     sodipodi:nodetypes="cssc" />
   <g
-     transform="translate(459.749,95.970118)"
+     transform="translate(424.10434,95.970118)"
      stroke="#000000"
      stroke-width="1.5"
      fill="none"
      id="g3894"
      style="stroke-width:2;stroke-dasharray:none">
     <polygon
-       points="14,0 7,12 0,0 "
+       points="0,0 14,0 7,12 "
        id="polygon3888"
        style="stroke-width:2;stroke-dasharray:none" />
     <line
@@ -171,7 +176,8 @@
   <g
      stroke="#008000"
      stroke-width="2"
-     id="g3900">
+     id="g3900"
+     transform="translate(-5.3545797)">
     <line
        x1="65"
        y1="198"
@@ -179,12 +185,12 @@
        y2="237"
        id="line3896" />
     <path
-       d="M 61,203 L 65,195 L 69,203 M 61,232 L 65,240 L 69,232"
+       d="m 61,203 4,-8 4,8 m -8,29 4,8 4,-8"
        fill="none"
        id="path3898" />
   </g>
   <text
-     x="73.709923"
+     x="68.355347"
      y="220.16031"
      font-family="sans-serif"
      font-size="16px"
@@ -196,7 +202,7 @@
    style="font-size:65%;baseline-shift:sub"
    id="tspan5154">1</tspan></tspan></text>
   <text
-     x="100.67939"
+     x="95.324814"
      y="265.78625"
      font-family="sans-serif"
      font-size="16px"
@@ -210,7 +216,7 @@
      stroke="#0091ff"
      stroke-width="2"
      id="g3916"
-     transform="translate(14.892425,-0.16733061)">
+     transform="translate(9.5378453,-0.16733061)">
     <line
        x1="100"
        y1="204"
@@ -248,7 +254,7 @@
        id="line3914" />
   </g>
   <text
-     x="159.45801"
+     x="154.10342"
      y="222.38931"
      font-family="sans-serif"
      font-size="16px"
@@ -264,7 +270,8 @@
      stroke="#000000"
      stroke-width="1.5"
      stroke-linecap="round"
-     id="g3928">
+     id="g3928"
+     transform="translate(-5.3545797)">
     <path
        d="m 231.91384,210.20611 c 15,-20 0,-35 -15,-25"
        marker-end="url(#black-arrow)"
@@ -278,14 +285,15 @@
        marker-end="url(#black-arrow)"
        id="path3924" />
     <path
-       d="M 255,228 C 270,220 278,223 292,215"
+       d="m 255,228 c 15,-8 23,-5 37,-13"
        marker-end="url(#black-arrow)"
        id="path3926" />
   </g>
   <g
      stroke="#008000"
      stroke-width="2"
-     id="g3934">
+     id="g3934"
+     transform="translate(-5.3545797)">
     <line
        x1="390"
        y1="113"
@@ -293,12 +301,12 @@
        y2="237"
        id="line3930" />
     <path
-       d="M 386,118 L 390,110 L 394,118 M 386,232 L 390,240 L 394,232"
+       d="m 386,118 4,-8 4,8 m -8,114 4,8 4,-8"
        fill="none"
        id="path3932" />
   </g>
   <text
-     x="400"
+     x="394.64542"
      y="175"
      font-family="sans-serif"
      font-size="16px"
@@ -310,7 +318,7 @@
    style="font-size:65%;baseline-shift:sub"
    id="tspan5146">2</tspan></tspan></text>
   <text
-     x="362.71756"
+     x="357.36298"
      y="263.10687"
      font-family="sans-serif"
      font-size="16px"
@@ -324,7 +332,7 @@
      stroke="#0091ff"
      stroke-width="2"
      id="g3958"
-     transform="translate(0,-1.6564886)">
+     transform="translate(-5.3545797,-1.6564886)">
     <line
        x1="345"
        y1="122"
@@ -390,7 +398,7 @@
        id="line3956" />
   </g>
   <text
-     x="318.57251"
+     x="313.21793"
      y="178.01526"
      font-family="sans-serif"
      font-size="16px"
@@ -435,7 +443,8 @@
   <g
      stroke="#000000"
      stroke-width="2"
-     id="g3974">
+     id="g3974"
+     transform="translate(-109.76888)">
     <line
        x1="545"
        y1="240"
@@ -445,8 +454,8 @@
        id="line3972" />
   </g>
   <text
-     x="590.37451"
-     y="244.99602"
+     x="476.39365"
+     y="244.48213"
      font-family="serif"
      font-style="italic"
      font-size="18px"
