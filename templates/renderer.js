@@ -699,7 +699,6 @@ function injectPlots(state, pageData) {
         }
         const xAxisG = svg.append('g').attr('class', 'axis')
            .attr('transform', `translate(0,${m.t + ih})`)
-
         xAxisG.call(xAxis);
 
         const xTextRotation = plotConfig.xTickRotation || 0;
@@ -721,7 +720,12 @@ function injectPlots(state, pageData) {
         const yAxisG = svg.append('g').attr('class', 'axis')
            .attr('transform', `translate(${plot_x_offset},0)`);
         yAxisG.call(yAxis);
-        yAxisG.selectAll('text').style('font-size', `${1 * scale}rem`);
+
+        const yTextRotation = plotConfig.yTickRotation || 0;
+
+        yAxisG.selectAll('text')
+            .style('font-size', `${1 * scale}rem`)
+            .attr('transform', `rotate(${-yTextRotation})`)
         
         // Labels
         // Use foreignObject for x-axis to allow HTML (MathJax) rendering
