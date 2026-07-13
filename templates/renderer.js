@@ -3,6 +3,9 @@
  * Dynamically maps data from a topic file into the skeleton HTML.
  */
 
+const mathjaxCache = new Map();
+const formulaCache = new Map();
+
 // ---------------------------------------------------------
 // SECTION 0: Layout Configuration
 function configLayout(layout) {
@@ -153,6 +156,7 @@ function renderSchematic(schematic) {
         console.error("Schematic image container not found.");
         return;
     }
+
     const img = container.querySelector('img');
     if (img) {
         img.src = schematic.src;
@@ -422,30 +426,38 @@ function renderGroup(values, containerId) {
 // ---------------------------------------------------------
 
 function evaluateFormula(formula, state) {
-    let parsedFormula = formula;
-    
-    // Sort keys descending to safely replace longer IDs first
-    const keys = Object.keys(state).sort((a, b) => b.length - a.length);
-    keys.forEach(k => {
-        const escapedKey = k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-        const regex = new RegExp(`(^|[^a-zA-Z0-9_\\-])(${escapedKey})([^a-zA-Z0-9_\\-]|$)`, 'g');
-        parsedFormula = parsedFormula.replace(regex, (match, p1, p2, p3) => {
-            return p1 + `state["${k}"]` + p3;
+    let fn = formulaCache.get(formula);
+    if (!fn) {
+        let parsedFormula = formula;
+        
+        // Sort keys descending to safely replace longer IDs first
+        const keys = Object.keys(state).sort((a, b) => b.length - a.length);
+        keys.forEach(k => {
+            const escapedKey = k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(`(?<![a-zA-Z0-9_])(?<![a-zA-Z0-9_]-)(${escapedKey})(?![a-zA-Z0-9_])(?!-[a-zA-Z0-9_])`, 'g');
+            parsedFormula = parsedFormula.replace(regex, `state["${k}"]`);
         });
-    });
-    
-    // Replace standard math functions with Math.xxx
-    const mathFuncs = Object.getOwnPropertyNames(Math);
-    mathFuncs.forEach(func => {
-        const regex = new RegExp(`(^|[^a-zA-Z0-9_.])(${func})\\b`, 'g');
-        parsedFormula = parsedFormula.replace(regex, `$1Math.$2`);
-    });
+        
+        // Replace standard math functions with Math.xxx
+        const mathFuncs = Object.getOwnPropertyNames(Math);
+        mathFuncs.forEach(func => {
+            const regex = new RegExp(`(^|[^a-zA-Z0-9_.])(${func})\\b`, 'g');
+            parsedFormula = parsedFormula.replace(regex, `$1Math.$2`);
+        });
+        
+        try {
+            fn = new Function('state', `return ${parsedFormula};`);
+            formulaCache.set(formula, fn);
+        } catch(e) {
+            console.error("Evaluation Compilation Error:", formula, parsedFormula, e);
+            return NaN;
+        }
+    }
     
     try {
-        const fn = new Function('state', `return ${parsedFormula};`);
         return fn(state);
     } catch(e) {
-        console.error("Evaluation Error:", formula, parsedFormula, e);
+        console.error("Evaluation Execution Error:", formula, e);
         return NaN;
     }
 }
@@ -611,7 +623,7 @@ function _plot(refData, clipId=0, name='', dashed=false, opacity=1, stroke='blac
     if (svg.empty()) return;
 
     svg.append('path').attr('class', 'curve' + (name ? `-${name}` : ''))
-        .attr('clip-path', `url(clip-${clipId}`)
+        .attr('clip-path', `url(#clip-${clipId})`)
         .style('stroke-dasharray', dashed ? '4 4' : null)
         .style('opacity', `${opacity}`)
         .style('stroke', stroke)
@@ -626,7 +638,15 @@ function injectPlots(state, pageData) {
     if (svg.empty()) return;
     svg.selectAll('*').remove(); // Clear previous plot
     
-    const W = 760, H = 320, m = { l: 100, r: 40, t: 14, b: 54 };
+    let W = 760, H = 320, m = { l: 100, r: 40, t: 14, b: 60 };
+    if (pageData.plots.aspectRatio !== undefined) {
+        H = W / pageData.plots.aspectRatio;
+        const svgEl = document.getElementById('plot');
+        if (svgEl) {
+            svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+            console.log(svgEl.viewBox);
+        }
+    }
     const gap = 80;
     const numPlots = pageData.plots.settings.length;
     const totalGap = gap * (numPlots - 1);
@@ -678,9 +698,15 @@ function injectPlots(state, pageData) {
             xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
         const xAxisG = svg.append('g').attr('class', 'axis')
-           .attr('transform', `translate(0,${m.t + ih})`);
+           .attr('transform', `translate(0,${m.t + ih})`)
+
         xAxisG.call(xAxis);
-        xAxisG.selectAll('text').style('font-size', `${1 * scale}rem`);
+
+        const xTextRotation = plotConfig.xTickRotation || 0;
+        xAxisG.selectAll('text')
+            .style('font-size', `${1 * scale}rem`)
+            .attr('transform', `rotate(${-xTextRotation})`)
+            .style('text-anchor', xTextRotation > 0 ? 'end' : 'middle');
            
         const yAxis = d3.axisLeft(y).ticks(5);
         if (plotConfig.yTickInterval !== undefined) {
@@ -699,12 +725,29 @@ function injectPlots(state, pageData) {
         
         // Labels
         // Use foreignObject for x-axis to allow HTML (MathJax) rendering
+        const xAxisBBox = xAxisG.node().getBBox(); // BBox of the axis ticks/numbers
+
+        // In local coordinates of xAxisG, the axis line is at y = 0.
+        // The bottom of the x-axis (line + ticks + tick labels) in global SVG coordinates is:
+        const axisBottomY = (m.t + ih) + xAxisBBox.y + xAxisBBox.height;
+
+        // Define margin and height in SVG coordinates, scaled to keep physical size constant
+        const margin = 2 * scale;
+        const labelHeight = 30 * scale;
+
         const xLabelFO = svg.append('foreignObject')
-            .attr('x', plot_x_offset).attr('y', H - 35 / scale)
-            .attr('width', iw).attr('height', 40);
-        xLabelFO.append('xhtml:div')
-            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', `${1.125 * scale}rem`)
-            .html(parseText(plotConfig.xLabel));
+            .attr('x', plot_x_offset).attr('y', axisBottomY + margin)
+            .attr('width', iw).attr('height', labelHeight);
+        const xLabelDiv = xLabelFO.append('xhtml:div')
+            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
+        const xText = plotConfig.xLabel;
+        if (mathjaxCache.has(xText)) {
+            xLabelDiv.html(mathjaxCache.get(xText));
+        } else {
+            xLabelDiv.html(parseText(xText))
+                .classed('needs-typeset', true)
+                .attr('data-raw-text', xText);
+        }
 
         const yAxisBBox = yAxisG.node().getBBox(); // BBox of the axis ticks/numbers
 
@@ -716,10 +759,17 @@ function injectPlots(state, pageData) {
             .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${m.t + ih}) rotate(-90)`);
         
         // The inner div uses flexbox to perfectly center the content.
-        yLabelFO.append('xhtml:div')
+        const yLabelDiv = yLabelFO.append('xhtml:div')
             .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
-            .style('width', '100%').style('height', '100%').style('font-size', `${1.125 * scale}rem`)
-            .html(parseText(plotConfig.yLabel));
+            .style('width', '100%').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
+        const yText = plotConfig.yLabel;
+        if (mathjaxCache.has(yText)) {
+            yLabelDiv.html(mathjaxCache.get(yText));
+        } else {
+            yLabelDiv.html(parseText(yText))
+                .classed('needs-typeset', true)
+                .attr('data-raw-text', yText);
+        }
 
         // Generate Curve
         const steps = 100;
@@ -792,6 +842,8 @@ function injectPlots(state, pageData) {
 
         // Draw reference lines
         if (pageData.plots['reference-settings']) {
+            const labelsToDraw = [];
+
             pageData.plots['reference-settings'].forEach(refSetting => {
                 const refState = { ...state, ...refSetting };
                 const refData = accessibleVals.map(v => getPoint(v, refState));
@@ -814,20 +866,62 @@ function injectPlots(state, pageData) {
                     }
 
                     if (lastPoint) {
-                        const fo = svg.append('foreignObject')
-                            .attr('x', lastPoint[0] + 5)
-                            .attr('y', lastPoint[1] - 14 * scale) // Vertically center based on font size
-                            .attr('width', 200 * scale) // Generous width
-                            .attr('height', 30 * scale)
-                            .style('overflow', 'visible');
-
-                        fo.append('xhtml:div')
-                            .style('font-size', `${.875 * scale}rem`)
-                            .style('color', 'gray')
-                            .html(parseText(refSetting.text));
+                        labelsToDraw.push({
+                            refSetting,
+                            lastPoint,
+                            y: lastPoint[1]
+                        });
                     }
                 }
             });
+
+            // Resolve vertical overlaps for labels
+            if (labelsToDraw.length > 0) {
+                // Sort by y position ascending
+                labelsToDraw.sort((a, b) => a.y - b.y);
+
+                const minDist = 18 * scale;
+                let iterations = 10;
+                while (iterations-- > 0) {
+                    let changed = false;
+                    for (let j = 0; j < labelsToDraw.length - 1; j++) {
+                        const a = labelsToDraw[j];
+                        const b = labelsToDraw[j + 1];
+                        const overlap = minDist - (b.y - a.y);
+                        if (overlap > 0) {
+                            a.y -= overlap / 2;
+                            b.y += overlap / 2;
+                            changed = true;
+                        }
+                    }
+                    labelsToDraw.forEach(l => {
+                        l.y = Math.max(m.t + 10, Math.min(m.t + ih, l.y));
+                    });
+                    if (!changed) break;
+                }
+
+                // Render the labels at their adjusted positions
+                labelsToDraw.forEach(l => {
+                    const fo = svg.append('foreignObject')
+                        .attr('x', l.lastPoint[0] + 5)
+                        .attr('y', l.y - 14 * scale) // Vertically center based on font size
+                        .attr('width', 200 * scale) // Generous width
+                        .attr('height', 30 * scale)
+                        .style('overflow', 'visible');
+
+                    const refDiv = fo.append('xhtml:div')
+                        .style('font-size', `${.875 * scale}rem`)
+                        .style('color', 'gray');
+                    const refText = l.refSetting.text;
+                    if (mathjaxCache.has(refText)) {
+                        refDiv.html(mathjaxCache.get(refText));
+                    } else {
+                        refDiv.html(parseText(refText))
+                            .classed('needs-typeset', true)
+                            .attr('data-raw-text', refText);
+                    }
+                });
+            }
         }
         
         // Draw Current Point
@@ -932,11 +1026,36 @@ function injectPlots(state, pageData) {
     });
 
     const plotNote = document.getElementById("plot-note");
-    plotNote.innerHTML = parseText(pageData.plots.text);
+    const noteText = pageData.plots.text;
+    if (mathjaxCache.has(noteText)) {
+        plotNote.innerHTML = mathjaxCache.get(noteText);
+    } else {
+        plotNote.innerHTML = parseText(noteText);
+        plotNote.classList.add('needs-typeset');
+        plotNote.setAttribute('data-raw-text', noteText);
+    }
+    
+    // Re-typeset the plot with MathJax ONLY for elements that need it
+    const toTypeset = [];
+    svg.selectAll('.needs-typeset').each(function() {
+        toTypeset.push(this);
+    });
+    if (plotNote.classList.contains('needs-typeset')) {
+        toTypeset.push(plotNote);
+    }
 
-    // Re-typeset the plot with MathJax to render LaTeX in axis titles
-    if (window.MathJax && window.MathJax.typesetPromise) {
-        window.MathJax.typesetPromise([svg.node()]).catch(err => console.error("MathJax typesetting error on plot:", err));
+    if (toTypeset.length > 0 && window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise(toTypeset)
+            .then(() => {
+                toTypeset.forEach(el => {
+                    const rawText = el.getAttribute('data-raw-text');
+                    if (rawText) {
+                        mathjaxCache.set(rawText, el.innerHTML);
+                    }
+                    el.classList.remove('needs-typeset');
+                });
+            })
+            .catch(err => console.error("MathJax typesetting error on plot:", err));
     }
 }
 
@@ -1006,6 +1125,10 @@ window.addEventListener('load', async () => {
         }
         if (pageData.schematic) {
             renderSchematic(pageData.schematic);
+        } else {
+            const container = document.getElementById('schematic-image-container');
+            container.classList.add('hidden');
+            container.parentElement.classList.remove('grid'); // Remove class from equation-schematic container for layout adjustment
         }
         renderInputOutput(pageData.inputOutput);
         

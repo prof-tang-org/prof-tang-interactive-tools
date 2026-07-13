@@ -162,8 +162,8 @@ const pageData = {
                 "dottedMax": 1
             }
         ],
-        "text": "Adjust the upstream Froude number (Fr₁) on the input panel to dynamically " 
-        + "view the changes across the hydraulic jump. Note that the plot for Fr₁ < 1 is dashed " 
-        + "because flow must be supercritical for a hydraulic jump to occur!"
+        "text": "Adjust the upstream Froude number ($Fr_1$) to dynamically " 
+        + "view changes across the hydraulic jump. Note that the plot for $Fr_1 < 1$ is dashed " 
+        + "because it is impossible—flow must be supercritical for a hydraulic jump to occur!"
     }
 };

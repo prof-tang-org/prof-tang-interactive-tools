@@ -1,17 +1,5 @@
 const pageData = {
     "title": "Manning Equation",
-    "layout": {
-        "grid": [
-            {
-                "desktop": "1.2fr 0.8fr",
-                "mobile": "100%"
-            },
-            {
-                "desktop": "0.8fr 1.4fr",
-                "mobile": "100%"
-            }
-        ]
-    },
     "equationElements": [
         {
             "type": "header",
@@ -47,10 +35,6 @@ const pageData = {
             ]
         }
     ],
-    "schematic": {
-        "src": "../assets/me310/10.16-eq.png",
-        "alt": "Schematic representation of open channel flow parameters showing hydraulic radius R_h, bottom slope s_0, and Manning roughness n."
-    },
     "inputOutput": {
         "inputs": [
             {
@@ -125,6 +109,7 @@ const pageData = {
         ]
     },
     "plots": {
+        "aspectRatio": 3,
         "settings": [
             {
                 "x": "hydraulic-radius",
@@ -146,10 +131,10 @@ const pageData = {
                 "xMin": 0,
                 "xMax": 0.01,
                 "xTickInterval": 0.002,
+                "xTickRotation": 45,
                 "yMin": 0,
                 "yMax": [5, 20, 30, 100],
                 "yTickInterval": [1, 4, 6, 20],
-                "xTickInterval": 0.004
             },
             {
                 "x": "manning",
@@ -159,10 +144,10 @@ const pageData = {
                 "xMin": 0.01,
                 "xMax": 0.08,
                 "xTickInterval": 0.01,
+                "xTickRotation": 45,
                 "yMin": 0,
                 "yMax": [5, 20, 30, 100],
                 "yTickInterval": [1, 4, 6, 20],
-                "xTickInterval": 0.02
             }
         ],
         "text": "Analyze how hydraulic radius, bottom slope, and manning resistance coefficient impact velocity. Note the impact of units on scale but not shape!"

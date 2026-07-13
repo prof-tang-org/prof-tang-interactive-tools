@@ -54,13 +54,13 @@ const pageData = {
                     "text": "$\\dot{m}$ — mass flow rate"
                 },
                 {
-                    "text": "$p_1, p_2$ — inlet and exit pressures"
+                    "text": "$p_1, p_2$ — inlet and outlet pressures"
                 },
                 {
-                    "text": "$T_1, T_2$ — inlet and exit temperatures"
+                    "text": "$T_1, T_2$ — inlet and outlet temperatures"
                 },
                 {
-                    "text": "$v_1, v_2$ — inlet and exit specific volumes"
+                    "text": "$v_1, v_2$ — inlet and outlet specific volumes"
                 },
                 {
                     "text": "$R$ — specific gas constant ($R = \\bar{R}/M$)"
@@ -84,7 +84,7 @@ const pageData = {
     },
     "inputOutput": {
         "note": {
-            "text": "The air as an ideal gas passes through a turbine (or compressor) undergoes a steady, internally reversible polytropic process. The inlet pressure and temperature are fixed, while the exit pressure and polytropic index can be varied. The exit temperature, exit specific volume, and specific work done are calculated based on the inputs."
+            "text": "The air as an ideal gas passes through a turbine (or compressor) undergoes a steady, internally reversible polytropic process. The inlet pressure and temperature are fixed, while the outlet pressure and polytropic index can be varied. The outlet temperature, outlet specific volume, and specific work done are calculated based on the inputs."
         },
         "fixedInputs": [
             {
@@ -121,7 +121,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "pressure-2",
-                "text": "Exit Pressure $p_2$ [kPa]",
+                "text": "Outlet Pressure $p_2$ [kPa]",
                 "min": 100,
                 "max": 1000,
                 "initialValue": 100,
@@ -142,13 +142,13 @@ const pageData = {
                 "value": "(gas-constant-R * temp-1) / (pressure-1 * 1000)"
             },
             {
-                "text": "Exit Temperature $T_2$ [K]",
+                "text": "Outlet Temperature $T_2$ [K]",
                 "id": "temp-2",
                 "type": "calculation",
                 "value": "temp-1 * pow(pressure-2 / pressure-1, (polytropic-n - 1) / polytropic-n)"
             },
             {
-                "text": "Exit Spec. Volume $v_2$ [m³/kg]",
+                "text": "Outlet Spec. Volume $v_2$ [m³/kg]",
                 "id": "volume-2",
                 "type": "calculation",
                 "value": "(gas-constant-R * temp-2) / (pressure-2 * 1000)"
@@ -162,6 +162,7 @@ const pageData = {
         ]
     },
     "plots": {
+        "aspectRatio": 3,
         "reference-settings": [
             {
                 "polytropic-n": 0.5,
@@ -207,6 +208,6 @@ const pageData = {
                 "yTickInterval": 100
             }
         ],
-        "text": "Drag the red dots to analyze the influence of exit pressure on the specific flow work done under different polytropic modes."
+        "text": "Drag the red dots to analyze the influence of outlet pressure on the outlet state and specific flow work done under different polytropic modes."
     }
 };
