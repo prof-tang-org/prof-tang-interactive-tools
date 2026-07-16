@@ -111,7 +111,7 @@
       <div class="eqwrap">
         <div class="title-xl"><b>Quality (or Vapor Quality) and Two-Phase Mixture Properties</b></div>
         <div class="eqbig">
-          \(\displaystyle x = \frac{m_{\text{g}}}{m_{\text{f}} + m_{\text{g}}}\)
+          \(\displaystyle x = \frac{m_{g}}{m_{f} + m_{g}}\)
         </div>
         <div class="eqbig" style="margin-top:10px">
           \(\displaystyle v = (1-x)v_f + xv_g = v_f + x(v_g - v_f)\)
@@ -443,7 +443,7 @@ function drawPlots() {
   const panels = [
     {
       id: 'v',
-      xlabel: 'v  (m³/kg)', ylabel: 'T  (°C)',
+      xlabel: 'v  [m³/kg]', ylabel: 'T  [°C]',
       logX: true,
       xDom: [0.001, 200], yDom: [0, 400],
       dot: { x: props.v, y: state.T },
@@ -451,21 +451,21 @@ function drawPlots() {
     },
     {
       id: 'u',
-      xlabel: 'u  (kJ/kg)', ylabel: 'T  (°C)',
+      xlabel: 'u  [kJ/kg]', ylabel: 'T  [°C]',
       logX: false,
       xDom: [0, 3000], yDom: [0, 400],
       dot: { x: props.u, y: state.T },
     },
     {
       id: 'h',
-      xlabel: 'h  (kJ/kg)', ylabel: 'T  (°C)',
+      xlabel: 'h  [kJ/kg]', ylabel: 'T  [°C]',
       logX: false,
       xDom: [0, 3500], yDom: [0, 400],
       dot: { x: props.h, y: state.T },
     },
     {
       id: 's',
-      xlabel: 's  (kJ/(kg·K))', ylabel: 'T  (°C)',
+      xlabel: 's  [kJ/(kg·K)]', ylabel: 'T  [°C]',
       logX: false,
       xDom: [0, 10], yDom: [0, 400],
       dot: { x: props.s, y: state.T },
@@ -556,9 +556,7 @@ function drawPlots() {
       const vapPt = pts[2] || pts[pts.length - 1]; // sat vapor is always index 2
       const lx = xSc(Math.max(panel.xDom[0], Math.min(panel.xDom[1], vapPt.x)));
       const ly = ySc(vapPt.y);
-      const labelOffsets = {
-        u: { "15.55": { dx: 22, dy: -40 } },
-      };
+      const labelOffsets = {};
       const off = (labelOffsets[panel.id] && labelOffsets[panel.id][key]) || { dx: 4, dy: -4 };
       svg.append('text')
         .attr('x', lx + off.dx).attr('y', ly + off.dy)
