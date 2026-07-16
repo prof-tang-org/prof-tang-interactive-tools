@@ -207,14 +207,15 @@ function syncInput(p, el){
   if(p === 'TH'){
     v = Math.max(275, Math.min(325, v));
     S.TH = v;
-    // If TC is now above TH-10, clamp it
-    if(S.TC > S.TH - 10){ S.TC = S.TH - 10; }
+    const tcMax = Math.min(S.TH - 10, 265);
+    // If TC is now above the cap, clamp it
+    if(S.TC > tcMax){ S.TC = tcMax; }
     // Update TC slider bounds and value
-    document.getElementById('TC-out').max = S.TH - 10;
-    document.getElementById('TC-in').max  = S.TH - 10;
+    document.getElementById('TC-out').max = tcMax;
+    document.getElementById('TC-in').max  = tcMax;
     setVal('TC', S.TC);
   } else {
-    v = Math.max(0, Math.min(S.TH - 10, v));
+    v = Math.max(0, Math.min(Math.min(S.TH - 10, 265), v));
     S.TC = v;
   }
   setVal(p, S[p]);
@@ -275,9 +276,9 @@ function drawPlot(){
     .y(d => ySc(calcBeta(TH, d)));
 
   const curves = [
-    { TH: S.TH,  color: '#3b82f6', dashed: false, labelTC: 260,  labelOffset: -38 },  // input (blue)
-    { TH: 250,   color: '#f97316', dashed: true,  labelTC: 200, labelOffset: -14 },  // orange
-    { TH: 350,   color: '#22c55e', dashed: true,  labelTC: 270, labelOffset:  14 },  // green, below curve
+    { TH: S.TH,  color: '#3b82f6', dashed: false, labelTC: 260,  labelOffset: -38, isInput: true },  // input (blue)
+    { TH: 275,   color: '#f97316', dashed: true,  labelTC: 200, labelOffset: -14 },  // orange
+    { TH: 325,   color: '#22c55e', dashed: true,  labelTC: 270, labelOffset:  14 },  // green, below curve
   ];
 
   curves.forEach(c => {
@@ -298,7 +299,7 @@ function drawPlot(){
        .style('font-size', '11px')
        .style('font-weight', '600')
        .style('fill', c.color)
-       .text(c.TH === S.TH ? `T_H = input (${c.TH} K)` : `T_H = ${c.TH} K`);
+       .text(c.isInput ? `T_H = input (${c.TH} K)` : `T_H = ${c.TH} K`);
   }
 });
 
@@ -322,7 +323,7 @@ function drawPlot(){
   hitRect.call(d3.drag().on('start drag end', function(event){
     const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
     let   val = Math.round(xSc.invert(xm));
-    val = Math.max(1, Math.min(S.TH - 10, val));
+    val = Math.max(0, Math.min(Math.min(S.TH - 10, 265), val));
     S.TC = val;
     setVal('TC', val);
     compute();
@@ -332,8 +333,8 @@ function drawPlot(){
 /* ─── init ─── */
 window.addEventListener('DOMContentLoaded', () => {
   // Set TC slider max to TH-10 on init
-  document.getElementById('TC-out').max = S.TH - 10;
-  document.getElementById('TC-in').max  = S.TH - 10;
+  document.getElementById('TC-out').max = 265;
+  document.getElementById('TC-in').max  = 265;
   compute();
   window.addEventListener('resize', compute);
 });
