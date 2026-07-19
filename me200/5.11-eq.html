@@ -284,9 +284,9 @@ function drawPlot(){
     .y(d => ySc(calcGamma(d, TC)));
 
   const curves = [
-    { TC: S.TC,  color: '#3b82f6', dashed: false, labelTH: 340, labelOffset: -20 },  // input (blue)
-    { TC: 250,   color: '#f97316', dashed: true,  labelTH: 370, labelOffset: 12 },  // orange
-    { TC: 350,   color: '#22c55e', dashed: true,  labelTH: 460, labelOffset:  -12 },  // green, below curve
+    { TC: S.TC,  color: '#3b82f6', dashed: false, labelTH: 340, labelOffset: -20, isInput: true },  // input (blue)
+    { TC: 275,   color: '#9ca3af', dashed: true,  labelTH: 370, labelOffset: 12 },  // orange
+    { TC: 325,   color: '#9ca3af', dashed: true,  labelTH: 460, labelOffset:  -12 },  // green, below curve
   ];
 
   curves.forEach(c => {
@@ -308,7 +308,7 @@ function drawPlot(){
         .style('font-size', '11px')
         .style('font-weight', '600')
         .style('fill', c.color)
-        .text(c.TC === S.TC ? `T_C = input (${c.TC} K)` : `T_C = ${c.TC} K`);
+        .text(c.isInput ? `T_C = input (${c.TC} K)` : `T_C = ${c.TC} K`);
     }
  });
 

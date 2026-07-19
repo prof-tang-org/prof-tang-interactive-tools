@@ -279,9 +279,9 @@ function drawPlot(){
     .y(d => ySc(calcEta(d, TC)));
 
   const curves = [
-    { TC: S.TC,  color: '#3b82f6', dashed: false, labelTH: 850,  labelOffset: -24 },  // above
-    { TC: 250,   color: '#f97316', dashed: true,  labelTH: 1100, labelOffset: -14 },  // above
-    { TC: 350,   color: '#22c55e', dashed: true,  labelTH: 1350, labelOffset:  16 }
+    { TC: S.TC,  color: '#3b82f6', dashed: false, labelTH: 850,  labelOffset: -24, isInput: true },  // above
+    { TC: 275,   color: '#9ca3af', dashed: true,  labelTH: 1100, labelOffset: -14 },  // above
+    { TC: 325,   color: '#9ca3af', dashed: true,  labelTH: 1350, labelOffset:  16 }
   ];
 
   curves.forEach(c => {
@@ -301,7 +301,7 @@ function drawPlot(){
        .style('font-size', '11px')
        .style('font-weight', '600')
        .style('fill', c.color)
-       .text(c.TC === S.TC ? `T_C = input (${c.TC} K)` : `T_C = ${c.TC} K`);
+       .text(c.isInput ? `T_C = input (${c.TC} K)` : `T_C = ${c.TC} K`);
   }
 });
 
