@@ -52,7 +52,8 @@ const pageData = {
                 "id": "kinematic-viscosity",
                 "text": "conversion-factor == 1.0 ? 'Kinematic Viscosity, $\\\\nu$ [m²/s]' : 'Kinematic Viscosity, $\\\\nu$ [ft²/s]'",
                 "type": "calculation",
-                "value": "conversion-factor == 1.0 ? 1.004e-6 : 1.21e-5"
+                "value": "conversion-factor == 1.0 ? 1.004e-6 : 1.21e-5",
+                "decimals": "conversion-factor == 1.0 ? 3 : 2"
             }
         ],
         "inputs": [

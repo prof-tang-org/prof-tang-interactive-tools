@@ -424,7 +424,7 @@ function renderGroup(values, containerId, cols = 5) {
         val.className = 'val';
         val.id = `value_${value.id}`;
         if (typeof value.value === 'number') {
-            val.textContent = formatNumber(value.value);
+            val.textContent = formatNumber(value.value, value.decimals);
         } else {
             val.innerHTML = parseText(String(value.value ?? ''));
         }
@@ -480,12 +480,12 @@ function evaluateFormula(formula, state) {
     }
 }
 
-function formatNumber(val) {
+function formatNumber(val, decimals) {
     if (!Number.isFinite(val)) return '—';
     if (Math.abs(val) >= 10000 || (Math.abs(val) < 0.001 && val !== 0)) {
-        return val.toExponential(2);
+        return val.toExponential(decimals !== undefined ? decimals : 3);
     }
-    return parseFloat(val.toPrecision(4)).toString();
+    return parseFloat(val.toPrecision(decimals !== undefined ? decimals + 1 : 4)).toString();
 }
 
 function setupCalculationEngine(pageData) {
@@ -592,7 +592,8 @@ function setupCalculationEngine(pageData) {
                     const el = document.getElementById(`value_${fixedInput.id}`);
                     if (el) {
                         if (typeof val === 'number') {
-                            el.textContent = formatNumber(val);
+                            const decVal = typeof fixedInput.decimals === 'string' ? evaluateFormula(fixedInput.decimals, state) : fixedInput.decimals;
+                            el.textContent = formatNumber(val, decVal);
                         } else {
                             const parsed = parseText(String(val ?? ''));
                             if (el.getAttribute('data-eval-val') !== parsed) {
@@ -656,7 +657,8 @@ function setupCalculationEngine(pageData) {
             const el = document.getElementById(`value_${output.id}`);
             if (el) {
                 if (typeof val === 'number') {
-                    el.textContent = formatNumber(val);
+                    const decVal = typeof output.decimals === 'string' ? evaluateFormula(output.decimals, state) : output.decimals;
+                    el.textContent = formatNumber(val, decVal);
                 } else {
                     const parsed = parseText(String(val ?? ''));
                     if (el.getAttribute('data-eval-val') !== parsed) {
@@ -1018,7 +1020,9 @@ function injectPlots(state, pageData) {
                     return refVal === stateVal;
                 });
 
-                if (!isMatched && refSetting.text) {
+                const shouldHideRefLabel = isMatched && plotConfig.activeLabel;
+
+                if (!shouldHideRefLabel && refSetting.text) {
                     let lastPoint = null;
                     for (let i = refData.length - 1; i >= 0; i--) {
                         if (refData[i] && !isNaN(refData[i][1])) {
