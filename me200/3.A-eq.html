@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Isothermal Processes of Ideal Gases</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root{
+      --ink:#1f2937;--ink2:#374151;
+      --bg:#f6f7fb;--card:#fff;--line:#e5e7eb;
+      --accent:#0ea5e9;
+      --ok:#10b981;--warn:#f59e0b;--danger:#ef4444;
+      --r-sm:10px;--r-md:12px;--r-lg:14px;
+      --shadow-sm:0 6px 16px rgba(0,0,0,.04);
+      --shadow-md:0 10px 22px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45;background:var(--bg);color:var(--ink)}
+    html{scroll-behavior:smooth}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    .site-header{background:linear-gradient(135deg,var(--ink),var(--ink2));color:#fff;padding:28px 0}
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .header-row h1{font-size:clamp(1.4rem,2.1vw,2rem);line-height:1.12;margin:0}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none;cursor:pointer;font-size:14px}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.primary:hover{filter:brightness(1.06)}
+    .site-footer{border-top:1px solid var(--line);background:#fff;padding:16px 0;margin-top:28px}
+    .back-row{display:flex;align-items:center;margin:12px 0 14px}
+    .back-home{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#0ea5e9;text-decoration:none;font-size:14px}
+    .back-home:hover{background:#f0f9ff}
+    .back-home .chev{font-size:16px;line-height:1}
+
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:var(--r-md);background:#fcfcff;margin-bottom:10px;overflow-x:auto}
+    .eqbig{font-size:1.05em;margin-bottom:8px}
+    .title-xl{font-size:18px;line-height:1.22;color:#111;margin-bottom:10px}
+
+    .top-grid{display:grid;gap:12px}
+    @media(min-width:1024px){.top-grid{grid-template-columns:1.2fr 0.9fr}}
+
+    .inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    input[type="number"]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit;width:78px;text-align:right}
+    input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
+    label{font-size:13px;color:#4b5563}
+    select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
+    select:disabled{background:#f3f4f6;color:#9ca3af;border-color:var(--line);cursor:not-allowed}
+
+    .inputs-two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media(max-width:760px){.inputs-two{grid-template-columns:1fr}}
+
+    .kpi{display:grid;gap:10px;margin-top:10px;background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:15px;font-weight:700;color:#111}
+
+    .viz{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px}
+    .schem-box{background:#f8fafc;border:1px solid var(--line);border-radius:var(--r-md);box-shadow:inset 0 1px 2px rgba(0,0,0,.03);padding:16px;width:100%;box-sizing:border-box;display:flex;justify-content:center}
+    svg{width:100%;height:auto;display:block}
+    .axis text{font-size:14px;fill:#111}
+    .axis-title{font-size:14px;fill:#111}
+    .curve{fill:none;stroke-width:2}
+    .ref-curve{fill:none;stroke-width:1.5}
+    .dragpt{fill:#ef4444;stroke:#111;stroke-width:1.2;cursor:crosshair}
+    .hit{fill:transparent;cursor:crosshair}
+
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="header-row">
+      <h1>Isothermal Processes of Ideal Gases</h1>
+      <a class="btn primary" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="back-row">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </nav>
+
+  <!-- TOP GRID: equations + schematic -->
+  <section class="top-grid">
+    <div class="ctl">
+      <div class="eqwrap">
+        <div class="title-xl"><b>Isothermal (Constant-Temperature) Processes of Ideal Gases in a Closed System</b></div>
+        <div class="eqbig">
+          \(\displaystyle pV = \text{constant}\)
+        </div>
+        <div class="eqbig" style="margin-top:10px">
+          \(\displaystyle p_1 V_1 = p_2 V_2\)
+        </div>
+        <div class="eqbig">
+          \(\displaystyle V_2 = V_1\,\frac{p_1}{p_2} \qquad \text{and} \qquad p_2 = p_1\,\frac{V_1}{V_2}\)
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:10px;margin-bottom:4px">Symbols</div>
+        <ul style="margin:8px 0 0 0;padding-left:40px">
+          <li>\(p\) — absolute pressure</li>
+          <li>\(V\) — volume</li>
+          <li>subscript \(1\) — initial state</li>
+          <li>subscript \(2\) — final state</li>
+        </ul>
+      </div>
+    </div>
+    <!-- Right: schematic -->
+    <div>
+      <div class="ctl" style="position:sticky;top:20px">
+        <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
+        <div class="schem" aria-label="Isothermal piston-cylinder schematic" style="box-sizing:border-box;">
+          <div class="schem-box">
+            <img src="../assets/me200/3.a-eq.png" alt="Isothermal piston-cylinder schematic"
+                style="width:100%;height:auto;max-width:420px;display:block;" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INPUTS & OUTPUTS -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Inputs &amp; Outputs</h2>
+
+    <div class="inputs-two">
+      <!-- Left: controls -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="ctl">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Initial pressure \(p_1\) &nbsp;<span style="font-size:11px;color:#6b7280">[100, 1000] kPa</span></label>
+          <div class="inline">
+            <input type="number" id="p1-out" min="100" max="1000" step="10" value="300" onchange="syncVar('p1',this,'num')" />
+            <input type="range" id="p1-in" min="100" max="1000" step="10" value="300" oninput="syncVar('p1',this,'range')" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Initial volume \(V_1\) &nbsp;<span style="font-size:11px;color:#6b7280">[0.1, 1] m³</span></label>
+          <div class="inline">
+            <input type="number" id="V1-out" min="0.1" max="1" step="0.01" value="0.4" onchange="syncVar('V1',this,'num')" />
+            <input type="range" id="V1-in" min="0.1" max="1" step="0.01" value="0.4" oninput="syncVar('V1',this,'range')" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Select second input</label>
+          <select id="mode-select" onchange="onModeChange(this)" style="width:100%;max-width:280px">
+            <option value="p2" selected>Final pressure, p₂</option>
+            <option value="V2">Final volume, V₂</option>
+          </select>
+        </div>
+
+        <div class="ctl" id="p2-row">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Final pressure \(p_2\) &nbsp;<span style="font-size:11px;color:#6b7280">[100, 1000] kPa</span></label>
+          <div class="inline">
+            <input type="number" id="p2-out" min="100" max="1000" step="10" value="600" onchange="syncVar('p2',this,'num')" />
+            <input type="range" id="p2-in" min="100" max="1000" step="10" value="600" oninput="syncVar('p2',this,'range')" />
+          </div>
+        </div>
+
+        <div class="ctl hidden" id="V2-row">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Final volume \(V_2\) &nbsp;<span style="font-size:11px;color:#6b7280">[0.1, 1] m³</span></label>
+          <div class="inline">
+            <input type="number" id="V2-out" min="0.1" max="1" step="0.01" value="0.2" onchange="syncVar('V2',this,'num')" />
+            <input type="range" id="V2-in" min="0.1" max="1" step="0.01" value="0.2" oninput="syncVar('V2',this,'range')" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: outputs -->
+      <div>
+        <div class="kpi" style="grid-template-columns:1fr">
+          <div>
+            <div class="lab" id="output-lab">Final volume \(V_2\)</div>
+            <div class="val"><span id="kpi-output">—</span> <span id="output-unit">m³</span></div>
+          </div>
+        </div>
+        <div class="kpi" style="grid-template-columns:1fr 1fr;margin-top:8px">
+          <div>
+            <div class="lab">State 1: \(p_1,\;V_1\)</div>
+            <div class="val"><span id="kpi-p1">—</span> kPa, <span id="kpi-V1">—</span> m³</div>
+          </div>
+          <div>
+            <div class="lab">State 2: \(p_2,\;V_2\)</div>
+            <div class="val"><span id="kpi-p2">—</span> kPa, <span id="kpi-V2">—</span> m³</div>
+          </div>
+        </div>
+        <div class="kpi" style="grid-template-columns:1fr;margin-top:8px">
+          <div>
+            <div class="lab">Constant \(p_1 V_1 = p_2 V_2\)</div>
+            <div class="val"><span id="kpi-const">—</span> kPa·m³</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLOT -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 6px;font-size:1.25rem">Plot</h2>
+    <div class="viz">
+      <svg id="plot" viewBox="0 0 700 480" aria-label="Isothermal process output plot"></svg>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:#6b7280">
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current final state. Drag it along the curve, or use the inputs above to change the final state.
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </div>
+</footer>
+
+<script>
+// ─── State ───
+let state = { p1: 300, V1: 0.4, mode: 'p2', p2: 600, V2: 0.2 };
+
+const RANGE = {
+  p1: [100, 1000],
+  V1: [0.1, 1],
+  p2: [100, 1000],
+  V2: [0.1, 1],
+};
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function syncVar(key, el, from) {
+  let v = parseFloat(el.value);
+  if (isNaN(v)) v = state[key];
+  v = clamp(v, RANGE[key][0], RANGE[key][1]);
+  state[key] = v;
+  document.getElementById(key + '-out').value = v;
+  document.getElementById(key + '-in').value = v;
+  compute();
+}
+
+function onModeChange(sel) {
+  state.mode = sel.value;
+  document.getElementById('p2-row').classList.toggle('hidden', state.mode !== 'p2');
+  document.getElementById('V2-row').classList.toggle('hidden', state.mode !== 'V2');
+  compute();
+}
+
+function fmt(n, dec) { return isNaN(n) ? '—' : n.toFixed(dec); }
+
+function compute() {
+  const C = state.p1 * state.V1;
+  let outVal, outLab, outUnit;
+
+  if (state.mode === 'p2') {
+    state.V2 = C / state.p2;
+    outVal = state.V2; outLab = 'Final volume \\(V_2\\)'; outUnit = 'm³';
+  } else {
+    state.p2 = C / state.V2;
+    outVal = state.p2; outLab = 'Final pressure \\(p_2\\)'; outUnit = 'kPa';
+  }
+
+  document.getElementById('kpi-output').textContent = fmt(outVal, state.mode === 'p2' ? 4 : 1);
+  document.getElementById('output-unit').textContent = outUnit;
+  const labEl = document.getElementById('output-lab');
+  labEl.innerHTML = outLab;
+  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([labEl]);
+
+  document.getElementById('kpi-p1').textContent = fmt(state.p1, 0);
+  document.getElementById('kpi-V1').textContent = fmt(state.V1, 3);
+  document.getElementById('kpi-p2').textContent = fmt(state.p2, 1);
+  document.getElementById('kpi-V2').textContent = fmt(state.V2, 4);
+  document.getElementById('kpi-const').textContent = fmt(C, 2);
+
+  drawPlot();
+}
+
+function drawPlot() {
+  const svg = d3.select('#plot');
+  svg.selectAll('*').remove();
+
+  const W = 700, H = 480;
+  const mg = { top: 30, right: 30, bottom: 60, left: 70 };
+  const pW = W - mg.left - mg.right;
+  const pH = H - mg.top - mg.bottom;
+
+  const C = state.p1 * state.V1;
+
+  let xDom, yDom, xLabel, yLabel, xKey, yKey, curveXDom;
+  if (state.mode === 'p2') {
+    xDom = [0, 1000];
+    curveXDom = [100, 1000];
+    const V2max = C / curveXDom[0];
+    yDom = [0, V2max < 1 ? 1 : 10];
+    xLabel = 'p\u2082  [kPa]'; yLabel = 'V\u2082  [m\u00b3]';
+    xKey = 'p2'; yKey = 'V2';
+  } else {
+    xDom = RANGE.V2.slice();
+    curveXDom = RANGE.V2.slice();
+    const p2max = C / curveXDom[0];
+    yDom = [0, p2max < 1000 ? 1000 : 10000];
+    xLabel = 'V\u2082  [m\u00b3]'; yLabel = 'p\u2082  [kPa]';
+    xKey = 'V2'; yKey = 'p2';
+  }
+
+  const xSc = d3.scaleLinear().domain(xDom).range([mg.left, mg.left + pW]);
+  const ySc = d3.scaleLinear().domain(yDom).range([mg.top + pH, mg.top]);
+
+  const xAxis = state.mode === 'V2'
+    ? d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+    : d3.axisBottom(xSc).tickValues([0, 200, 400, 600, 800, 1000]);
+  const yAxis = d3.axisLeft(ySc).ticks(6);
+
+  svg.append('g').attr('class', 'axis')
+     .attr('transform', `translate(0,${mg.top + pH})`)
+     .call(xAxis);
+  svg.append('g').attr('class', 'axis')
+     .attr('transform', `translate(${mg.left},0)`)
+     .call(yAxis);
+
+  svg.append('text').attr('class', 'axis-title')
+     .attr('x', mg.left + pW / 2).attr('y', H - 15)
+     .attr('text-anchor', 'middle').text(xLabel);
+  svg.append('text').attr('class', 'axis-title')
+     .attr('transform', `translate(${20},${mg.top + pH / 2}) rotate(-90)`)
+     .attr('text-anchor', 'middle').text(yLabel);
+
+  const lineFn = d3.line()
+    .x(d => xSc(clamp(d.x, xDom[0], xDom[1])))
+    .y(d => ySc(clamp(d.y, yDom[0], yDom[1])))
+    .defined(d => d.y >= yDom[0] * 0.999 && d.y <= yDom[1] * 1.001);
+
+  function curvePts(constant) {
+    const pts = [];
+    const n = 60;
+    for (let i = 0; i <= n; i++) {
+      const x = curveXDom[0] + (curveXDom[1] - curveXDom[0]) * (i / n);
+      pts.push({ x: x, y: constant / x });
+    }
+    return pts;
+  }
+
+
+  if (state.mode === 'p2') {
+    const dashPts = [];
+    const n = 60;
+    const xStart = 0.1; // avoid division by zero at x=0
+    for (let i = 0; i <= n; i++) {
+      const x = xStart + (curveXDom[0] - xStart) * (i / n);
+      dashPts.push({ x: x, y: C / x });
+    }
+    svg.append('path').datum(dashPts)
+       .attr('class', 'curve')
+       .style('stroke', 'var(--accent)')
+       .style('stroke-dasharray', '5 4')
+       .attr('d', lineFn);
+  }
+
+  // current highlighted curve
+  svg.append('path').datum(curvePts(C))
+     .attr('class', 'curve')
+     .style('stroke', 'var(--accent)')
+     .attr('d', lineFn);
+  // current highlighted curve
+
+  svg.append('path').datum(curvePts(C))
+     .attr('class', 'curve')
+     .style('stroke', 'var(--accent)')
+     .attr('d', lineFn);
+
+  // state point 1 marker (on same curve family, at x = p1 or V1 depending on mode)
+  const x1 = state.mode === 'p2' ? state.p1 : state.V1;
+  const y1 = C / x1;
+  if (x1 >= xDom[0] && x1 <= xDom[1] && y1 >= yDom[0] && y1 <= yDom[1]) {
+    svg.append('circle')
+       .attr('cx', xSc(x1)).attr('cy', ySc(y1)).attr('r', 4)
+       .attr('fill', '#111');
+    const nearRight1 = xSc(x1) > mg.left + pW - 60;
+    svg.append('text')
+       .attr('x', xSc(x1) + (nearRight1 ? -8 : 8)).attr('y', ySc(y1) - 8)
+       .attr('text-anchor', nearRight1 ? 'end' : 'start')
+       .attr('font-size', '12px').attr('fill', '#111').text('State 1');
+  }
+
+  // draggable state 2 dot
+  const x2 = state[xKey], y2 = state[yKey];
+  svg.append('circle').attr('class', 'dragpt')
+     .attr('cx', xSc(clamp(x2, xDom[0], xDom[1])))
+     .attr('cy', ySc(clamp(y2, yDom[0], yDom[1])))
+     .attr('r', 6);
+  const nearRight2 = xSc(clamp(x2, xDom[0], xDom[1])) > mg.left + pW - 60;
+  svg.append('text')
+     .attr('x', xSc(clamp(x2, xDom[0], xDom[1])) + (nearRight2 ? -8 : 8))
+     .attr('y', ySc(clamp(y2, yDom[0], yDom[1])) + 4)
+     .attr('text-anchor', nearRight2 ? 'end' : 'start')
+     .attr('font-size', '12px').attr('fill', '#ef4444').text('State 2');
+
+  const hitRect = svg.append('rect').attr('class', 'hit')
+     .attr('x', mg.left).attr('y', mg.top)
+     .attr('width', pW).attr('height', pH);
+
+  hitRect.call(d3.drag().on('start drag end', function (event) {
+    const xm = clamp(event.x, mg.left, mg.left + pW);
+    let xVal = xSc.invert(xm);
+    xVal = clamp(xVal, curveXDom[0], curveXDom[1]);
+    xVal = Math.round(xVal * 100) / 100;
+    state[xKey] = xVal;
+    document.getElementById(xKey + '-out').value = xVal;
+    document.getElementById(xKey + '-in').value = xVal;
+    compute();
+  }));
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  compute();
+  window.addEventListener('resize', compute);
+});
+</script>
+</body>
+</html>
