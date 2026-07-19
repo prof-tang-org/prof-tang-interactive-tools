@@ -262,6 +262,7 @@ function renderControls(inputs) {
         wrapper.id = `wrapper_input_${input.id}`;
 
         const label = document.createElement('label');
+        label.id = `label_input_${input.id}`;
         label.innerHTML = parseText(input.text || input.id);
         wrapper.appendChild(label);
 
@@ -416,12 +417,17 @@ function renderGroup(values, containerId, cols = 5) {
 
         const lab = document.createElement('div');
         lab.className = 'lab';
-        lab.textContent = parseText(value.text);
+        lab.id = `label_${value.id}`;
+        lab.innerHTML = parseText(value.text);
 
         const val = document.createElement('div');
         val.className = 'val';
         val.id = `value_${value.id}`;
-        val.textContent = formatNumber(value.value);
+        if (typeof value.value === 'number') {
+            val.textContent = formatNumber(value.value);
+        } else {
+            val.innerHTML = parseText(String(value.value ?? ''));
+        }
 
         div.appendChild(lab);
         div.appendChild(val);
@@ -524,6 +530,20 @@ function setupCalculationEngine(pageData) {
 
     function updateInputBounds(state) {
         pageData.inputOutput.inputs.forEach(input => {
+            if (typeof input.text === 'string' && input.text.includes('?')) {
+                const labelEl = document.getElementById(`label_input_${input.id}`);
+                if (labelEl) {
+                    const evalText = evaluateFormula(input.text, state);
+                    if (labelEl.getAttribute('data-eval-text') !== evalText) {
+                        labelEl.setAttribute('data-eval-text', evalText);
+                        labelEl.innerHTML = parseText(evalText);
+                        if (window.MathJax && window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise([labelEl]).catch(err => console.error(err));
+                        }
+                    }
+                }
+            }
+
             if (input.type === 'slider' || input.type === 'number' || input.type === 'slider-dropdown') {
                 const minVal = typeof input.min === 'string' ? evaluateFormula(input.min, state) : input.min;
                 const maxVal = typeof input.max === 'string' ? evaluateFormula(input.max, state) : input.max;
@@ -564,7 +584,58 @@ function setupCalculationEngine(pageData) {
     }
 
     function calculateOutputs(state) {
+        if (pageData.inputOutput.fixedInputs) {
+            pageData.inputOutput.fixedInputs.forEach(fixedInput => {
+                if (fixedInput.type === 'calculation' || (typeof fixedInput.value === 'string' && fixedInput.value.includes('?'))) {
+                    const val = evaluateFormula(fixedInput.value, state);
+                    state[fixedInput.id] = val;
+                    const el = document.getElementById(`value_${fixedInput.id}`);
+                    if (el) {
+                        if (typeof val === 'number') {
+                            el.textContent = formatNumber(val);
+                        } else {
+                            const parsed = parseText(String(val ?? ''));
+                            if (el.getAttribute('data-eval-val') !== parsed) {
+                                el.setAttribute('data-eval-val', parsed);
+                                el.innerHTML = parsed;
+                                if (window.MathJax && window.MathJax.typesetPromise) {
+                                    window.MathJax.typesetPromise([el]).catch(err => console.error(err));
+                                }
+                            }
+                        }
+                    }
+                }
+                if (typeof fixedInput.text === 'string' && fixedInput.text.includes('?')) {
+                    const labelEl = document.getElementById(`label_${fixedInput.id}`);
+                    if (labelEl) {
+                        const evalText = evaluateFormula(fixedInput.text, state);
+                        if (labelEl.getAttribute('data-eval-text') !== evalText) {
+                            labelEl.setAttribute('data-eval-text', evalText);
+                            labelEl.innerHTML = parseText(evalText);
+                            if (window.MathJax && window.MathJax.typesetPromise) {
+                                window.MathJax.typesetPromise([labelEl]).catch(err => console.error(err));
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         pageData.inputOutput.outputs.forEach(output => {
+            if (typeof output.text === 'string' && output.text.includes('?')) {
+                const labelEl = document.getElementById(`label_${output.id}`);
+                if (labelEl) {
+                    const evalText = evaluateFormula(output.text, state);
+                    if (labelEl.getAttribute('data-eval-text') !== evalText) {
+                        labelEl.setAttribute('data-eval-text', evalText);
+                        labelEl.innerHTML = parseText(evalText);
+                        if (window.MathJax && window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise([labelEl]).catch(err => console.error(err));
+                        }
+                    }
+                }
+            }
+
             let val;
             if (output.type === 'map') {
                 const keyInput = pageData.inputOutput.inputs.find(i => i.id === output.key);
@@ -584,7 +655,18 @@ function setupCalculationEngine(pageData) {
 
             const el = document.getElementById(`value_${output.id}`);
             if (el) {
-                el.textContent = (typeof val === 'number') ? formatNumber(val) : val;
+                if (typeof val === 'number') {
+                    el.textContent = formatNumber(val);
+                } else {
+                    const parsed = parseText(String(val ?? ''));
+                    if (el.getAttribute('data-eval-val') !== parsed) {
+                        el.setAttribute('data-eval-val', parsed);
+                        el.innerHTML = parsed;
+                        if (window.MathJax && window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise([el]).catch(err => console.error(err));
+                        }
+                    }
+                }
             }
         });
     }
@@ -809,7 +891,7 @@ function injectPlots(state, pageData) {
             .attr('width', iw).attr('height', labelHeight);
         const xLabelDiv = xLabelFO.append('xhtml:div')
             .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
-        const xText = plotConfig.xLabel;
+        const xText = typeof plotConfig.xLabel === 'string' && plotConfig.xLabel.includes('?') ? evaluateFormula(plotConfig.xLabel, state) : plotConfig.xLabel;
         if (mathjaxCache.has(xText)) {
             xLabelDiv.html(mathjaxCache.get(xText));
         } else {
@@ -831,7 +913,7 @@ function injectPlots(state, pageData) {
         const yLabelDiv = yLabelFO.append('xhtml:div')
             .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
             .style('width', '100%').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
-        const yText = plotConfig.yLabel;
+        const yText = typeof plotConfig.yLabel === 'string' && plotConfig.yLabel.includes('?') ? evaluateFormula(plotConfig.yLabel, state) : plotConfig.yLabel;
         if (mathjaxCache.has(yText)) {
             yLabelDiv.html(mathjaxCache.get(yText));
         } else {
@@ -1280,10 +1362,16 @@ window.addEventListener('load', async () => {
         }
         if (pageData.schematic) {
             renderSchematic(pageData.schematic);
+            const card = document.getElementById('schematic-card-container') || document.getElementById('schematic-image-container');
+            if (card) card.classList.remove('hidden');
         } else {
-            const container = document.getElementById('schematic-image-container');
-            container.classList.add('hidden');
-            container.parentElement.classList.remove('grid'); // Remove class from equation-schematic container for layout adjustment
+            const container = document.getElementById('schematic-card-container') || document.getElementById('schematic-image-container');
+            if (container) {
+                container.classList.add('hidden');
+                if (container.parentElement) {
+                    container.parentElement.classList.remove('grid'); // Remove class from equation-schematic container for layout adjustment
+                }
+            }
         }
         renderInputOutput(pageData.inputOutput);
 

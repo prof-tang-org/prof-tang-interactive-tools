@@ -58,11 +58,10 @@
  * @property {number | string} [min] - Minimum boundary value or JS conditional expression (e.g. 0.1, or "conversion-factor == 1.0 ? 5.0 : 15.0")
  * @property {number | string} [max] - Maximum boundary value or JS conditional expression
  * @property {number | string} [step] - Value step interval or JS conditional expression
- * @property {number} [initialValue] - Default value for the input (for slider, number, and slider-dropdown)
+ * @property {number} [initialValue] - Default starting value for the input (for slider, number, dropdown, and slider-dropdown)
  * @property {DropdownChoice[]} [choices] - Array of options (for dropdown and slider-dropdown)
- * @property {number} [initialChoiceIndex] - Index of the initial selected choice (for dropdown)
- * @property {number} [initialCustomValue] - Initial numeric value when the "custom" option is selected (for dropdown)
- * @property {string} [notes] - Small descriptive notes rendered under the dropdown (for dropdown)
+ * @property {number} [initialChoiceIndex] - Index of the initial selected choice (for dropdown and slider-dropdown)
+ * @property {string} [notes] - Small descriptive notes rendered under the control (for dropdown and slider-dropdown)
  */
 
 /**

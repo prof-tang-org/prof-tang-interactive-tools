@@ -229,6 +229,6 @@ const pageData = {
                 ]
             }
         ],
-        "text": "Drag the red dots to analyze the influence of outlet pressure on the outlet state and specific flow work done under different polytropic modes."
+        "text": "Drag the red dots to analyze the influence of outlet pressure on the outlet state and specific work done under different polytropic modes."
     }
 };
