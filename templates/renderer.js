@@ -181,12 +181,85 @@ function clampInputValue(e, inputDef) {
     return null;
 }
 
+function createDropdownSelect(input, selectId) {
+    const select = document.createElement('select');
+    select.id = selectId;
+    if (input.choices) {
+        input.choices.forEach(choice => {
+            const opt = document.createElement('option');
+            opt.value = choice.value;
+            opt.textContent = choice.text;
+            select.appendChild(opt);
+        });
+    }
+    select.selectedIndex = input.initialChoiceIndex !== undefined ? input.initialChoiceIndex : 0;
+    const initCustomVal = input.initialValue ?? input.min ?? 0.01;
+
+    const selectWrapper = document.createElement('div');
+    selectWrapper.className = 'select-wrapper';
+    selectWrapper.appendChild(select);
+
+    return { select, selectWrapper, initCustomVal };
+}
+
+function createSliderControl(input, numId, rangeId, initialValOverride) {
+    const num = document.createElement('input');
+    num.type = 'number';
+    num.id = numId;
+    num.className = 'num-sm';
+
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.id = rangeId;
+
+    const startVal = initialValOverride !== undefined ? initialValOverride : (input.initialValue ?? input.min ?? 0);
+
+    [num, range].forEach(el => {
+        if (input.min !== undefined) el.min = input.min;
+        if (input.max !== undefined) el.max = input.max;
+        if (input.step !== undefined) el.step = input.step;
+        el.value = startVal;
+    });
+
+    // 2-way data binding
+    num.addEventListener('input', e => { range.value = e.target.value; });
+    num.addEventListener('change', e => { clampInputValue(e, input); });
+    range.addEventListener('input', e => { num.value = e.target.value; });
+
+    const rangeAndLabelsContainer = document.createElement('div');
+    rangeAndLabelsContainer.className = 'range-labels-container';
+    rangeAndLabelsContainer.appendChild(range);
+
+    const minMaxLabels = document.createElement('div');
+    minMaxLabels.className = 'min-max-labels';
+
+    if (input.min !== undefined) {
+        const minLabel = document.createElement('span');
+        minLabel.className = 'min-label';
+        minLabel.id = `label_${input.id}_min`;
+        minLabel.textContent = formatNumber(input.min);
+        minMaxLabels.appendChild(minLabel);
+    }
+
+    if (input.max !== undefined) {
+        const maxLabel = document.createElement('span');
+        maxLabel.className = 'max-label';
+        maxLabel.id = `label_${input.id}_max`;
+        maxLabel.textContent = formatNumber(input.max);
+        minMaxLabels.appendChild(maxLabel);
+    }
+    rangeAndLabelsContainer.appendChild(minMaxLabels);
+
+    return { num, range, rangeAndLabelsContainer };
+}
+
 function renderControls(inputs) {
     const container = document.getElementById('controls');
     if (!container) return;
 
     inputs.forEach(input => {
         const wrapper = document.createElement('div');
+        wrapper.id = `wrapper_input_${input.id}`;
 
         const label = document.createElement('label');
         label.innerHTML = parseText(input.text || input.id);
@@ -196,18 +269,8 @@ function renderControls(inputs) {
             const inline = document.createElement('div');
             inline.className = 'inline';
 
-            const select = document.createElement('select');
-            select.id = `input_${input.id}`;
-            input.choices.forEach(choice => {
-                const opt = document.createElement('option');
-                opt.value = choice.value;
-                opt.textContent = choice.text;
-                select.appendChild(opt);
-            });
-
-            select.selectedIndex = input.initialChoiceIndex || 0;
-
-            inline.appendChild(select);
+            const { select, selectWrapper, initCustomVal } = createDropdownSelect(input, `input_${input.id}`);
+            inline.appendChild(selectWrapper);
 
             if (input.choices && input.choices.some(c => c.value === 'custom')) {
                 const customInput = document.createElement('input');
@@ -217,22 +280,19 @@ function renderControls(inputs) {
                 if (input.min !== undefined) customInput.min = input.min;
                 if (input.max !== undefined) customInput.max = input.max;
                 if (input.step !== undefined) customInput.step = input.step;
-                if (input.initialCustomValue !== undefined) customInput.value = input.initialCustomValue;
+                customInput.value = initCustomVal;
 
-                customInput.addEventListener('change', e => {
-                    let val = parseFloat(e.target.value);
-                    if (!isNaN(val)) {
-                        if (input.min !== undefined) val = Math.max(input.min, val);
-                        if (input.max !== undefined) val = Math.min(input.max, val);
-                        e.target.value = val;
-                    }
-                });
+                if (select.value === 'custom') {
+                    customInput.classList.remove('hidden');
+                }
+
+                customInput.addEventListener('change', e => { clampInputValue(e, input); });
 
                 select.addEventListener('change', e => {
                     if (e.target.value === 'custom') {
                         customInput.classList.remove('hidden');
                         if (!customInput.value) {
-                            customInput.value = input.initialCustomValue || input.min || 0.01;
+                            customInput.value = initCustomVal;
                         }
                     } else {
                         customInput.classList.add('hidden');
@@ -259,126 +319,76 @@ function renderControls(inputs) {
             if (input.max !== undefined) num.max = input.max;
             if (input.step !== undefined) num.step = input.step;
             if (input.initialValue !== undefined) num.value = input.initialValue;
+            num.addEventListener('change', e => { clampInputValue(e, input); });
             wrapper.appendChild(num);
         } else if (input.type === 'slider') {
             const inline = document.createElement('div');
             inline.className = 'inline';
 
-            const num = document.createElement('input');
-            num.type = 'number';
-            num.id = `input_${input.id}_num`;
-            num.className = 'num-sm';
+            const { num, rangeAndLabelsContainer } = createSliderControl(input, `input_${input.id}_num`, `input_${input.id}`);
 
-            const range = document.createElement('input');
-            range.type = 'range';
-            range.id = `input_${input.id}`;
-
-            [num, range].forEach(el => {
-                if (input.min !== undefined) el.min = input.min;
-                if (input.max !== undefined) el.max = input.max;
-                if (input.step !== undefined) el.step = input.step;
-                if (input.initialValue !== undefined) el.value = input.initialValue;
-            });
-
-            // 2-way data binding
-            num.addEventListener('input', e => { range.value = e.target.value; });
-            num.addEventListener('change', e => { clampInputValue(e, input); });
-
-            range.addEventListener('input', e => { num.value = e.target.value; });
-
-            inline.appendChild(num); // Number input is still in 'inline'
-
-            const rangeAndLabelsContainer = document.createElement('div'); // New container for range and labels
-            rangeAndLabelsContainer.className = 'range-labels-container'; // New class for styling
-
-            rangeAndLabelsContainer.appendChild(range); // Range is now in the new container
-
-            // min/max labels for slider
-            const minMaxLabels = document.createElement('div');
-            minMaxLabels.className = 'min-max-labels';
-
-            if (input.min !== undefined) {
-                const minLabel = document.createElement('span');
-                minLabel.className = 'min-label';
-                minLabel.id = `label_${input.id}_min`;
-                minLabel.textContent = formatNumber(input.min);
-                minMaxLabels.appendChild(minLabel);
-            }
-
-            if (input.max !== undefined) {
-                const maxLabel = document.createElement('span');
-                maxLabel.className = 'max-label';
-                maxLabel.id = `label_${input.id}_max`;
-                maxLabel.textContent = formatNumber(input.max);
-                minMaxLabels.appendChild(maxLabel);
-            }
-            rangeAndLabelsContainer.appendChild(minMaxLabels); // minMaxLabels is also in the new container
-
-            inline.appendChild(rangeAndLabelsContainer); // The new container is appended to 'inline'
-            wrapper.appendChild(inline); // 'inline' (with number and new container) is appended to 'wrapper'
-
+            inline.appendChild(num);
+            inline.appendChild(rangeAndLabelsContainer);
+            wrapper.appendChild(inline);
         } else if (input.type === 'slider-dropdown') {
             const inline = document.createElement('div');
             inline.className = 'inline';
 
-            const num = document.createElement('input');
-            num.type = 'number';
-            num.id = `input_${input.id}_num`;
-            num.className = 'num-sm';
-            if (input.min !== undefined) num.min = input.min;
-            if (input.max !== undefined) num.max = input.max;
-            if (input.step !== undefined) num.step = input.step;
-            if (input.initialValue !== undefined) num.value = input.initialValue;
+            const { select, selectWrapper, initCustomVal } = createDropdownSelect(input, `input_${input.id}_dropdown`);
 
-            const select = document.createElement('select');
-            select.id = `input_${input.id}_unit`;
-            if (input.choices) {
-                input.choices.forEach(choice => {
-                    const opt = document.createElement('option');
-                    opt.value = choice.value;
-                    opt.textContent = choice.text;
-                    select.appendChild(opt);
-                });
+            let startVal;
+            if (select.value === 'custom') {
+                startVal = initCustomVal;
+            } else {
+                const parsed = parseFloat(select.value);
+                startVal = !isNaN(parsed) ? parsed : initCustomVal;
             }
+
+            const { num, range, rangeAndLabelsContainer } = createSliderControl(input, `input_${input.id}_num`, `input_${input.id}`, startVal);
+
+            const syncSelectFromNumeric = (val) => {
+                if (input.choices) {
+                    const matchingChoice = input.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - val) < 1e-6);
+                    if (matchingChoice) {
+                        select.value = matchingChoice.value;
+                    } else if (input.choices.some(c => c.value === 'custom')) {
+                        select.value = 'custom';
+                    }
+                }
+            };
+
+            select.addEventListener('change', e => {
+                if (e.target.value === 'custom') {
+                    if (!num.value) {
+                        num.value = initCustomVal;
+                        range.value = initCustomVal;
+                    }
+                } else {
+                    const parsed = parseFloat(e.target.value);
+                    if (!isNaN(parsed)) {
+                        num.value = parsed;
+                        range.value = parsed;
+                    }
+                }
+            });
+
+            num.addEventListener('input', e => {
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val)) syncSelectFromNumeric(val);
+            });
+            num.addEventListener('change', e => {
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val)) syncSelectFromNumeric(val);
+            });
+            range.addEventListener('input', e => {
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val)) syncSelectFromNumeric(val);
+            });
 
             inline.appendChild(num);
-            inline.appendChild(select);
+            inline.appendChild(selectWrapper);
             wrapper.appendChild(inline);
-
-            const range = document.createElement('input');
-            range.type = 'range';
-            range.id = `input_${input.id}`;
-            if (input.min !== undefined) range.min = input.min;
-            if (input.max !== undefined) range.max = input.max;
-            if (input.step !== undefined) range.step = input.step;
-            if (input.initialValue !== undefined) range.value = input.initialValue;
-
-            num.addEventListener('input', e => { range.value = e.target.value; });
-            num.addEventListener('change', e => { clampInputValue(e, input); });
-            range.addEventListener('input', e => { num.value = e.target.value; });
-
-            wrapper.appendChild(range);
-
-            // min/max labels for slider
-            const minMaxLabels = document.createElement('div');
-            minMaxLabels.className = 'min-max-labels';
-
-            if (input.min !== undefined) {
-                const minLabel = document.createElement('span');
-                minLabel.className = 'min-label';
-                minLabel.id = `label_${input.id}_min`;
-                minLabel.textContent = formatNumber(input.min);
-                minMaxLabels.appendChild(minLabel);
-            }
-
-            if (input.max !== undefined) {
-                const maxLabel = document.createElement('span');
-                maxLabel.className = 'max-label';
-                maxLabel.id = `label_${input.id}_max`;
-                maxLabel.textContent = formatNumber(input.max);
-                minMaxLabels.appendChild(maxLabel);
-            }
-            wrapper.appendChild(minMaxLabels);
+            wrapper.appendChild(rangeAndLabelsContainer);
         }
 
         container.appendChild(wrapper);
@@ -495,7 +505,10 @@ function setupCalculationEngine(pageData) {
                     state[input.id] = parseFloat(el.value);
                 }
             }
-            // Gather units for slider-dropdown
+            const dropdownEl = document.getElementById(`input_${input.id}_dropdown`);
+            if (dropdownEl) {
+                state[`${input.id}_dropdown`] = dropdownEl.value;
+            }
             const unitEl = document.getElementById(`input_${input.id}_unit`);
             if (unitEl) {
                 state[`${input.id}_unit`] = unitEl.value;
@@ -555,9 +568,10 @@ function setupCalculationEngine(pageData) {
             let val;
             if (output.type === 'map') {
                 const keyInput = pageData.inputOutput.inputs.find(i => i.id === output.key);
-                if (keyInput && keyInput.type === 'dropdown') {
-                    const selectedValue = state[output.key];
-                    const selectedIndex = keyInput.choices.findIndex(c => c.value === selectedValue);
+                if (keyInput && (keyInput.type === 'dropdown' || keyInput.type === 'slider-dropdown')) {
+                    const dropdownEl = document.getElementById(`input_${output.key}_dropdown`) || document.getElementById(`input_${output.key}`);
+                    const selectedValue = dropdownEl ? dropdownEl.value : state[output.key];
+                    const selectedIndex = keyInput.choices ? keyInput.choices.findIndex(c => c.value === selectedValue || parseFloat(c.value) === selectedValue) : -1;
                     if (selectedIndex !== -1 && output.value[selectedIndex] !== undefined) {
                         val = output.value[selectedIndex];
                     }
@@ -575,6 +589,52 @@ function setupCalculationEngine(pageData) {
         });
     }
 
+    // Cache DOM element references and state tracking for high-performance dotted-range updates
+    const dottedRangeState = new Map();
+
+    function updateDottedRangeStyling(state) {
+        const dottedRange = pageData.inputOutput && pageData.inputOutput.dottedRange;
+        if (!dottedRange) return;
+
+        const ranges = Array.isArray(dottedRange) ? dottedRange : [dottedRange];
+
+        ranges.forEach((range, index) => {
+            const varId = range.variable;
+            const currentVal = state[varId];
+            if (currentVal === undefined || isNaN(currentVal)) return;
+
+            const minVal = typeof range.min === 'string' ? evaluateFormula(range.min, state) : range.min;
+            const maxVal = typeof range.max === 'string' ? evaluateFormula(range.max, state) : range.max;
+
+            const isGrayed = (currentVal >= minVal && currentVal <= maxVal);
+
+            // Short-circuit if grayed state hasn't changed to avoid unnecessary DOM operations
+            let entry = dottedRangeState.get(index);
+            if (!entry) {
+                entry = {
+                    lastGrayed: null,
+                    wrapperEl: document.getElementById(`wrapper_input_${varId}`),
+                    outputValEls: pageData.inputOutput.outputs ? pageData.inputOutput.outputs.map(o => document.getElementById(`value_${o.id}`)).filter(Boolean) : []
+                };
+                dottedRangeState.set(index, entry);
+            }
+
+            if (entry.lastGrayed === isGrayed) return;
+            entry.lastGrayed = isGrayed;
+
+            // Update DOM only when crossing the state boundary
+            if (entry.wrapperEl) {
+                entry.wrapperEl.classList.toggle('grayed-out', isGrayed);
+                entry.wrapperEl.style.filter = isGrayed ? 'grayscale(1)' : '';
+            }
+
+            entry.outputValEls.forEach(valEl => {
+                valEl.classList.toggle('grayed-out', isGrayed);
+                valEl.style.color = isGrayed ? 'gray' : '';
+            });
+        });
+    }
+
     function compute(e) {
         if (e && e.target && e.target.id) {
             // strip 'input_' and '_num' prefixes/suffixes to get core ID
@@ -587,6 +647,7 @@ function setupCalculationEngine(pageData) {
         const state = gatherInputs();
         updateInputBounds(state);
         calculateOutputs(state);
+        updateDottedRangeStyling(state);
 
         injectPlots(state, pageData);
     }
@@ -986,13 +1047,14 @@ function injectPlots(state, pageData) {
             }
         }
 
-        // Draw Current Point
+        // Draw Draggable Point at current vals
         const currentXVal = state[plotConfig.x];
+        const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
         const dragpt = svg.append('circle').attr('class', 'dragpt')
             .attr('r', 6 * scale)
             .attr('cx', x(currentXVal))
             .attr('cy', y(currentYVal))
-            .style('fill', '#0075ff')
+            .style('fill', ptGrayed ? 'gray' : '#0075ff')
             .style('stroke', 'none');
 
         // Interaction Background
@@ -1005,6 +1067,7 @@ function injectPlots(state, pageData) {
                 const elPrimary = document.getElementById(`input_${plotConfig.x}`);
                 const elNum = document.getElementById(`input_${plotConfig.x}_num`);
                 const customEl = document.getElementById(`input_${plotConfig.x}_custom`);
+                const elDropdown = document.getElementById(`input_${plotConfig.x}_dropdown`);
 
                 let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
                 let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
@@ -1013,18 +1076,19 @@ function injectPlots(state, pageData) {
                 const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
                 let dropdownChoiceVal = null;
 
-                if (inputDef && inputDef.type === 'dropdown') {
+                if (inputDef && (inputDef.type === 'dropdown' || inputDef.type === 'slider-dropdown')) {
                     const hasCustom = inputDef.choices && inputDef.choices.some(c => c.value === 'custom');
-                    if (hasCustom) {
-                        if (elPrimary) elPrimary.value = 'custom';
-                        if (customEl) {
-                            customEl.classList.remove('hidden');
-                            let clampedX = newX;
-                            if (inputDef.min !== undefined) clampedX = Math.max(inputDef.min, clampedX);
-                            if (inputDef.max !== undefined) clampedX = Math.min(inputDef.max, clampedX);
-                            customEl.value = clampedX;
-                            newX = clampedX;
-                        }
+                    const matchingChoice = inputDef.choices ? inputDef.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - newX) < 1e-5) : null;
+
+                    if (matchingChoice) {
+                        newX = parseFloat(matchingChoice.value);
+                        dropdownChoiceVal = matchingChoice.value;
+                    } else if (hasCustom) {
+                        dropdownChoiceVal = 'custom';
+                        let clampedX = newX;
+                        if (inputDef.min !== undefined) clampedX = Math.max(inputDef.min, clampedX);
+                        if (inputDef.max !== undefined) clampedX = Math.min(inputDef.max, clampedX);
+                        newX = clampedX;
                     } else if (inputDef.choices) {
                         let closestChoice = inputDef.choices[0];
                         let minDiff = Infinity;
@@ -1068,11 +1132,20 @@ function injectPlots(state, pageData) {
 
                 // Sync Input DOM Elements
                 if (elNum) elNum.value = newX;
+                if (customEl && dropdownChoiceVal === 'custom') {
+                    customEl.classList.remove('hidden');
+                    customEl.value = newX;
+                } else if (customEl) {
+                    customEl.classList.add('hidden');
+                }
+
+                if (elDropdown && dropdownChoiceVal !== null) {
+                    elDropdown.value = dropdownChoiceVal;
+                }
+
                 if (elPrimary) {
                     if (inputDef && inputDef.type === 'dropdown') {
-                        if (inputDef.choices && inputDef.choices.some(c => c.value === 'custom')) {
-                            elPrimary.value = 'custom';
-                        } else if (dropdownChoiceVal !== null) {
+                        if (dropdownChoiceVal !== null) {
                             elPrimary.value = dropdownChoiceVal;
                         } else {
                             elPrimary.value = newX;
@@ -1129,6 +1202,28 @@ function renderInputOutput(inputOutput) {
     renderGroup(inputOutput.fixedInputs, 'fixed-inputs', inputOutput.inputColumns);
     renderControls(inputOutput.inputs);
     renderGroup(inputOutput.outputs, 'outputs', inputOutput.outputColumns);
+
+    if (inputOutput.note) {
+        const noteText = typeof inputOutput.note === 'string' ? inputOutput.note : inputOutput.note.text;
+        if (noteText) {
+            const controlsEl = document.getElementById('controls');
+            const cardEl = controlsEl ? controlsEl.closest('.card') : null;
+            if (cardEl) {
+                let noteEl = document.getElementById('input-output-note');
+                if (!noteEl) {
+                    noteEl = document.createElement('div');
+                    noteEl.id = 'input-output-note';
+                    noteEl.className = 'note';
+                    noteEl.style.marginTop = '12px';
+                    cardEl.appendChild(noteEl);
+                }
+                noteEl.innerHTML = parseText(noteText);
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    window.MathJax.typesetPromise([noteEl]).catch(err => console.error(err));
+                }
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------

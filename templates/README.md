@@ -191,12 +191,14 @@ Interactive controls rendered inside the `#controls` container.
 * `type` (String): The type of UI control:
   * **`slider`**: A slider synced with a numeric text box. Shows bounds labels under the track.
   * **`number`**: A small standalone numeric input box.
-  * **`dropdown`**: A selection menu. Requires a `choices` array of `{ "text": "Label", "value": "val" }` objects. Can include optional `notes` text.
-  * **`slider-dropdown`**: A slider combined with a select box next to it (e.g. for choosing units).
+  * **`dropdown`**: A selection menu. Requires a `choices` array of `{ "text": "Label", "value": "val" }` objects. Can include optional `notes` text. Supports custom numeric input when a `"custom"` option is present.
+  * **`slider-dropdown`**: A slider combined with a select box next to it. Fully syncs numeric slider input and dropdown choice selections.
 * `min` (Number): Minimum allowed value.
 * `max` (Number): Maximum allowed value.
 * `step` (Number): Tick interval for the slider.
-* `initialValue` (Number): Default starting value.
+* `initialValue` (Number): Default starting numeric value for `slider`, `number`, `dropdown`, or `slider-dropdown`.
+* `choices` (Array of Objects): Preset choices for `dropdown` and `slider-dropdown`.
+* `initialChoiceIndex` (Number, optional): Default selected index for `choices` (defaults to 0).
 
 #### 3. `outputs` (Array of Objects)
 Dynamically updated outputs rendered under `#outputs`.

@@ -75,12 +75,20 @@
  */
 
 /**
+ * @typedef {Object} DottedRangeConfig
+ * @property {string} variable - ID of the input variable to monitor
+ * @property {number | string} min - Lower boundary of the grayed/dotted range
+ * @property {number | string} max - Upper boundary of the grayed/dotted range
+ */
+
+/**
  * @typedef {Object} InputOutputConfig
  * @property {FixedInput[]} [fixedInputs] - Read-only constant values in calculations
  * @property {InputConfig[]} inputs - Interactive control parameters
  * @property {OutputConfig[]} outputs - Computed outcomes
  * @property {number} [outputColumns] - Columns for grid-rendering of the outputs (e.g., 3)
  * @property {{ text: string }} [note] - Optional conceptual note describing the simulation
+ * @property {DottedRangeConfig | DottedRangeConfig[]} [dottedRange] - Configuration for range where inputs and outputs are grayed out
  */
 
 /**
@@ -105,6 +113,7 @@
  * @property {number} [yTickRotation] - Angle of rotation for Y-axis tick labels (e.g. 45)
  * @property {number} [dottedMin] - Start boundary of dotted range along the X-axis (useful for showing physically impossible regions)
  * @property {number} [dottedMax] - End boundary of dotted range along the X-axis
+ * @property {string} [activeLabel] - Optional text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$")
  */
 
 /**

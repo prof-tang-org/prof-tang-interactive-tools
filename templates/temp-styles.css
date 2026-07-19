@@ -162,13 +162,51 @@ html {
 }
 
 #controls input[type="number"],
-#controls input[type="text"],
-#controls select {
+#controls input[type="text"] {
   padding: 0.375rem 0.5rem;
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   background: #fff;
   color: inherit;
+}
+
+.select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.75rem;
+}
+
+.select-wrapper select {
+  width: 100%;
+  min-width: 0;
+  border: none !important;
+  outline: none;
+  background: transparent !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.375rem 2.25rem 0.375rem 0.625rem;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  cursor: pointer;
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 3.2rem), transparent calc(100% - 1.5rem), transparent 100%);
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 3.2rem), transparent calc(100% - 1.5rem), transparent 100%);
+}
+
+.select-wrapper:focus-within {
+  border-color: var(--accent, #0ea5e9);
 }
 
 #controls input[type="range"] {
@@ -335,14 +373,24 @@ section {
   width: 100%;
 }
 
-#controls .inline select:first-child {
+#controls .inline .select-wrapper {
   flex: 1 1 0%;
   min-width: 0;
 }
 
-#controls .inline select:first-child+input.num-sm {
+#controls .inline .select-wrapper:first-child {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+#controls .inline .select-wrapper:first-child+input.num-sm {
   width: 5.5rem;
   flex: 0 0 5.5rem;
+  min-width: 0;
+}
+
+#controls .inline input.num-sm+.select-wrapper {
+  flex: 1 1 0%;
   min-width: 0;
 }
 

@@ -11,27 +11,27 @@ const pageData = {
         },
         {
             "type": "equation",
-            "text": "V = \\frac{k}{n} R_h^{\\frac{2}{3}} s_0^{\\frac{1}{2}}"
+            "text": "V = \\frac{\\kappa}{n} R_h^{\\frac{2}{3}} s_0^{\\frac{1}{2}}"
         },
         {
             "type": "list",
             "header": "Variables",
             "content": [
                 {
-                    "text": "$V$ — velocity (m/s or ft/s)"
+                    "text": "$V$ — velocity"
                 },
                 {
-                    "text": "$R_h$ — hydraulic radius (m or ft)"
+                    "text": "$\\kappa$ — unit conversion factor"
                 },
                 {
-                    "text": "$s_0$ — bottom slope (m/m or ft/ft)"
+                    "text": "$n$ — Manning roughness coefficient"
                 },
                 {
-                    "text": "$n$ — Manning resistance coefficient"
+                    "text": "$R_h$ — hydraulic radius"
                 },
                 {
-                    "text": "$k$ — unit conversion factor ($1$ for metric, $1.49$ for imperial)"
-                }
+                    "text": "$s_0$ — bottom slope"
+                },
             ]
         }
     ],
@@ -40,26 +40,26 @@ const pageData = {
             {
                 "type": "dropdown",
                 "id": "conversion-factor",
-                "text": "Unit System ($k$)",
+                "text": "Unit Conversion Factor, $\\kappa$",
                 "choices": [
                     {
-                        "text": "Metric (k = 1.0)",
+                        "text": "Metric (κ = 1.0)",
                         "value": "1.0"
                     },
                     {
-                        "text": "Imperial (k = 1.49)",
+                        "text": "Imperial (κ = 1.49)",
                         "value": "1.49"
                     }
                 ]
             },
             {
-                "type": "dropdown",
+                "type": "slider-dropdown",
                 "id": "manning",
-                "text": "Manning roughness (n)",
+                "text": "Manning Roughness, $n$",
                 "min": 0.01,
                 "max": 0.08,
                 "step": 0.001,
-                "initialCustomValue": 0.012,
+                "initialValue": 0.012,
                 "initialChoiceIndex": 1,
                 "choices": [
                     {
@@ -75,7 +75,7 @@ const pageData = {
                         "value": "0.035"
                     },
                     {
-                        "text": "Heavily brushed flood-plains (n = 0.075)",
+                        "text": "Heavily brushed floodplains (n = 0.075)",
                         "value": "0.075"
                     },
                 ]
@@ -83,7 +83,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "hydraulic-radius",
-                "text": "Hydraulic Radius ($R_h$)",
+                "text": "Hydraulic Radius, $R_h$ [m or ft]",
                 "min": 0.1,
                 "max": "conversion-factor == 1.0 ? 5.0 : 15.0",
                 "initialValue": 1,
@@ -92,7 +92,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "bottom-slope",
-                "text": "Bottom Slope ($s_0$)",
+                "text": "Bottom Slope, $s_0$",
                 "min": 0.0001,
                 "max": 0.01,
                 "initialValue": 0.005,
@@ -101,7 +101,7 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "Velocity ($V$)",
+                "text": "Velocity, $V$ [m/s or ft/s]",
                 "id": "velocity",
                 "type": "calculation",
                 "value": "conversion-factor / manning * pow(hydraulic-radius, 2/3) * sqrt(bottom-slope)"

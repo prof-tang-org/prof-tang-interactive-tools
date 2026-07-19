@@ -57,7 +57,7 @@ const pageData = {
             "content": [
                 {
                     "text": "$y_1$ — depth at section (1)"
-                }, 
+                },
                 {
                     "text": "$y_2$ — depth at section (2)"
                 },
@@ -86,7 +86,7 @@ const pageData = {
     "schematic": {
         "src": "../assets/me310/10.26-eq.png",
         "alt": "Schematic of a hydraulic jump in an open channel, showing the flow before and after the jump, the jump region, and the relevant parameters such as flow depth and velocity."
-    }, 
+    },
     "inputOutput": {
         "inputs": [
             {
@@ -118,9 +118,18 @@ const pageData = {
                 "type": "calculation",
                 "value": "froude-1 * pow(1 / depth-ratio, 1.5)"
             }
-        ]
+        ],
+        "dottedRange": {
+            "variable": "froude-1",
+            "min": 0,
+            "max": 1
+        },
+        "note": {
+            "text": "The values gray out when the head loss becomes negative, as this would imply energy creation."
+        }
     },
     "plots": {
+        "aspectRatio": 2.8,
         "settings": [
             {
                 "y": "depth-ratio",
@@ -162,8 +171,8 @@ const pageData = {
                 "dottedMax": 1
             }
         ],
-        "text": "Adjust the upstream Froude number ($Fr_1$) to dynamically " 
-        + "view changes across the hydraulic jump. Note that the plot for $Fr_1 < 1$ is dashed " 
-        + "because it is impossible—flow must be supercritical for a hydraulic jump to occur!"
+        "text": "Adjust the upstream Froude number ($Fr_1$) to dynamically "
+            + "view changes across the hydraulic jump. Note that the plot for $Fr_1 < 1$ is dashed "
+            + "because it is impossible—flow must be supercritical for a hydraulic jump to occur!"
     }
 };
