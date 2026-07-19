@@ -74,7 +74,7 @@ function renderContent(data, containerId) {
 
     if (card) {
         // 1. Safe, efficient way to clear filler content without innerHTML
-        card.textContent = ''; 
+        card.textContent = '';
 
         data.forEach(item => {
             if (item.type === 'header') {
@@ -105,7 +105,7 @@ function renderContent(data, containerId) {
             } else if (item.type === 'list') {
                 const div = document.createElement('div');
                 div.className = 'note';
-                
+
                 // Replaced <b> innerHTML template string with a safe element structure
                 const b = document.createElement('b');
                 b.textContent = item.header;
@@ -117,7 +117,7 @@ function renderContent(data, containerId) {
                     li.insertAdjacentHTML('beforeend', parseText(sym.text));
                     ul.appendChild(li);
                 });
-                
+
                 div.appendChild(ul);
                 card.appendChild(div);
             } else if (item.type === 'schematic') {
@@ -187,7 +187,7 @@ function renderControls(inputs) {
 
     inputs.forEach(input => {
         const wrapper = document.createElement('div');
-        
+
         const label = document.createElement('label');
         label.innerHTML = parseText(input.text || input.id);
         wrapper.appendChild(label);
@@ -208,7 +208,7 @@ function renderControls(inputs) {
             select.selectedIndex = input.initialChoiceIndex || 0;
 
             inline.appendChild(select);
-            
+
             if (input.choices && input.choices.some(c => c.value === 'custom')) {
                 const customInput = document.createElement('input');
                 customInput.type = 'number';
@@ -218,7 +218,7 @@ function renderControls(inputs) {
                 if (input.max !== undefined) customInput.max = input.max;
                 if (input.step !== undefined) customInput.step = input.step;
                 if (input.initialCustomValue !== undefined) customInput.value = input.initialCustomValue;
-                
+
                 customInput.addEventListener('change', e => {
                     let val = parseFloat(e.target.value);
                     if (!isNaN(val)) {
@@ -227,7 +227,7 @@ function renderControls(inputs) {
                         e.target.value = val;
                     }
                 });
-                
+
                 select.addEventListener('change', e => {
                     if (e.target.value === 'custom') {
                         customInput.classList.remove('hidden');
@@ -238,12 +238,12 @@ function renderControls(inputs) {
                         customInput.classList.add('hidden');
                     }
                 });
-                
+
                 inline.appendChild(customInput);
             }
-            
+
             wrapper.appendChild(inline);
-            
+
             if (input.notes) {
                 const note = document.createElement('div');
                 note.className = 'note';
@@ -263,16 +263,16 @@ function renderControls(inputs) {
         } else if (input.type === 'slider') {
             const inline = document.createElement('div');
             inline.className = 'inline';
-            
+
             const num = document.createElement('input');
             num.type = 'number';
             num.id = `input_${input.id}_num`;
             num.className = 'num-sm';
-            
+
             const range = document.createElement('input');
             range.type = 'range';
             range.id = `input_${input.id}`;
-            
+
             [num, range].forEach(el => {
                 if (input.min !== undefined) el.min = input.min;
                 if (input.max !== undefined) el.max = input.max;
@@ -316,11 +316,11 @@ function renderControls(inputs) {
 
             inline.appendChild(rangeAndLabelsContainer); // The new container is appended to 'inline'
             wrapper.appendChild(inline); // 'inline' (with number and new container) is appended to 'wrapper'
-            
+
         } else if (input.type === 'slider-dropdown') {
             const inline = document.createElement('div');
             inline.className = 'inline';
-            
+
             const num = document.createElement('input');
             num.type = 'number';
             num.id = `input_${input.id}_num`;
@@ -329,7 +329,7 @@ function renderControls(inputs) {
             if (input.max !== undefined) num.max = input.max;
             if (input.step !== undefined) num.step = input.step;
             if (input.initialValue !== undefined) num.value = input.initialValue;
-            
+
             const select = document.createElement('select');
             select.id = `input_${input.id}_unit`;
             if (input.choices) {
@@ -340,11 +340,11 @@ function renderControls(inputs) {
                     select.appendChild(opt);
                 });
             }
-            
+
             inline.appendChild(num);
             inline.appendChild(select);
             wrapper.appendChild(inline);
-            
+
             const range = document.createElement('input');
             range.type = 'range';
             range.id = `input_${input.id}`;
@@ -352,13 +352,13 @@ function renderControls(inputs) {
             if (input.max !== undefined) range.max = input.max;
             if (input.step !== undefined) range.step = input.step;
             if (input.initialValue !== undefined) range.value = input.initialValue;
-            
+
             num.addEventListener('input', e => { range.value = e.target.value; });
             num.addEventListener('change', e => { clampInputValue(e, input); });
             range.addEventListener('input', e => { num.value = e.target.value; });
-            
+
             wrapper.appendChild(range);
-            
+
             // min/max labels for slider
             const minMaxLabels = document.createElement('div');
             minMaxLabels.className = 'min-max-labels';
@@ -379,8 +379,8 @@ function renderControls(inputs) {
                 minMaxLabels.appendChild(maxLabel);
             }
             wrapper.appendChild(minMaxLabels);
-        } 
-        
+        }
+
         container.appendChild(wrapper);
 
         if (window.MathJax && window.MathJax.typesetPromise) {
@@ -389,28 +389,30 @@ function renderControls(inputs) {
     });
 }
 
-function renderGroup(values, containerId) {
+function renderGroup(values, containerId, cols = 5) {
     if (values === undefined || values.length === 0) return;
 
     const container = document.getElementById(containerId);
-    if (!container) return; 
+    if (!container) return;
     container.textContent = '';
-    container.style.gridTemplateColumns = `repeat(${Math.min(values.length, 5)}, minmax(60px, 1fr))`;
+    if (cols) {
+        container.style.gridTemplateColumns = `repeat(${Math.min(values.length, cols)}, minmax(60px, 1fr))`;
+    }
     container.classList.remove('hidden');
 
     values.forEach(value => {
         const div = document.createElement('div');
         div.classList.add('value-container');
-        
+
         const lab = document.createElement('div');
         lab.className = 'lab';
         lab.textContent = parseText(value.text);
-        
+
         const val = document.createElement('div');
         val.className = 'val';
         val.id = `value_${value.id}`;
         val.textContent = formatNumber(value.value);
-        
+
         div.appendChild(lab);
         div.appendChild(val);
         container.appendChild(div);
@@ -429,7 +431,7 @@ function evaluateFormula(formula, state) {
     let fn = formulaCache.get(formula);
     if (!fn) {
         let parsedFormula = formula;
-        
+
         // Sort keys descending to safely replace longer IDs first
         const keys = Object.keys(state).sort((a, b) => b.length - a.length);
         keys.forEach(k => {
@@ -437,26 +439,26 @@ function evaluateFormula(formula, state) {
             const regex = new RegExp(`(?<![a-zA-Z0-9_])(?<![a-zA-Z0-9_]-)(${escapedKey})(?![a-zA-Z0-9_])(?!-[a-zA-Z0-9_])`, 'g');
             parsedFormula = parsedFormula.replace(regex, `state["${k}"]`);
         });
-        
+
         // Replace standard math functions with Math.xxx
         const mathFuncs = Object.getOwnPropertyNames(Math);
         mathFuncs.forEach(func => {
             const regex = new RegExp(`(^|[^a-zA-Z0-9_.])(${func})\\b`, 'g');
             parsedFormula = parsedFormula.replace(regex, `$1Math.$2`);
         });
-        
+
         try {
             fn = new Function('state', `return ${parsedFormula};`);
             formulaCache.set(formula, fn);
-        } catch(e) {
+        } catch (e) {
             console.error("Evaluation Compilation Error:", formula, parsedFormula, e);
             return NaN;
         }
     }
-    
+
     try {
         return fn(state);
-    } catch(e) {
+    } catch (e) {
         console.error("Evaluation Execution Error:", formula, e);
         return NaN;
     }
@@ -563,9 +565,9 @@ function setupCalculationEngine(pageData) {
             } else if (output.type === 'calculation') {
                 val = evaluateFormula(output.value, state);
             }
-            
+
             state[output.id] = val;
-            
+
             const el = document.getElementById(`value_${output.id}`);
             if (el) {
                 el.textContent = (typeof val === 'number') ? formatNumber(val) : val;
@@ -581,16 +583,16 @@ function setupCalculationEngine(pageData) {
                 lastChangedInputId = rawId;
             }
         }
-        
+
         const state = gatherInputs();
         updateInputBounds(state);
         calculateOutputs(state);
-        
+
         injectPlots(state, pageData);
     }
 
     // Expose a global hook for D3 drag events to trigger calculations
-    window.forceCompute = function(inputId) {
+    window.forceCompute = function (inputId) {
         lastChangedInputId = inputId;
         compute();
     };
@@ -618,7 +620,7 @@ function _calculateState(baseState, xVal, plotConfig, pageData) {
     return tempState;
 }
 
-function _plot(refData, clipId=0, name='', dashed=false, opacity=1, stroke='black') {
+function _plot(refData, clipId = 0, name = '', dashed = false, opacity = 1, stroke = 'black', strokeWidth = 2) {
     const svg = d3.select('#plot');
     if (svg.empty()) return;
 
@@ -627,24 +629,26 @@ function _plot(refData, clipId=0, name='', dashed=false, opacity=1, stroke='blac
         .style('stroke-dasharray', dashed ? '4 4' : null)
         .style('opacity', `${opacity}`)
         .style('stroke', stroke)
+        .style('stroke-width', `${strokeWidth}px`)
         .style('fill', 'none')
+        .style('stroke-linecap', 'round')
         .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
 }
 
 function injectPlots(state, pageData) {
     if (!pageData.plots || pageData.plots.settings.length === 0 || typeof d3 === 'undefined') return;
-    
+
     const svg = d3.select('#plot');
     if (svg.empty()) return;
     svg.selectAll('*').remove(); // Clear previous plot
-    
+
     let W = 760, H = 320, m = { l: 100, r: 40, t: 14, b: 60 };
     if (pageData.plots.aspectRatio !== undefined) {
         H = W / pageData.plots.aspectRatio;
         const svgEl = document.getElementById('plot');
         if (svgEl) {
             svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
-            console.log(svgEl.viewBox);
+            // console.log(svgEl.viewBox);
         }
     }
     const gap = 80;
@@ -652,14 +656,14 @@ function injectPlots(state, pageData) {
     const totalGap = gap * (numPlots - 1);
     const iw = (W - m.l - m.r - totalGap) / numPlots;
     const ih = H - m.t - m.b;
-    
+
     // Anti-scaling for text
     const renderedWidth = svg.node() ? svg.node().getBoundingClientRect().width : W;
     const scale = (renderedWidth > 0) ? W / renderedWidth : 1;
-    
+
     pageData.plots.settings.forEach((plotConfig, i) => {
         const plot_x_offset = m.l + i * (iw + gap);
-        
+
         let currentYVal = state[plotConfig.y];
         if (currentYVal === undefined || isNaN(currentYVal)) return;
 
@@ -676,10 +680,10 @@ function injectPlots(state, pageData) {
                 yMax = yMax[yIndex];
             }
         }
-        
+
         const xMinVal = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
         const xMaxVal = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
-        
+
         let xTickIntervalVal = plotConfig.xTickInterval;
         if (typeof xTickIntervalVal === 'string') {
             xTickIntervalVal = evaluateFormula(xTickIntervalVal, state);
@@ -689,7 +693,7 @@ function injectPlots(state, pageData) {
 
         const x = d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
         const y = d3.scaleLinear().domain([plotConfig.yMin, yMax]).range([m.t + ih, m.t]);
-        
+
         // Axes
         const xAxis = d3.axisBottom(x).ticks(5);
         if (xTickIntervalVal !== undefined) {
@@ -698,7 +702,7 @@ function injectPlots(state, pageData) {
             xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
         const xAxisG = svg.append('g').attr('class', 'axis')
-           .attr('transform', `translate(0,${m.t + ih})`)
+            .attr('transform', `translate(0,${m.t + ih})`)
         xAxisG.call(xAxis);
 
         const xTextRotation = plotConfig.xTickRotation || 0;
@@ -706,7 +710,7 @@ function injectPlots(state, pageData) {
             .style('font-size', `${1 * scale}rem`)
             .attr('transform', `rotate(${-xTextRotation})`)
             .style('text-anchor', xTextRotation > 0 ? 'end' : 'middle');
-           
+
         const yAxis = d3.axisLeft(y).ticks(5);
         if (plotConfig.yTickInterval !== undefined) {
             let yTickInterval = plotConfig.yTickInterval;
@@ -718,7 +722,7 @@ function injectPlots(state, pageData) {
             yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
         const yAxisG = svg.append('g').attr('class', 'axis')
-           .attr('transform', `translate(${plot_x_offset},0)`);
+            .attr('transform', `translate(${plot_x_offset},0)`);
         yAxisG.call(yAxis);
 
         const yTextRotation = plotConfig.yTickRotation || 0;
@@ -726,7 +730,7 @@ function injectPlots(state, pageData) {
         yAxisG.selectAll('text')
             .style('font-size', `${1 * scale}rem`)
             .attr('transform', `rotate(${-yTextRotation})`)
-        
+
         // Labels
         // Use foreignObject for x-axis to allow HTML (MathJax) rendering
         const xAxisBBox = xAxisG.node().getBBox(); // BBox of the axis ticks/numbers
@@ -761,7 +765,7 @@ function injectPlots(state, pageData) {
             .attr('height', 50) // The height of the object is the space for the label
             // 1. Translate to final position, then 2. Rotate around the top-left corner of the object
             .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${m.t + ih}) rotate(-90)`);
-        
+
         // The inner div uses flexbox to perfectly center the content.
         const yLabelDiv = yLabelFO.append('xhtml:div')
             .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
@@ -777,16 +781,16 @@ function injectPlots(state, pageData) {
 
         // Generate Curve
         const steps = 100;
-        let xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal)/steps, (xMaxVal - xMinVal)/steps);
-        
+        let xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal) / steps, (xMaxVal - xMinVal) / steps);
+
         const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
-        
+
         const inpMinVal = (inputDef && typeof inputDef.min === 'string') ? evaluateFormula(inputDef.min, state) : (inputDef ? inputDef.min : undefined);
         const inpMaxVal = (inputDef && typeof inputDef.max === 'string') ? evaluateFormula(inputDef.max, state) : (inputDef ? inputDef.max : undefined);
 
         const accMin = (inpMinVal !== undefined) ? inpMinVal : xMinVal;
         const accMax = (inpMaxVal !== undefined) ? inpMaxVal : xMaxVal;
-        
+
         // Ensure input min and max are exact points in our xVals array if within bounds
         if (inputDef) {
             if (inpMinVal !== undefined && inpMinVal > xMinVal && inpMinVal < xMaxVal) {
@@ -796,11 +800,11 @@ function injectPlots(state, pageData) {
                 xVals.push(inpMaxVal);
             }
         }
-        
+
         xVals.sort((a, b) => a - b);
         // Remove duplicates
         xVals = xVals.filter((v, idx) => xVals.indexOf(v) === idx);
-        
+
         const getPoint = (xVal, baseState) => {
             const fullState = _calculateState(baseState, xVal, plotConfig, pageData);
             return [x(xVal), y(fullState[plotConfig.y])];
@@ -808,12 +812,12 @@ function injectPlots(state, pageData) {
 
         const dottedMin = plotConfig.dottedMin;
         const dottedMax = plotConfig.dottedMax;
-        
+
         const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
-        
+
         let solidData = [];
         let dottedData = [];
-        
+
         if (dottedMin !== undefined && dottedMax !== undefined) {
             const solidVals = [];
             const dottedVals = [];
@@ -829,36 +833,37 @@ function injectPlots(state, pageData) {
         } else {
             solidData = accessibleVals.map(v => getPoint(v, state));
         }
-        
+
         // Add clip path for the plot
         const clipId = `clip-${i}`;
         svg.append('clipPath').attr('id', clipId)
-           .append('rect').attr('x', plot_x_offset).attr('y', m.t)
-           .attr('width', iw).attr('height', ih);
-        
+            .append('rect').attr('x', plot_x_offset).attr('y', m.t)
+            .attr('width', iw).attr('height', ih);
+
         // Draw solid and dotted parts of the curve
         if (solidData.length > 0) {
-            _plot(solidData, i, 'solid', false, 1, 'black');
+            _plot(solidData, i, 'solid', false, 1, '#0075ff', 3 * scale);
         }
         if (dottedData.length > 0) {
-            _plot(dottedData, i, 'dotted', true, 0.7, 'gray');
+            _plot(dottedData, i, 'dotted', true, 0.7, 'gray', 2 * scale);
         }
 
         // Draw reference lines
-        if (pageData.plots['reference-settings']) {
+        const refSettings = plotConfig.reference; // || plotConfig['reference-settings'] || (pageData.plots && pageData.plots['reference-settings']);
+        if (refSettings) {
             const labelsToDraw = [];
 
-            pageData.plots['reference-settings'].forEach(refSetting => {
+            refSettings.forEach(refSetting => {
                 const refState = { ...state, ...refSetting };
                 const refData = accessibleVals.map(v => getPoint(v, refState));
 
                 svg.append('path').attr('class', 'curve-reference')
-                   .attr('clip-path', `url(#${clipId})`)
-                   .style('stroke-dasharray', '4 4')
-                   .style('opacity', '0.6')
-                   .style('stroke', 'gray')
-                   .style('fill', 'none')
-                   .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
+                    .attr('clip-path', `url(#${clipId})`)
+                    .style('stroke-dasharray', '4 4')
+                    .style('opacity', '0.6')
+                    .style('stroke', 'gray')
+                    .style('fill', 'none')
+                    .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
 
                 if (refSetting.text) {
                     let lastPoint = null;
@@ -884,7 +889,7 @@ function injectPlots(state, pageData) {
                 // Sort by y position ascending
                 labelsToDraw.sort((a, b) => a.y - b.y);
 
-                const minDist = 18 * scale;
+                const minDist = 14 * scale;
                 let iterations = 10;
                 while (iterations-- > 0) {
                     let changed = false;
@@ -899,7 +904,7 @@ function injectPlots(state, pageData) {
                         }
                     }
                     labelsToDraw.forEach(l => {
-                        l.y = Math.max(m.t + 10, Math.min(m.t + ih, l.y));
+                        l.y = Math.max(m.t + 10, Math.min(m.t + ih + 10, l.y));
                     });
                     if (!changed) break;
                 }
@@ -927,17 +932,21 @@ function injectPlots(state, pageData) {
                 });
             }
         }
-        
+
         // Draw Current Point
         const currentXVal = state[plotConfig.x];
         const dragpt = svg.append('circle').attr('class', 'dragpt')
-            .attr('r', 6).attr('cx', x(currentXVal)).attr('cy', y(currentYVal));
-            
+            .attr('r', 6 * scale)
+            .attr('cx', x(currentXVal))
+            .attr('cy', y(currentYVal))
+            .style('fill', '#0075ff')
+            .style('stroke', 'none');
+
         // Interaction Background
         const hit = svg.append('rect').attr('class', 'hit')
             .attr('x', plot_x_offset).attr('y', m.t)
             .attr('width', iw).attr('height', ih);
-            
+
         const drag = d3.drag()
             .on('start drag', (event) => {
                 const elPrimary = document.getElementById(`input_${plotConfig.x}`);
@@ -947,7 +956,7 @@ function injectPlots(state, pageData) {
                 let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
                 let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
                 let newX = Math.max(xMinValDrag, Math.min(xMaxValDrag, x.invert(event.x)));
-                
+
                 const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
                 let dropdownChoiceVal = null;
 
@@ -1003,7 +1012,7 @@ function injectPlots(state, pageData) {
                 }
 
                 newX = Math.max(absoluteMin, Math.min(absoluteMax, newX));
-                
+
                 // Sync Input DOM Elements
                 if (elNum) elNum.value = newX;
                 if (elPrimary) {
@@ -1019,13 +1028,13 @@ function injectPlots(state, pageData) {
                         elPrimary.value = newX;
                     }
                 }
-                
+
                 // Recompute
                 if (window.forceCompute) {
                     window.forceCompute(plotConfig.x);
                 }
             });
-            
+
         hit.call(drag);
     });
 
@@ -1038,10 +1047,10 @@ function injectPlots(state, pageData) {
         plotNote.classList.add('needs-typeset');
         plotNote.setAttribute('data-raw-text', noteText);
     }
-    
+
     // Re-typeset the plot with MathJax ONLY for elements that need it
     const toTypeset = [];
-    svg.selectAll('.needs-typeset').each(function() {
+    svg.selectAll('.needs-typeset').each(function () {
         toTypeset.push(this);
     });
     if (plotNote.classList.contains('needs-typeset')) {
@@ -1064,15 +1073,9 @@ function injectPlots(state, pageData) {
 }
 
 function renderInputOutput(inputOutput) {
-    renderGroup(inputOutput.fixedInputs, 'fixed-inputs');
+    renderGroup(inputOutput.fixedInputs, 'fixed-inputs', inputOutput.inputColumns);
     renderControls(inputOutput.inputs);
-    renderGroup(inputOutput.outputs, 'outputs');
-    if (inputOutput.outputColumns !== undefined) {
-        const outputContainer = document.getElementById('outputs');
-        if (outputContainer) {
-            outputContainer.style.gridTemplateColumns = `repeat(${inputOutput.outputColumns}, 1fr)`;
-        }
-    }
+    renderGroup(inputOutput.outputs, 'outputs', inputOutput.outputColumns);
 }
 
 // ---------------------------------------------------------
@@ -1121,7 +1124,7 @@ window.addEventListener('load', async () => {
     if (typeof pageData !== 'undefined') {
         const titleEl = document.getElementById("header-title");
         if (titleEl) titleEl.textContent = pageData.title;
-        
+
         configLayout(pageData.layout);
         renderContent(pageData.equationElements, 'equation-container');
         if (pageData.derivationElements) {
@@ -1135,7 +1138,7 @@ window.addEventListener('load', async () => {
             container.parentElement.classList.remove('grid'); // Remove class from equation-schematic container for layout adjustment
         }
         renderInputOutput(pageData.inputOutput);
-        
+
         setupCalculationEngine(pageData);
     } else {
         console.error("pageData is not defined. Ensure the data script is loaded before renderer.js.");
