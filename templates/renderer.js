@@ -865,7 +865,17 @@ function injectPlots(state, pageData) {
                     .style('fill', 'none')
                     .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
 
-                if (refSetting.text) {
+                const isMatched = Object.keys(refSetting).every(key => {
+                    if (key === 'text') return true;
+                    const refVal = refSetting[key];
+                    const stateVal = state[key];
+                    if (typeof refVal === 'number' && typeof stateVal === 'number') {
+                        return Math.abs(refVal - stateVal) < 1e-4;
+                    }
+                    return refVal === stateVal;
+                });
+
+                if (!isMatched && refSetting.text) {
                     let lastPoint = null;
                     for (let i = refData.length - 1; i >= 0; i--) {
                         if (refData[i] && !isNaN(refData[i][1])) {
@@ -884,7 +894,7 @@ function injectPlots(state, pageData) {
                 }
             });
 
-            // Resolve vertical overlaps for labels
+            // Resolve vertical overlaps for reference labels
             if (labelsToDraw.length > 0) {
                 // Sort by y position ascending
                 labelsToDraw.sort((a, b) => a.y - b.y);
@@ -930,6 +940,49 @@ function injectPlots(state, pageData) {
                             .attr('data-raw-text', refText);
                     }
                 });
+            }
+        }
+
+        // Active curve label (rendered independently at exact curve tip)
+        if (plotConfig.activeLabel) {
+            let activeText = plotConfig.activeLabel;
+            activeText = activeText.replace(/\{([^}]+)\}/g, (_, key) => {
+                const val = state[key];
+                if (typeof val === 'number') {
+                    return Number.isInteger(val) ? val.toFixed(1) : parseFloat(val.toFixed(4)).toString();
+                }
+                return val !== undefined ? val : '';
+            });
+
+            let lastPoint = null;
+            const activeData = solidData.length > 0 ? solidData : dottedData;
+            for (let i = activeData.length - 1; i >= 0; i--) {
+                if (activeData[i] && !isNaN(activeData[i][1])) {
+                    lastPoint = activeData[i];
+                    break;
+                }
+            }
+
+            if (lastPoint) {
+                const fo = svg.append('foreignObject')
+                    .attr('x', lastPoint[0] + 5)
+                    .attr('y', lastPoint[1] - 14 * scale)
+                    .attr('width', 200 * scale)
+                    .attr('height', 30 * scale)
+                    .style('overflow', 'visible');
+
+                const activeDiv = fo.append('xhtml:div')
+                    .style('font-size', `${.875 * scale}rem`)
+                    .style('font-weight', 'bold')
+                    .style('color', '#0075ff');
+
+                if (mathjaxCache.has(activeText)) {
+                    activeDiv.html(mathjaxCache.get(activeText));
+                } else {
+                    activeDiv.html(parseText(activeText))
+                        .classed('needs-typeset', true)
+                        .attr('data-raw-text', activeText);
+                }
             }
         }
 
