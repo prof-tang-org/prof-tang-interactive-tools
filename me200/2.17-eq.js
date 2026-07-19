@@ -4,7 +4,7 @@ const pageData = {
     "layout": {
         "grid": [
             {
-                "desktop": "1.2fr 0.8fr",
+                "desktop": "1.4fr 0.8fr",
                 "mobile": "100%"
             },
             {

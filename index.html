@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -7,71 +8,259 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     /* ===== Home-only polish (scoped) ===== */
-    .home .pane{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);padding:10px;margin-top:12px}
+    .home .pane {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      padding: 10px;
+      margin-top: 12px
+    }
 
     /* Tabs (ribbon) — uses classes your styles.css already defines */
-    .home .course-tabs{--tab-h:56px;--ink-h:4px;position:relative;display:flex;gap:0;border-radius:10px;background:#fff;border:1px solid var(--line);box-shadow:0 6px 20px rgba(0,0,0,.04);padding:6px;margin:4px 4px 12px}
-    .home .course-tabs .tab{position:relative;flex:1 1 0;height:var(--tab-h);display:grid;place-items:center;border:none;background:transparent;font-size:16px;font-weight:700;color:#334155;border-radius:10px;cursor:pointer;transition:color .15s,background-color .15s,transform .08s}
-    .home .course-tabs .tab:hover{background:#f8fafc}
-    .home .course-tabs .tab.is-active{color:var(--accent);background:#eff6ff}
-    .home .course-tabs .tab:active{transform:translateY(1px)}
-    .home .course-tabs .ink{position:absolute;left:6px;bottom:6px;height:4px;width:0;background:var(--accent);border-radius:999px;box-shadow:0 4px 14px rgba(14,165,233,.35);transform:translateX(0);transition:transform .24s cubic-bezier(.22,.61,.36,1), width .24s cubic-bezier(.22,.61,.36,1);pointer-events:none}
+    .home .course-tabs {
+      --tab-h: 56px;
+      --ink-h: 4px;
+      position: relative;
+      display: flex;
+      gap: 0;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .04);
+      padding: 6px;
+      margin: 4px 4px 12px
+    }
+
+    .home .course-tabs .tab {
+      position: relative;
+      flex: 1 1 0;
+      height: var(--tab-h);
+      display: grid;
+      place-items: center;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: 700;
+      color: #334155;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: color .15s, background-color .15s, transform .08s
+    }
+
+    .home .course-tabs .tab:hover {
+      background: #f8fafc
+    }
+
+    .home .course-tabs .tab.is-active {
+      color: var(--accent);
+      background: #eff6ff
+    }
+
+    .home .course-tabs .tab:active {
+      transform: translateY(1px)
+    }
+
+    .home .course-tabs .ink {
+      position: absolute;
+      left: 6px;
+      bottom: 6px;
+      height: 4px;
+      width: 0;
+      background: var(--accent);
+      border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, .35);
+      transform: translateX(0);
+      transition: transform .24s cubic-bezier(.22, .61, .36, 1), width .24s cubic-bezier(.22, .61, .36, 1);
+      pointer-events: none
+    }
 
     /* Two-column layout: outline (left) + content (right) */
-    .home .course-layout{display:grid;grid-template-columns:240px 1fr;gap:14px}
-    @media (max-width: 900px){ .home .course-layout{grid-template-columns:1fr} }
+    .home .course-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 14px
+    }
+
+    @media (max-width: 900px) {
+      .home .course-layout {
+        grid-template-columns: 1fr
+      }
+    }
 
     /* Left outline */
-    .home .toc{
-      position:sticky; top:84px; align-self:start;
-      border:1px solid var(--line); border-radius:12px; background:#fff; padding:8px; box-shadow:var(--shadow-sm);
+    .home .toc {
+      position: sticky;
+      top: 84px;
+      align-self: start;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 8px;
+      box-shadow: var(--shadow-sm);
     }
-    .home .toc h3{margin:6px 8px 8px;font-size:16px}
-    .home .toc a{
-      display:block; padding:8px 10px; margin:4px 4px; border-radius:8px; color:#334155;
-      text-decoration:none; border:1px solid transparent; font-size:14px;
+
+    .home .toc h3 {
+      margin: 6px 8px 8px;
+      font-size: 16px
     }
-    .home .toc a:hover{background:#f8fafc}
-    .home .toc a.active{background:#eff6ff; color:var(--accent); border-color:#dbeafe}
+
+    .home .toc a {
+      display: block;
+      padding: 8px 10px;
+      margin: 4px 4px;
+      border-radius: 8px;
+      color: #334155;
+      text-decoration: none;
+      border: 1px solid transparent;
+      font-size: 14px;
+    }
+
+    .home .toc a:hover {
+      background: #f8fafc
+    }
+
+    .home .toc a.active {
+      background: #eff6ff;
+      color: var(--accent);
+      border-color: #dbeafe
+    }
 
     /* Topic sections (right column) */
-    .home .topic{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;margin:10px 0}
-    .home .topic h2{font-size:18px;margin:6px 8px 10px}
-    .home .cards{display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}
-    @media (max-width:960px){ .home .cards{grid-template-columns:repeat(2,minmax(0,1fr))} }
-    @media (max-width:620px){ .home .cards{grid-template-columns:1fr} }
+    .home .topic {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      margin: 10px 0
+    }
+
+    .home .topic h2 {
+      font-size: 18px;
+      margin: 6px 8px 10px
+    }
+
+    .home .cards {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr))
+    }
+
+    @media (max-width:960px) {
+      .home .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+    }
+
+    @media (max-width:620px) {
+      .home .cards {
+        grid-template-columns: 1fr
+      }
+    }
 
     /* Card look (matches site) */
-    .home .sim-card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;min-height:260px;box-shadow:var(--shadow-sm);transition:transform .06s, box-shadow .2s}
-    .home .sim-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
-    .home .thumb{width:100%;aspect-ratio:16/10;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:#fff}
-    .home .thumb img{width:100%;height:100%;object-fit:contain;padding:10px}
-    .home .sim-card h3{
-      margin:10px 12px 6px;font-size:16px;line-height:1.25;
-      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:calc(1.25em * 2);
+    .home .sim-card {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      min-height: 260px;
+      box-shadow: var(--shadow-sm);
+      transition: transform .06s, box-shadow .2s
     }
-    .home .sim-card p.muted{margin:0 12px 10px;font-size:13px}
+
+    .home .sim-card:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md)
+    }
+
+    .home .thumb {
+      width: 100%;
+      aspect-ratio: 16/10;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff
+    }
+
+    .home .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 10px
+    }
+
+    .home .sim-card h3 {
+      margin: 10px 12px 6px;
+      font-size: 16px;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: calc(1.25em * 2);
+    }
+
+    .home .sim-card p.muted {
+      margin: 0 12px 10px;
+      font-size: 13px
+    }
 
     /* “Coming soon” placeholder */
-    .home .thumb.ph{background:repeating-linear-gradient(-45deg,#f3f4f6 0 10px,#f8fafc 10px 20px);color:#475569;font-weight:700}
+    .home .thumb.ph {
+      background: repeating-linear-gradient(-45deg, #f3f4f6 0 10px, #f8fafc 10px 20px);
+      color: #475569;
+      font-weight: 700
+    }
 
     /* Info tiles */
-    .home .grid-3{display:grid;gap:16px;margin-top:18px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-    .home .info-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow-sm)}
-    .home .info-card h3{margin:0 0 8px}
-    .home .muted{color:#4b5563}
+    .home .grid-3 {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))
+    }
+
+    .home .info-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow-sm)
+    }
+
+    .home .info-card h3 {
+      margin: 0 0 8px
+    }
+
+    .home .muted {
+      color: #4b5563
+    }
 
     /* Anchor offset so “How to use” isn’t hidden by header */
-    #how { scroll-margin-top: 110px; }
-  
-    .home .topic h2{line-height:1.2}
-    .home .sim-card h3{font-size:16px;line-height:1.25}
+    #how {
+      scroll-margin-top: 110px;
+    }
 
+    .home .topic h2 {
+      line-height: 1.2
+    }
+
+    .home .sim-card h3 {
+      font-size: 16px;
+      line-height: 1.25
+    }
   </style>
-  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
-          async src="https://gc.zgo.at/count.js"></script>
+  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count" async
+    src="https://gc.zgo.at/count.js"></script>
   <script defer src="analytics.js"></script>
 </head>
+
 <body class="home">
   <!-- Header -->
   <header class="site-header">
@@ -79,7 +268,8 @@
       <div class="header-row">
         <div>
           <h1 style="margin:0">Thermofluid Learn</h1>
-          <p class="subtitle">Explore the core equations of undergraduate thermal fluid courses through interactive simulations and dynamic visualizations.<br>Developed by Prof. Ke Tang with the assistance of Aarav Shah.</p>
+          <p class="subtitle">Explore the core equations of undergraduate thermal fluid courses through interactive
+            simulations and dynamic visualizations.<br>Developed by Prof. Ke Tang with the assistance of Aarav Shah.</p>
         </div>
         <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <a class="btn" href="#how" aria-label="How to use">How to use ↓</a>
@@ -154,7 +344,7 @@
                 <a class="sim-card" href="./me310/2.7-ex.html">
                   <div class="thumb"><img src="assets/me310/2.7.png" alt=""></div>
                   <h3>Hydrostatic Force on a Plane Surface</h3>
-                </a>           
+                </a>
 
                 <a class="sim-card" href="./me310/2.28-eq.html">
                   <div class="thumb"><img src="assets/me310/2.28.png" alt=""></div>
@@ -303,28 +493,25 @@
             </div>
 
             <!-- Flow over Immersed Bodies -->
-            <div id="t-immersed" class="topic">
+            <!-- <div id="t-immersed" class="topic">
               <h2>Flow over Immersed Bodies</h2>
               <div class="cards">
-                <div class="sim-card">
-                  <div class="thumb ph">Reynolds number</div>
+                <a class="sim-card" href="/templates/eq_deriv-schem-io-plot.html?course=me310&topic=reynolds-number">
+                  <div class="thumb"><img src="/assets/me310/reynolds-number.png" alt="Reynolds number of viscous external flow over a flat plate"></div>
                   <h3>Reynolds number of viscous external flow over a flat plate</h3>
-                  <p class="muted">Coming soon</p>
-                </div>
+                </a>
 
-                <div class="sim-card">
-                  <div class="thumb ph">Blasius boundary layer</div>
+                <a class="sim-card" href="/templates/eq_deriv-schem-io-plot.html?course=me310&topic=9.15-eq">
+                  <div class="thumb"><img src="/assets/me310/9.15-eq.png" alt="Blasius Boundary Layer"></div>
                   <h3>Blasius Boundary Layer Thickness and Wall Shear Stress of Steady, Laminar, Viscous, Incompressible Flow over Flat Plates</h3>
-                  <p class="muted">Coming soon</p>
-                </div>
+                </a>
 
-                <div class="sim-card">
-                  <div class="thumb ph">Terminal velocity</div>
+                <a class="sim-card" href="/templates/eq_deriv-schem-io-plot.html?course=me310&topic=9.10-ex">
+                  <div class="thumb"><img src="/assets/me310/9.10-ex.png" alt="Terminal Velocity of Small Spherical Particles"></div>
                   <h3>Terminal Velocity of Small Spherical Particles</h3>
-                  <p class="muted">Coming soon</p>
-                </div>
+                </a>
               </div>
-            </div>
+            </div> -->
 
             <!-- Open-Channel Flow -->
             <div id="t-open" class="topic">
@@ -356,7 +543,7 @@
                   <h3>Manning Equation</h3>
                 </a>
 
-                <a class="sim-card" href="/templates/eq_deriv-schem-io-plot.html?course=me310&topic=10.26-eq">
+                <a class="sim-card" href="/templates/eq_deriv-schem-io_wide-plot.html?course=me310&topic=10.26-eq">
                   <div class="thumb"><img src="/assets/me310/10.26-eq.png" alt="Hydraulic Jump"></div>
                   <h3>Hydraulic Jump</h3>
                 </a>
@@ -380,9 +567,10 @@
 
                 <a class="sim-card" href="./me310/isentropic.html">
                   <div class="thumb"><img src="assets/me310/isentropic.png" alt=""></div>
-                  <h3>Ratio of Static Properties / Stagnation Properties of the Isentropic Flow of an Ideal Gas with Constant cp and cv</h3>
+                  <h3>Ratio of Static Properties / Stagnation Properties of the Isentropic Flow of an Ideal Gas with
+                    Constant cp and cv</h3>
                 </a>
-                
+
                 <!-- 
                 <div class="sim-card">
                   <div class="thumb ph">Area ratio</div>
@@ -408,7 +596,8 @@
             <section id="how" class="grid-3">
               <div class="info-card">
                 <h3>How to use</h3>
-                <p class="muted">Pick a course tab, use the left outline to jump to a topic, then click a card to open a simulation. Change one control at a time and watch the plots &amp; equations update together.</p>
+                <p class="muted">Pick a course tab, use the left outline to jump to a topic, then click a card to open a
+                  simulation. Change one control at a time and watch the plots &amp; equations update together.</p>
               </div>
               <div class="info-card">
                 <h3>Feedback &amp; Ideas</h3>
@@ -418,8 +607,10 @@
               <div class="info-card">
                 <h3>About this project</h3>
                 <p class="muted">
-                  Built by <b>Aarav Shah</b> (UIUC ME ’26) under the guidance of <b>Prof. Tang</b>. Ongoing effort to create interactive teaching tools for fluids &amp; thermal sciences.
-                  Tech: JavaScript/D3, HTML, CSS. Questions or ideas? <a href="mailto:aaravrshah2@gmail.com">Email me</a>.
+                  Built by <b>Aarav Shah</b> (UIUC ME ’26) under the guidance of <b>Prof. Tang</b>. Ongoing effort to
+                  create interactive teaching tools for fluids &amp; thermal sciences.
+                  Tech: JavaScript/D3, HTML, CSS. Questions or ideas? <a href="mailto:aaravrshah2@gmail.com">Email
+                    me</a>.
                 </p>
               </div>
             </section>
@@ -446,16 +637,20 @@
                 <a class="sim-card" href="./me200/3.1-eq.html">
                   <div class="thumb"><img src="assets/me200/3.1-eq.png" alt=""></div>
                   <h3>Properties of Water in the Liquid-Vapor Two-Phase Region</h3>
-                </a> 
+                </a>
               </div>
-            </div>  
+            </div>
             <!-- Work and Heat Transfer -->
             <div id="t-work-heat-transfer" class="topic">
               <h2>Work and Heat Transfer</h2>
               <div class="cards">
                 <a class="sim-card" href="./me200/2.17-eq.html">
                   <div class="thumb"><img src="assets/me200/2.17-eq.png" alt=""></div>
-                  <h3>Polytropic Process Work of a Closed System</h3>
+                  <h3>Polytropic Process Work of a Closed System (Old Version)</h3>
+                </a>
+                <a class="sim-card" href="./templates/eq_deriv-schem-io_wide-plot.html?course=me200&topic=2.17-eq">
+                  <div class="thumb"><img src="assets/me200/2.17-eq.png" alt=""></div>
+                  <h3>Polytropic Process Work of a Closed System (New Version)</h3>
                 </a>
                 <a class="sim-card" href="./me200/3.57-eq.html">
                   <div class="thumb"><img src="assets/me200/2.17-eq.png" alt=""></div>
@@ -480,23 +675,27 @@
               <h2>The Second Law of Thermodynamics</h2>
               <div class="cards">
                 <a class="sim-card" href="./me200/5.9-eq.html">
-                  <div class="thumb"><img src="assets/me200/5.9-eq.png" alt="Thermal Efficiency of Reversible Power Cycles"></div>
+                  <div class="thumb"><img src="assets/me200/5.9-eq.png"
+                      alt="Thermal Efficiency of Reversible Power Cycles"></div>
                   <h3>Thermal Efficiency of Reversible Power Cycles</h3>
                 </a>
                 <a class="sim-card" href="./me200/5.10-eq.html">
-                  <div class="thumb"><img src="assets/me200/5.10-eq.png" alt="Coefficient of Performance of Reversible Refrigeration Cycles"></div>
+                  <div class="thumb"><img src="assets/me200/5.10-eq.png"
+                      alt="Coefficient of Performance of Reversible Refrigeration Cycles"></div>
                   <h3>Coefficient of Performance of Reversible Refrigeration Cycles</h3>
                 </a>
                 <a class="sim-card" href="./me200/5.11-eq.html">
-                  <div class="thumb"><img src="assets/me200/5.11-eq.png" alt="Coefficient of Performance of Reversible Heat Pump Cycles"></div>
+                  <div class="thumb"><img src="assets/me200/5.11-eq.png"
+                      alt="Coefficient of Performance of Reversible Heat Pump Cycles"></div>
                   <h3>Coefficient of Performance of Reversible Heat Pump Cycles</h3>
                 </a>
                 <a class="sim-card" href="./templates/eq_deriv-schem-io_wide-plot.html?course=me200&topic=6.55-6.56-eq">
-                  <div class="thumb"><img src="assets/me200/6.55-6.56-eq.png" alt="Steady Internally Reversible Polytropic Process Work of Ideal Gas Flows"></div>
+                  <div class="thumb"><img src="assets/me200/6.55-6.56-eq.png"
+                      alt="Steady Internally Reversible Polytropic Process Work of Ideal Gas Flows"></div>
                   <h3>Steady Internally Reversible Polytropic Process Work of Ideal Gas Flows</h3>
                 </a>
               </div>
-            </div>  
+            </div>
           </div>
         </div>
       </section>
@@ -504,7 +703,9 @@
       <!-- ============ COURSE: Heat Transfer (placeholder) ============ -->
       <section id="course-me320" data-course="me320" hidden>
         <div class="course-layout">
-          <aside class="toc"><h3>Topics</h3><a class="active" href="#me320-intro">Overview</a></aside>
+          <aside class="toc">
+            <h3>Topics</h3><a class="active" href="#me320-intro">Overview</a>
+          </aside>
           <div>
             <div id="me320-intro" class="topic">
               <h2>Overview</h2>
@@ -544,116 +745,117 @@
     document.addEventListener('DOMContentLoaded', () => {
       const url = new URL('./feedback.html', location.href);
       if (FEEDBACK.course) url.searchParams.set('course', FEEDBACK.course);
-      if (FEEDBACK.sim)    url.searchParams.set('sim',    FEEDBACK.sim);
+      if (FEEDBACK.sim) url.searchParams.set('sim', FEEDBACK.sim);
       document.querySelectorAll('a.feedback-link').forEach(a => {
         a.href = url.toString();
-        try { localStorage.setItem('fb_ctx', JSON.stringify(FEEDBACK)); } catch {}
+        try { localStorage.setItem('fb_ctx', JSON.stringify(FEEDBACK)); } catch { }
       });
     });
 
     // Tabs
-    (function(){
+    (function () {
       const bar = document.querySelector('.course-tabs');
       const tabs = [...bar.querySelectorAll('.tab')];
-      const ink  = bar.querySelector('.ink');
+      const ink = bar.querySelector('.ink');
       const sections = {
         me310: document.getElementById('course-me310'),
         me200: document.getElementById('course-me200'),
         me320: document.getElementById('course-me320'),
       };
 
-      function moveInkTo(el, instant = false){
+      function moveInkTo(el, instant = false) {
         const rBar = bar.getBoundingClientRect();
         const rBtn = el.getBoundingClientRect();
         const left = rBtn.left - rBar.left + 6;
-        
+
         if (instant) ink.style.transition = 'none';
-        
+
         ink.style.width = (rBtn.width - 12) + 'px';
         ink.style.transform = `translateX(${left}px)`;
-        
+
         if (instant) {
           ink.offsetHeight; // force reflow
           ink.style.transition = '';
         }
       }
 
-      function showCourse(key, instant = false){
-        Object.keys(sections).forEach(k=>{
-          sections[k].hidden = (k!==key);
+      function showCourse(key, instant = false) {
+        Object.keys(sections).forEach(k => {
+          sections[k].hidden = (k !== key);
         });
-        
+
         if (instant) {
           tabs.forEach(t => t.style.transition = 'none');
         }
 
-        const on = tabs.find(t=>t.dataset.tab===key) || tabs[0];
-        tabs.forEach(t=>{
-          const active = (t===on);
+        const on = tabs.find(t => t.dataset.tab === key) || tabs[0];
+        tabs.forEach(t => {
+          const active = (t === on);
           t.classList.toggle('is-active', active);
-          t.setAttribute('aria-selected', active?'true':'false');
+          t.setAttribute('aria-selected', active ? 'true' : 'false');
         });
         moveInkTo(on, instant);
         // reset active link in outline for the newly shown course
         const firstLink = sections[key].querySelector('.toc a');
-        if(firstLink){ sections[key].querySelectorAll('.toc a').forEach(a=>a.classList.remove('active')); firstLink.classList.add('active'); }
-        
-        try { localStorage.setItem('active_course', key); } catch(e) {}
-        
+        if (firstLink) { sections[key].querySelectorAll('.toc a').forEach(a => a.classList.remove('active')); firstLink.classList.add('active'); }
+
+        try { localStorage.setItem('active_course', key); } catch (e) { }
+
         if (instant) {
           tabs[0].offsetHeight; // force reflow
           tabs.forEach(t => t.style.transition = '');
         }
       }
 
-      tabs.forEach(t=>t.addEventListener('click', ()=>showCourse(t.dataset.tab)));
-      window.addEventListener('resize', ()=>moveInkTo(bar.querySelector('.tab.is-active')||tabs[0], true));
-      
+      tabs.forEach(t => t.addEventListener('click', () => showCourse(t.dataset.tab)));
+      window.addEventListener('resize', () => moveInkTo(bar.querySelector('.tab.is-active') || tabs[0], true));
+
       let initKey = 'me310';
-      try { initKey = localStorage.getItem('active_course') || 'me310'; } catch(e) {}
+      try { initKey = localStorage.getItem('active_course') || 'me310'; } catch (e) { }
       if (!sections[initKey]) initKey = 'me310';
-      
+
       // Delay initialization slightly to let layout settle for ink movement
-      requestAnimationFrame(()=>showCourse(initKey, true));
-      
+      requestAnimationFrame(() => showCourse(initKey, true));
+
       window.showCourse = showCourse; // for potential external calls
     })();
 
     // Outline behavior: smooth scroll + active highlight
-    (function(){
+    (function () {
       const courses = document.querySelectorAll('[data-course]');
-      courses.forEach(course=>{
+      courses.forEach(course => {
         const toc = course.querySelector('.toc');
-        if(!toc) return;
-        toc.querySelectorAll('a').forEach(a=>{
-          a.addEventListener('click', e=>{
+        if (!toc) return;
+        toc.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', e => {
             e.preventDefault();
             const id = a.getAttribute('href').slice(1);
             const target = document.getElementById(id);
-            if(target){
-              target.scrollIntoView({behavior:'smooth', block:'start'});
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
           });
         });
 
         // Highlight as you scroll
         const links = [...toc.querySelectorAll('a')];
-        const ids = links.map(a=>a.getAttribute('href').slice(1));
-        const observer = new IntersectionObserver((entries)=>{
-          entries.forEach(ent=>{
-            if(ent.isIntersecting){
+        const ids = links.map(a => a.getAttribute('href').slice(1));
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(ent => {
+            if (ent.isIntersecting) {
               const id = ent.target.id;
-              links.forEach(l=>l.classList.toggle('active', l.getAttribute('href')==='#'+id));
+              links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
             }
           });
         }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
 
-        ids.forEach(id=>{
+        ids.forEach(id => {
           const el = document.getElementById(id);
-          if(el) observer.observe(el);
+          if (el) observer.observe(el);
         });
       });
     })();
   </script>
 </body>
+
 </html>
