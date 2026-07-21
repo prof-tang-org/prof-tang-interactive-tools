@@ -35,25 +35,25 @@ const pageData = {
             "header": "Variables",
             "content": [
                 {
-                    "text": "$E$ — specific energy [m]"
+                    "text": "$E$ — specific energy"
                 },
                 {
-                    "text": "$y$ — depth of open-channel flow [m]"
+                    "text": "$y$ — depth of open-channel flow"
                 },
                 {
-                    "text": "$q$ — flow rate per unit width [m²/s]"
+                    "text": "$q$ — flow rate per unit width"
                 },
                 {
-                    "text": "$g$ — gravitational acceleration [m/s²]"
+                    "text": "$g$ — gravitational acceleration"
                 },
                 {
-                    "text": "$z$ — elevation of the channel bottom [m]"
+                    "text": "$z$ — elevation of the channel bottom"
                 },
                 {
-                    "text": "$y_c$ — critical depth [m]"
+                    "text": "$y_c$ — critical depth"
                 },
                 {
-                    "text": "$z_c$ — maximum bump height to maintain subcritical flow without choking [m]"
+                    "text": "$z_c$ — maximum bump height to maintain subcritical flow without choking"
                 }
             ]
         }

@@ -41,7 +41,9 @@
  * @typedef {Object} FixedInput
  * @property {string} id - Unique identifier for the fixed input parameter
  * @property {string} text - Display text / label of the input (supports MathJax)
- * @property {number} value - The constant numeric value
+ * @property {number | string} value - The constant numeric value or calculation formula
+ * @property {'calculation'} [type] - Optional evaluation type
+ * @property {number | string} [decimals] - Optional number of decimal places or conditional JS expression (e.g. 3, or "conversion-factor == 1.0 ? 3 : 2")
  */
 
 /**
@@ -71,6 +73,7 @@
  * @property {'calculation' | 'map'} type - Mode of evaluation
  * @property {string | Array<number | string>} value - Mathematical formula string (for 'calculation') or index-based map values array (for 'map')
  * @property {string} [key] - Reference ID of the input dropdown parameter used for indexing map arrays (required for 'map' type)
+ * @property {number | string} [decimals] - Optional number of decimal places or conditional JS expression
  */
 
 /**

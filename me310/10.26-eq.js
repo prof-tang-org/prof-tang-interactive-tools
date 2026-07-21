@@ -125,7 +125,7 @@ const pageData = {
             "max": 1
         },
         "note": {
-            "text": "The values gray out when the head loss becomes negative, as this would imply energy creation."
+            "text": "The values are grayed out when the head loss is negative, as negative head loss is physically impossible."
         }
     },
     "plots": {
