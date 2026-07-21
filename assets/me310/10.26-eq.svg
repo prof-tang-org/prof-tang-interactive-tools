@@ -7,6 +7,9 @@
    id="svg3978"
    sodipodi:docname="10.26-eq.svg"
    inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   inkscape:export-filename="10.26-eq.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -21,57 +24,18 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
-     inkscape:zoom="1.4940482"
-     inkscape:cx="229.24294"
-     inkscape:cy="134.86848"
-     inkscape:window-width="1920"
-     inkscape:window-height="991"
-     inkscape:window-x="-9"
-     inkscape:window-y="350"
+     inkscape:zoom="2.9880964"
+     inkscape:cx="270.90826"
+     inkscape:cy="164.48599"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="1911"
+     inkscape:window-y="-9"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg3978"
      showguides="true" />
   <defs
-     id="defs3864">
-    <pattern
-       id="grid"
-       width="20"
-       height="20"
-       patternUnits="userSpaceOnUse">
-      <path
-         d="M 20 0 L 0 0 0 20"
-         fill="none"
-         stroke="#e2f0fd"
-         stroke-width="1"
-         id="path3855" />
-    </pattern>
-    <marker
-       id="arrow"
-       viewBox="0 0 10 10"
-       refX="3"
-       refY="5"
-       markerWidth="4"
-       markerHeight="4"
-       orient="auto-start-reverse">
-      <path
-         d="M 0,1.5 6,5 0,8.5 Z"
-         fill="#0091ff"
-         id="path3858" />
-    </marker>
-    <marker
-       id="black-arrow"
-       viewBox="0 0 10 10"
-       refX="0"
-       refY="5"
-       markerWidth="6"
-       markerHeight="6"
-       orient="auto-start-reverse">
-      <path
-         d="M 0,1.5 6,5 0,8.5 Z"
-         fill="#000000"
-         id="path3861" />
-    </marker>
-  </defs>
+     id="defs3864" />
   <path
      d="m 14.64542,40.540817 h 157.74149 c 18.55782,0 32.47619,13.918366 60.31292,13.918366 h 232.61735"
      fill="none"
@@ -79,7 +43,8 @@
      stroke-width="2.78367"
      stroke-dasharray="10, 6"
      id="path3868"
-     sodipodi:nodetypes="cssc" />
+     sodipodi:nodetypes="cssc"
+     style="stroke-width:2;stroke-dasharray:7.18475982,4.31085589;stroke-dashoffset:0" />
   <text
      x="377.85349"
      y="42.099236"
@@ -91,43 +56,39 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, '"
        id="tspan5126">Energy Line</tspan></text>
   <line
-     x1="194.88206"
+     x1="186.5219"
      y1="39.526718"
-     x2="279.88205"
+     x2="281.45239"
      y2="39.526718"
      stroke="#008000"
-     stroke-width="2"
+     stroke-width="2.1136"
      id="line3872"
-     style="stroke-dasharray:8, 2;stroke-dashoffset:0" />
+     style="stroke-dasharray:8.45442, 2.1136;stroke-dashoffset:0" />
   <g
      stroke="#008000"
      stroke-width="2"
      id="g3880"
-     transform="translate(-5.3545797)">
+     transform="translate(-5.3545797)"
+     style="stroke-width:2;stroke-dasharray:none">
     <line
        x1="270"
-       y1="40.515266"
+       y1="42.834305"
        x2="270"
-       y2="53.020592"
+       y2="51.233997"
        id="line3876"
-       style="stroke-width:2.35753" />
-    <path
-       d="M 266.30338,44.583036 270,39.962255 l 3.69662,4.620781 m -7.39324,4.620781 3.69662,4.62078 3.69662,-4.62078"
-       fill="none"
-       id="path3878"
-       style="stroke-width:1.84832" />
+       style="stroke-width:1.63914;stroke-miterlimit:2.8;stroke-dasharray:none;marker-start:url(#marker1474);marker-end:url(#marker1474)" />
   </g>
   <text
-     x="285.11871"
-     y="45.847328"
+     x="283.78006"
+     y="44.174023"
      font-family="sans-serif"
      font-size="16px"
      font-weight="bold"
      fill="#008000"
      id="text3882"><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
        id="tspan5158">h</tspan><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:65%;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold';baseline-shift:sub"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.6667px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold';baseline-shift:sub"
        id="tspan5156">L</tspan></text>
   <line
      x1="14.271704"
@@ -138,7 +99,7 @@
      stroke-width="3.7247"
      stroke-linecap="round"
      id="line3884"
-     style="stroke-width:2.8901;stroke-dasharray:none" />
+     style="stroke-width:3;stroke-dasharray:none" />
   <path
      d="m 14.64542,195 h 160 c 30,0 60,-85 95,-85 h 195.43512"
      fill="none"
@@ -180,14 +141,11 @@
      transform="translate(-5.3545797)">
     <line
        x1="65"
-       y1="198"
+       y1="201.5215"
        x2="65"
-       y2="237"
-       id="line3896" />
-    <path
-       d="m 61,203 4,-8 4,8 m -8,29 4,8 4,-8"
-       fill="none"
-       id="path3898" />
+       y2="233.39484"
+       id="line3896"
+       style="stroke-width:1.80806;marker-start:url(#marker1398);marker-end:url(#marker1398)" />
   </g>
   <text
      x="68.355347"
@@ -196,14 +154,17 @@
      font-size="16px"
      font-weight="bold"
      fill="#008000"
-     id="text3902"><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
-       id="tspan5152">y<tspan
-   style="font-size:65%;baseline-shift:sub"
-   id="tspan5154">1</tspan></tspan></text>
+     id="text3902"
+     style="font-size:18.6667px"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5152"><tspan
+         style="font-style:italic;font-weight:normal;font-size:18.6667px"
+         id="tspan473">y</tspan><tspan
+         style="font-size:10.6667px;baseline-shift:sub"
+         id="tspan477">1</tspan></tspan></text>
   <text
-     x="95.324814"
-     y="265.78625"
+     x="100.01008"
+     y="265.4516"
      font-family="sans-serif"
      font-size="16px"
      font-weight="bold"
@@ -216,7 +177,7 @@
      stroke="#0091ff"
      stroke-width="2"
      id="g3916"
-     transform="translate(9.5378453,-0.16733061)">
+     transform="translate(9.5378453,-0.58565753)">
     <line
        x1="100"
        y1="204"
@@ -260,11 +221,17 @@
      font-size="16px"
      font-weight="bold"
      fill="#0091ff"
-     id="text3918"><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
-       id="tspan5148">V<tspan
-   style="font-size:65%;baseline-shift:sub"
-   id="tspan5150">1</tspan></tspan></text>
+     id="text3918"
+     style="white-space:pre;inline-size:18.0194;display:inline"
+     xml:space="preserve"><tspan
+       x="154.10342"
+       y="222.38931"
+       id="tspan1428"><tspan
+         style="font-style:italic;font-weight:normal;font-size:18.6667px"
+         id="tspan1424">V</tspan><tspan
+         dx="12.74221"
+         style="font-weight:normal;font-size:10.6667px;baseline-shift:sub"
+         id="tspan1426">1</tspan></tspan></text>
   <g
      fill="none"
      stroke="#000000"
@@ -293,17 +260,14 @@
      stroke="#008000"
      stroke-width="2"
      id="g3934"
-     transform="translate(-5.3545797)">
+     transform="matrix(1,0,0,1.0018742,-5.3545797,-0.2091341)">
     <line
-       x1="390"
-       y1="113"
-       x2="390"
-       y2="237"
-       id="line3930" />
-    <path
-       d="m 386,118 4,-8 4,8 m -8,114 4,8 4,-8"
-       fill="none"
-       id="path3932" />
+       x1="390.11832"
+       y1="117.14628"
+       x2="390.11832"
+       y2="232.29166"
+       id="line3930"
+       style="stroke-width:1.92727;marker-start:url(#marker1398);marker-end:url(#marker1398)" />
   </g>
   <text
      x="394.64542"
@@ -312,14 +276,17 @@
      font-size="16px"
      font-weight="bold"
      fill="#008000"
-     id="text3936"><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
-       id="tspan5144">y<tspan
-   style="font-size:65%;baseline-shift:sub"
-   id="tspan5146">2</tspan></tspan></text>
+     id="text3936"
+     style="font-size:18.6667px"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5144"><tspan
+         style="font-style:italic;font-size:18.6667px"
+         id="tspan479">y</tspan><tspan
+         style="font-size:10.6667px;baseline-shift:sub"
+         id="tspan481">2</tspan></tspan></text>
   <text
-     x="357.36298"
-     y="263.10687"
+     x="328.91678"
+     y="262.77222"
      font-family="sans-serif"
      font-size="16px"
      font-weight="bold"
@@ -332,7 +299,7 @@
      stroke="#0091ff"
      stroke-width="2"
      id="g3958"
-     transform="translate(-5.3545797,-1.6564886)">
+     transform="translate(-5.3545797,-3.3297947)">
     <line
        x1="345"
        y1="122"
@@ -398,17 +365,33 @@
        id="line3956" />
   </g>
   <text
-     x="313.21793"
+     x="316.56454"
      y="178.01526"
      font-family="sans-serif"
      font-size="16px"
      font-weight="bold"
      fill="#0091ff"
      id="text3960"><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
-       id="tspan5140">V<tspan
-   style="font-size:65%;baseline-shift:sub"
-   id="tspan5142">2</tspan></tspan></text>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5140"><tspan
+         style="font-style:italic;font-size:18.6667px"
+         id="tspan483">V</tspan><tspan
+         style="font-weight:normal;font-size:10.6667px;baseline-shift:sub"
+         id="tspan5142">2</tspan></tspan></text>
+  <text
+     x="154.33617"
+     y="223.44814"
+     font-family="sans-serif"
+     font-size="16px"
+     font-weight="bold"
+     fill="#0091ff"
+     id="text3960-3"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold'"
+       id="tspan5140-1"><tspan
+         style="font-style:italic;font-size:18.6667px"
+         id="tspan483-0">V</tspan><tspan
+         style="font-weight:normal;font-size:10.6667px;baseline-shift:sub"
+         id="tspan5142-5">1</tspan></tspan></text>
   <g
      stroke="#000000"
      stroke-width="2.5"
@@ -440,26 +423,4 @@
        y2="200"
        id="line3968" />
   </g>
-  <g
-     stroke="#000000"
-     stroke-width="2"
-     id="g3974"
-     transform="translate(-109.76888)">
-    <line
-       x1="545"
-       y1="240"
-       x2="575"
-       y2="240"
-       marker-end="url(#black-arrow)"
-       id="line3972" />
-  </g>
-  <text
-     x="476.39365"
-     y="244.48213"
-     font-family="serif"
-     font-style="italic"
-     font-size="18px"
-     font-weight="bold"
-     fill="#000000"
-     id="text3976">x</text>
 </svg>

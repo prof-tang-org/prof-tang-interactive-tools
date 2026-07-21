@@ -7,7 +7,7 @@ const pageData = {
                 "mobile": "100%"
             },
             {
-                "desktop": "0.6fr 1.4fr",
+                "desktop": "1fr 1fr",
                 "mobile": "100%"
             }
         ]
@@ -41,7 +41,7 @@ const pageData = {
         },
         {
             "type": "equation",
-            "text": "\\left(\\frac{\\dot{W}_{cv}}{\\dot{m}}\\right)_{\\text{int. rev.}} = \\begin{cases} -RT \\ln\\left(\\frac{p_2}{p_1}\\right) & \\text{if } n = 1 \\\\ -\\frac{nRT_1}{n-1}\\left[\\left(\\frac{p_2}{p_1}\\right)^{\\frac{n-1}{n}} - 1\\right] & \\text{if } n \\neq 1 \\end{cases}"
+            "text": "\\left(\\frac{\\dot{W}_{cv}}{\\dot{m}}\\right)_{\\text{int. rev.}} = \\int_1^2{vdp} = \\begin{cases} -RT \\ln\\left(\\frac{p_2}{p_1}\\right) & \\text{if } n = 1 \\\\ -\\frac{nRT_1}{n-1}\\left[\\left(\\frac{p_2}{p_1}\\right)^{\\frac{n-1}{n}} - 1\\right] & \\text{if } n \\neq 1 \\end{cases}"
         },
         {
             "type": "list",
@@ -54,10 +54,10 @@ const pageData = {
                     "text": "$\\dot{m}$ — mass flow rate"
                 },
                 {
-                    "text": "$p_1, p_2$ — inlet and outlet pressures"
+                    "text": "$p_1, p_2$ — inlet and outlet pressures (absolute)"
                 },
                 {
-                    "text": "$T_1, T_2$ — inlet and outlet temperatures"
+                    "text": "$T_1, T_2$ — inlet and outlet temperatures (thermodynamic)"
                 },
                 {
                     "text": "$v_1, v_2$ — inlet and outlet specific volumes"
@@ -89,7 +89,7 @@ const pageData = {
         "fixedInputs": [
             {
                 "id": "pressure-1",
-                "text": "Inlet Pressure $P_1$ [kPa]",
+                "text": "Inlet Pressure $p_1$ [kPa]",
                 "value": 500
             },
             {
@@ -108,7 +108,7 @@ const pageData = {
                 "value": 8314
             },
         ],
-        "inputs": [ 
+        "inputs": [
             {
                 "type": "slider",
                 "id": "polytropic-n",
@@ -159,20 +159,11 @@ const pageData = {
                 "type": "calculation",
                 "value": "abs(polytropic-n - 1.0) < 1e-4 ? (-gas-constant-R * temp-1 * log(pressure-2 / pressure-1) / 1000) : (-(polytropic-n * gas-constant-R * temp-1) / (polytropic-n - 1) * (pow(pressure-2 / pressure-1, (polytropic-n - 1) / polytropic-n) - 1) / 1000)"
             }
-        ]
+        ],
+        "outputColumns": 3
     },
     "plots": {
         "aspectRatio": 3,
-        "reference-settings": [
-            {
-                "polytropic-n": 0.5,
-                "text": "$n = 0.5$"
-            },
-            {
-                "polytropic-n": 2,
-                "text": "$n = 2$"
-            }
-        ],
         "settings": [
             {
                 "y": "temp-2",
@@ -183,7 +174,17 @@ const pageData = {
                 "xMax": 1000,
                 "yMin": 0,
                 "yMax": 1600,
-                "yTickInterval": 200
+                "yTickInterval": 200,
+                "reference": [
+                    {
+                        "polytropic-n": 0.5,
+                        "text": "$n = 0.5$"
+                    },
+                    {
+                        "polytropic-n": 2,
+                        "text": "$n = 2$"
+                    }
+                ]
             },
             {
                 "y": "volume-2",
@@ -194,7 +195,17 @@ const pageData = {
                 "xMax": 1000,
                 "yMin": 0,
                 "yMax": 5,
-                "yTickInterval": 1
+                "yTickInterval": 1,
+                "reference": [
+                    {
+                        "polytropic-n": 0.5,
+                        "text": "$n = 0.5$"
+                    },
+                    {
+                        "polytropic-n": 2,
+                        "text": "$n = 2$"
+                    }
+                ]
             },
             {
                 "y": "specific-work",
@@ -205,9 +216,19 @@ const pageData = {
                 "xMax": 1000,
                 "yMin": -100,
                 "yMax": 400,
-                "yTickInterval": 100
+                "yTickInterval": 100,
+                "reference": [
+                    {
+                        "polytropic-n": 0.5,
+                        "text": "$n = 0.5$"
+                    },
+                    {
+                        "polytropic-n": 2,
+                        "text": "$n = 2$"
+                    }
+                ]
             }
         ],
-        "text": "Drag the red dots to analyze the influence of outlet pressure on the outlet state and specific flow work done under different polytropic modes."
+        "text": "Drag the red dots to analyze the influence of outlet pressure on the outlet state and specific work done under different polytropic modes."
     }
 };
