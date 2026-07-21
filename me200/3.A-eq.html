@@ -255,6 +255,7 @@ function onModeChange(sel) {
 
 function fmt(n, dec) { return isNaN(n) ? '—' : n.toFixed(dec); }
 
+
 function compute() {
   const C = state.p1 * state.V1;
   let outVal, outLab, outUnit;
@@ -302,7 +303,7 @@ function drawPlot() {
     xLabel = 'p\u2082  [kPa]'; yLabel = 'V\u2082  [m\u00b3]';
     xKey = 'p2'; yKey = 'V2';
   } else {
-    xDom = RANGE.V2.slice();
+    xDom = [0,1];
     curveXDom = RANGE.V2.slice();
     const p2max = C / curveXDom[0];
     yDom = [0, p2max < 1000 ? 1000 : 10000];
@@ -345,22 +346,6 @@ function drawPlot() {
       pts.push({ x: x, y: constant / x });
     }
     return pts;
-  }
-
-
-  if (state.mode === 'p2') {
-    const dashPts = [];
-    const n = 60;
-    const xStart = 0.1; // avoid division by zero at x=0
-    for (let i = 0; i <= n; i++) {
-      const x = xStart + (curveXDom[0] - xStart) * (i / n);
-      dashPts.push({ x: x, y: C / x });
-    }
-    svg.append('path').datum(dashPts)
-       .attr('class', 'curve')
-       .style('stroke', 'var(--accent)')
-       .style('stroke-dasharray', '5 4')
-       .attr('d', lineFn);
   }
 
   // current highlighted curve
