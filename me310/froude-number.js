@@ -26,16 +26,16 @@ const pageData = {
                     "text": "$Fr$ — Froude number"
                 },
                 {
-                    "text": "$c$ — wave speed of flow [m/s]"
+                    "text": "$c$ — wave speed"
                 },
                 {
-                    "text": "$g$ — gravitational acceleration [m/s^2]"
+                    "text": "$g$ — gravitational acceleration"
                 },
                 {
-                    "text": "$y$ — flow depth [m]"
+                    "text": "$y$ — flow depth"
                 },
                 {
-                    "text": "$v$ — flow velocity [m/s]"
+                    "text": "$v$ — flow velocity"
                 }
             ]
         }
@@ -44,7 +44,7 @@ const pageData = {
         "fixedInputs": [
             {
                 "id": "g",
-                "text": "Gravitational Acceleration $g$ [m/s²]",
+                "text": "Gravitational Acceleration, $g$ [m/s²]",
                 "value": 9.81
             }
         ],
@@ -52,7 +52,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "y",
-                "text": "Flow Depth $y$ [m]",
+                "text": "Flow Depth, $y$ [m]",
                 "min": 0.1,
                 "max": 5,
                 "initialValue": 0.5,
@@ -61,7 +61,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "v",
-                "text": "Flow Velocity $v$ [m/s]",
+                "text": "Flow Velocity, $v$ [m/s]",
                 "min": 0.1,
                 "max": 8,
                 "initialValue": 1,
@@ -77,7 +77,7 @@ const pageData = {
             },
             {
                 "id": "froude-number",
-                "text": "Froude Number $Fr$",
+                "text": "Froude Number, $Fr$",
                 "type": "calculation",
                 "value": "v / sqrt(g * y)"
             },
