@@ -242,16 +242,16 @@ function drawPlot(){
   const pW = W - mg.left - mg.right;
   const pH = H - mg.top - mg.bottom;
 
-  // x-axis: T_H from 300 to 500 K; y-axis: γ from 0 to 40
+  // x-axis: T_H from 300 to 500 K; y-axis: γ from 0 to 35
   const xSc = d3.scaleLinear().domain([300, 500]).range([mg.left, mg.left + pW]);
-  const ySc = d3.scaleLinear().domain([0, 40]).range([mg.top + pH, mg.top]);
+  const ySc = d3.scaleLinear().domain([0, 35]).range([mg.top + pH, mg.top]);
 
   // Axes
   const xAxis = d3.axisBottom(xSc)
     .tickValues([300, 350, 400, 450, 500])
     .tickFormat(d3.format('d'));
   const yAxis = d3.axisLeft(ySc)
-    .tickValues([0, 5, 10, 15, 20, 25, 30, 35, 40])
+    .tickValues([0, 5, 10, 15, 20, 25, 30, 35])
     .tickFormat(d3.format('d'));
 
   svg.append('g').attr('class','axis')
@@ -279,14 +279,14 @@ function drawPlot(){
   const pts = d3.range(300, 501, 1);
 
   const lineFn = (TC) => d3.line()
-    .defined(d => d > TC && calcGamma(d, TC) <= 40)
+    .defined(d => d >= 335 && d > TC && calcGamma(d, TC) <= 35)
     .x(d => xSc(d))
     .y(d => ySc(calcGamma(d, TC)));
 
   const curves = [
     { TC: S.TC,  color: '#3b82f6', dashed: false, labelTH: 340, labelOffset: -20, isInput: true },  // input (blue)
     { TC: 275,   color: '#9ca3af', dashed: true,  labelTH: 370, labelOffset: 12 },  // orange
-    { TC: 325,   color: '#9ca3af', dashed: true,  labelTH: 460, labelOffset:  -12 },  // green, below curve
+    { TC: 325,   color: '#9ca3af', dashed: true,  labelTH: 400, labelOffset:  -12 },  // green, below curve
   ];
 
   curves.forEach(c => {
@@ -300,7 +300,7 @@ function drawPlot(){
 
   curves.forEach(c => {
     const g = calcGamma(c.labelTH, c.TC);
-    if (c.labelTH > c.TC && g <= 40) {
+    if (c.labelTH >= 335 && c.labelTH > c.TC && g <= 35) {
       svg.append('text')
         .attr('x', xSc(c.labelTH))
         .attr('y', ySc(g) + c.labelOffset)
@@ -314,7 +314,7 @@ function drawPlot(){
 
   // Operating point on the input curve
   const g = calcGamma(S.TH, S.TC);
-  if(S.TH > S.TC && g <= 40){
+  if(S.TH >= 335 && S.TH > S.TC && g <= 35){
     svg.append('circle')
        .attr('class','dragpt')
        .attr('cx', xSc(S.TH))
@@ -332,7 +332,7 @@ function drawPlot(){
   hitRect.call(d3.drag().on('start drag end', function(event){
     const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
     let   val = Math.round(xSc.invert(xm));
-    val = Math.max(S.TC + 10, Math.min(500, val));
+    val = Math.max(335, S.TC + 10, Math.min(500, val));
     S.TH = val;
     setVal('TH', val);
     compute();

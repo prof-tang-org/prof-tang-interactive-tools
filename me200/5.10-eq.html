@@ -244,11 +244,11 @@ function drawPlot(){
   const pH = H - mg.top - mg.bottom;
 
   const xSc = d3.scaleLinear().domain([0, 300]).range([mg.left, mg.left + pW]);
-  const ySc = d3.scaleLinear().domain([0, 40]).range([mg.top + pH, mg.top]);
+  const ySc = d3.scaleLinear().domain([0, 30]).range([mg.top + pH, mg.top]);
 
   // Axes
   const xAxis = d3.axisBottom(xSc).tickValues([0,50,100,150,200,250,300]).tickFormat(d3.format('d'));
-  const yAxis = d3.axisLeft(ySc).tickValues([0,5,10,15,20,25,30,35,40]).tickFormat(d3.format('d'));
+  const yAxis = d3.axisLeft(ySc).tickValues([0,5,10,15,20,25,30]).tickFormat(d3.format('d'));
 
   svg.append('g').attr('class','axis')
      .attr('transform',`translate(0,${mg.top+pH})`)
@@ -271,14 +271,14 @@ function drawPlot(){
   // Curve generator — TC on x-axis, TH is the parameter
   const pts = d3.range(0, 301, 1);
   const lineFn = (TH) => d3.line()
-    .defined(d => d <= TH - 10 && calcBeta(TH, d) <= 40)
+    .defined(d => d <= 265 && d <= TH - 10 && calcBeta(TH, d) <= 30)
     .x(d => xSc(d))
     .y(d => ySc(calcBeta(TH, d)));
 
   const curves = [
-    { TH: S.TH,  color: '#3b82f6', dashed: false, labelTC: 260,  labelOffset: -38, isInput: true },  // input (blue)
-    { TH: 275,   color: '#9ca3af', dashed: true,  labelTC: 200, labelOffset: -14 },  // orange
-    { TH: 325,   color: '#9ca3af', dashed: true,  labelTC: 270, labelOffset:  14 },  // green, below curve
+    { TH: S.TH,  color: '#3b82f6', dashed: false, labelTC: 265,  labelOffset: -10, isInput: true },  // input (blue)
+    { TH: 275,   color: '#9ca3af', dashed: true,  labelTC: 180, labelOffset: -14 },  // orange
+    { TH: 325,   color: '#9ca3af', dashed: true,  labelTC: 240, labelOffset:  14 },  // green, below curve
   ];
 
   curves.forEach(c => {
@@ -291,7 +291,7 @@ function drawPlot(){
   });
   curves.forEach(c => {
   const b = calcBeta(c.TH, c.labelTC);
-  if (c.labelTC <= c.TH - 10 && b <= 40) {
+  if (c.labelTC <= 265 && c.labelTC <= c.TH - 10 && b <= 30) {
     svg.append('text')
        .attr('x', xSc(c.labelTC))
        .attr('y', ySc(b) + c.labelOffset)
@@ -305,7 +305,7 @@ function drawPlot(){
 
   // Operating point on each curve at the current TC
   const b = calcBeta(S.TH, S.TC);
-   if(b <= 40 && S.TC <= S.TH - 10){
+   if(c.labelTC <= 265 && c.labelTC <= c.TH - 10 && b <= 30){
      svg.append('circle')
         .attr('class','dragpt')
         .attr('cx', xSc(S.TC))
