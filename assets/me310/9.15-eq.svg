@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 520 230"
+   width="100%"
+   height="100%"
+   version="1.1"
+   id="svg5990"
+   sodipodi:docname="9.15-eq.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   inkscape:export-filename="9.15-eq.png"
+   inkscape:export-xdpi="311.79001"
+   inkscape:export-ydpi="311.79001"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview5992"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.5570866"
+     inkscape:cx="365.74716"
+     inkscape:cy="113.35272"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="1911"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g5960" />
+  <defs
+     id="defs5930">
+    <rect
+       x="481.8231"
+       y="212.98307"
+       width="362.84322"
+       height="174.83685"
+       id="rect13942" />
+    <rect
+       x="471.83243"
+       y="126.24583"
+       width="39.508586"
+       height="72.659469"
+       id="rect13002" />
+    <marker
+       style="overflow:visible"
+       id="marker9133"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="3.46"
+       markerHeight="4"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path9131" />
+    </marker>
+    <marker
+       id="arrow-blue"
+       viewBox="0 0 8 8"
+       refX="5"
+       refY="5"
+       markerWidth="4"
+       markerHeight="4"
+       orient="auto-start-reverse"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,1 8,5 0,9 Z"
+         fill="#0088cc"
+         id="path5924" />
+    </marker>
+    <marker
+       id="arrow-green"
+       viewBox="0 0 10 10"
+       refX="6"
+       refY="5"
+       markerWidth="5"
+       markerHeight="5"
+       orient="auto-start-reverse">
+      <path
+         d="M 0,1 8,5 0,9 Z"
+         fill="#008a3b"
+         id="path5927" />
+    </marker>
+  </defs>
+  <style
+     id="style5932">
+    .label {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 14px;
+      font-style: italic;
+    }
+    .blue-flow { stroke: #0088cc; fill: #0088cc; }
+    .green-axis { stroke: #008a3b; fill: #008a3b; }
+    .thick-stroke { stroke-width: 3px; }
+    .thin-stroke { stroke-width: 2px; }
+  </style>
+  <rect
+     x="142.43324"
+     y="193.82854"
+     width="361.66586"
+     height="11.66664"
+     fill="#ffffff"
+     stroke="#000000"
+     class="thick-stroke"
+     id="rect5936"
+     style="stroke-width:4.39389;stroke-dasharray:none" />
+  <g
+     class="blue-flow thin-stroke"
+     id="g5950"
+     transform="matrix(1.1666641,0,0,1.1666641,-20.899719,-4.5043653)"
+     style="stroke-width:2.51002;stroke-dasharray:none">
+    <line
+       x1="30"
+       y1="55"
+       x2="90"
+       y2="55"
+       marker-end="url(#arrow-blue)"
+       id="line5938"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="80"
+       x2="90"
+       y2="80"
+       marker-end="url(#arrow-blue)"
+       id="line5940"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="105"
+       x2="90"
+       y2="105"
+       marker-end="url(#arrow-blue)"
+       id="line5942"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="130"
+       x2="90"
+       y2="130"
+       marker-end="url(#arrow-blue)"
+       id="line5944"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="155"
+       x2="90"
+       y2="155"
+       marker-end="url(#arrow-blue)"
+       id="line5946"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <text
+       x="55"
+       y="42"
+       class="label"
+       text-anchor="middle"
+       id="text5948"
+       style="font-size:22.836px;stroke-width:2.51002;stroke-dasharray:none"><tspan
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.836px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Italic';stroke:none;stroke-width:2.51002;stroke-dasharray:none"
+         id="tspan13938">U</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.95150131,0,0,0.95150131,-1.1376246,-7.792215)"
+       id="text13940"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Italic';text-align:center;white-space:pre;shape-inside:url(#rect13942);display:inline;fill:#008a3b;fill-opacity:1;stroke:none;stroke-width:2.63795;stroke-miterlimit:2.8;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000" />
+  </g>
+  <g
+     class="green-axis thin-stroke"
+     id="g5960"
+     transform="matrix(1.0509707,0,0,1.0509707,1.1956101,8.1893897)"
+     style="stroke-width:2.51001507;stroke-dasharray:none">
+    <line
+       x1="134.38782"
+       y1="176.63589"
+       x2="206.54318"
+       y2="176.63589"
+       marker-end="url(#arrow-green)"
+       id="line5952"
+       style="stroke-width:2.78632;stroke-dasharray:none" />
+    <text
+       x="211.66525"
+       y="169.10872"
+       class="label"
+       id="text5954"
+       style="font-size:25.3498px;fill:#008a3b;fill-opacity:1;stroke-width:2.78633;stroke-dasharray:none"
+       inkscape:transform-center-x="7.1292329"
+       inkscape:transform-center-y="3.921079"><tspan
+         style="font-size:25.3498px;stroke:none;stroke-width:2.78633;stroke-dasharray:none"
+         id="tspan13486">x</tspan></text>
+    <line
+       x1="134.38782"
+       y1="176.63589"
+       x2="134.38782"
+       y2="121.13176"
+       marker-end="url(#arrow-green)"
+       id="line5956"
+       style="stroke-width:2.78632;stroke-dasharray:none" />
+    <text
+       x="132.43489"
+       y="115.36893"
+       class="label"
+       text-anchor="end"
+       id="text5958"
+       style="font-size:25.3498px;stroke-width:2.78633;stroke-dasharray:none"><tspan
+         style="font-size:25.3498px;stroke:none;stroke-width:2.78633;stroke-dasharray:none"
+         id="tspan13380">y</tspan></text>
+  </g>
+  <path
+     d="M 142.43325,193.82853 Q 247.43303,147.16197 480.76585,129.662"
+     fill="none"
+     stroke="#000000"
+     class="thin-stroke"
+     stroke-dasharray="6.30582, 4.20388"
+     id="path5962"
+     style="stroke-width:2.78632;stroke-dasharray:8.78503, 5.85668;stroke-dashoffset:0" />
+  <g
+     class="blue-flow thin-stroke"
+     id="g5982"
+     transform="matrix(1.1666641,0,0,1.1666641,-20.899719,-4.5043653)"
+     style="stroke-width:2.51002;stroke-dasharray:none">
+    <line
+       x1="340"
+       y1="170"
+       x2="340"
+       y2="56.339935"
+       id="line5964"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="340"
+       y1="158"
+       x2="366.34512"
+       y2="158"
+       marker-end="url(#arrow-blue)"
+       id="line5966"
+       style="stroke-width:2.51002;stroke-dasharray:none;marker-end:url(#marker9133)" />
+    <line
+       x1="340"
+       y1="144"
+       x2="384.33398"
+       y2="144"
+       marker-end="url(#arrow-blue)"
+       id="line5968"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="340"
+       y1="130"
+       x2="392.953"
+       y2="130"
+       marker-end="url(#arrow-blue)"
+       id="line5970"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="340"
+       y1="116"
+       x2="396.58432"
+       y2="116"
+       marker-end="url(#arrow-blue)"
+       id="line5972"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="340"
+       y1="92"
+       x2="397"
+       y2="92"
+       marker-end="url(#arrow-blue)"
+       id="line5974"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="340"
+       y1="68"
+       x2="397"
+       y2="68"
+       marker-end="url(#arrow-blue)"
+       id="line5976"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <path
+       d="m 340.18904,169.45988 c 4.72677,0 11.28077,-1.76686 18.28824,-4.9695 18.30784,-8.36727 39.71099,-26.53483 39.71099,-48.5984 V 55.697217"
+       fill="none"
+       stroke="#0088cc"
+       class="thin-stroke"
+       id="path5978"
+       sodipodi:nodetypes="cscc"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <text
+       x="406.33353"
+       y="69.528885"
+       class="label"
+       id="text5980"
+       style="font-size:22.836px;stroke-width:2.51002;stroke-dasharray:none"><tspan
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.836px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Italic';fill:#0088cc;fill-opacity:1;stroke:none;stroke-width:2.51002;stroke-dasharray:none;stroke-opacity:1"
+         id="tspan10077">u(y)</tspan></text>
+  </g>
+  <g
+     class="green-axis thin-stroke"
+     id="g5988"
+     transform="matrix(1.1666641,0,0,1.1666641,-53.16292,-5.5125903)"
+     style="stroke-width:2.51002;stroke-dasharray:none">
+    <line
+       x1="455"
+       y1="166.9236"
+       x2="455"
+       y2="118.84724"
+       marker-start="url(#arrow-green)"
+       marker-end="url(#arrow-green)"
+       id="line5984"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <text
+       x="462.50027"
+       y="148"
+       class="label"
+       id="text5986"
+       style="font-size:22.836px;stroke-width:2.51002;stroke-dasharray:none"><tspan
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.836px;font-family:'Times New ROman';-inkscape-font-specification:'Times New ROman, ';stroke:none;stroke-width:2.51002;stroke-dasharray:none"
+         id="tspan12998">δ</tspan></text>
+  </g>
+  <text
+     xml:space="preserve"
+     id="text13000"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;font-family:'Times New ROman';-inkscape-font-specification:'Times New ROman, ';text-align:center;white-space:pre;shape-inside:url(#rect13002);display:inline;fill:#0088cc;fill-opacity:1;stroke:none;stroke-width:4.74334;stroke-miterlimit:2.8;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000" />
+</svg>

@@ -124,7 +124,7 @@ const pageData = {
                 "text": "Outlet Pressure $p_2$ [kPa]",
                 "min": 100,
                 "max": 1000,
-                "initialValue": 100,
+                "initialValue": 200,
                 "step": 10
             }
         ],
@@ -175,6 +175,7 @@ const pageData = {
                 "yMin": 0,
                 "yMax": 1600,
                 "yTickInterval": 200,
+                "activeLabel": "$n = {polytropic-n}$",
                 "reference": [
                     {
                         "polytropic-n": 0.5,
@@ -196,6 +197,7 @@ const pageData = {
                 "yMin": 0,
                 "yMax": 5,
                 "yTickInterval": 1,
+                // "activeLabel": "$n = {polytropic-n}$",
                 "reference": [
                     {
                         "polytropic-n": 0.5,
@@ -217,6 +219,7 @@ const pageData = {
                 "yMin": -100,
                 "yMax": 400,
                 "yTickInterval": 100,
+                // "activeLabel": "$n = {polytropic-n}$",
                 "reference": [
                     {
                         "polytropic-n": 0.5,

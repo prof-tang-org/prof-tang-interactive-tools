@@ -787,7 +787,7 @@ function injectPlots(state, pageData) {
     if (svg.empty()) return;
     svg.selectAll('*').remove(); // Clear previous plot
 
-    let W = 760, H = 320, m = { l: 100, r: 40, t: 14, b: 60 };
+    let W = 760, H = 320, m = { l: 80, r: 40, t: 14, b: 60 };
     if (pageData.plots.aspectRatio !== undefined) {
         H = W / pageData.plots.aspectRatio;
         const svgEl = document.getElementById('plot');
@@ -844,6 +844,13 @@ function injectPlots(state, pageData) {
         if (xTickIntervalVal !== undefined) {
             const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
             xAxis.tickValues(ticks);
+        }
+        if (plotConfig.xExponential) {
+            xAxis.tickFormat(d => {
+                if (d === 0) return '0';
+                return d.toExponential().replace(/e\+/, 'e');
+            });
+        } else if (xTickIntervalVal !== undefined) {
             xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
         const xAxisG = svg.append('g').attr('class', 'axis')
@@ -864,6 +871,13 @@ function injectPlots(state, pageData) {
             }
             const ticks = d3.range(plotConfig.yMin, yMax + yTickInterval / 2, yTickInterval);
             yAxis.tickValues(ticks);
+        }
+        if (plotConfig.yExponential) {
+            yAxis.tickFormat(d => {
+                if (d === 0) return '0';
+                return d.toExponential().replace(/e\+/, 'e');
+            });
+        } else if (plotConfig.yTickInterval !== undefined) {
             yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
         const yAxisG = svg.append('g').attr('class', 'axis')
@@ -987,151 +1001,34 @@ function injectPlots(state, pageData) {
 
         // Draw solid and dotted parts of the curve
         if (solidData.length > 0) {
-            _plot(solidData, i, 'solid', false, 1, '#0075ff', 3 * scale);
+            _plot(solidData, i, 'solid', false, 1, '#0075ff', 2 * scale);
         }
         if (dottedData.length > 0) {
             _plot(dottedData, i, 'dotted', true, 0.7, 'gray', 2 * scale);
         }
 
-        // Draw reference lines
-        const refSettings = plotConfig.reference; // || plotConfig['reference-settings'] || (pageData.plots && pageData.plots['reference-settings']);
-        if (refSettings) {
-            const labelsToDraw = [];
+        const plotCtx = {
+            svg,
+            plotConfig,
+            state,
+            pageData,
+            x,
+            y,
+            m,
+            iw,
+            ih,
+            scale,
+            plot_x_offset,
+            clipId,
+            accessibleVals,
+            getPoint
+        };
 
-            refSettings.forEach(refSetting => {
-                const refState = { ...state, ...refSetting };
-                const refData = accessibleVals.map(v => getPoint(v, refState));
-
-                svg.append('path').attr('class', 'curve-reference')
-                    .attr('clip-path', `url(#${clipId})`)
-                    .style('stroke-dasharray', '4 4')
-                    .style('opacity', '0.6')
-                    .style('stroke', 'gray')
-                    .style('fill', 'none')
-                    .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
-
-                const isMatched = Object.keys(refSetting).every(key => {
-                    if (key === 'text') return true;
-                    const refVal = refSetting[key];
-                    const stateVal = state[key];
-                    if (typeof refVal === 'number' && typeof stateVal === 'number') {
-                        return Math.abs(refVal - stateVal) < 1e-4;
-                    }
-                    return refVal === stateVal;
-                });
-
-                const shouldHideRefLabel = isMatched && plotConfig.activeLabel;
-
-                if (!shouldHideRefLabel && refSetting.text) {
-                    let lastPoint = null;
-                    for (let i = refData.length - 1; i >= 0; i--) {
-                        if (refData[i] && !isNaN(refData[i][1])) {
-                            lastPoint = refData[i];
-                            break;
-                        }
-                    }
-
-                    if (lastPoint) {
-                        labelsToDraw.push({
-                            refSetting,
-                            lastPoint,
-                            y: lastPoint[1]
-                        });
-                    }
-                }
-            });
-
-            // Resolve vertical overlaps for reference labels
-            if (labelsToDraw.length > 0) {
-                // Sort by y position ascending
-                labelsToDraw.sort((a, b) => a.y - b.y);
-
-                const minDist = 14 * scale;
-                let iterations = 10;
-                while (iterations-- > 0) {
-                    let changed = false;
-                    for (let j = 0; j < labelsToDraw.length - 1; j++) {
-                        const a = labelsToDraw[j];
-                        const b = labelsToDraw[j + 1];
-                        const overlap = minDist - (b.y - a.y);
-                        if (overlap > 0) {
-                            a.y -= overlap / 2;
-                            b.y += overlap / 2;
-                            changed = true;
-                        }
-                    }
-                    labelsToDraw.forEach(l => {
-                        l.y = Math.max(m.t + 10, Math.min(m.t + ih + 10, l.y));
-                    });
-                    if (!changed) break;
-                }
-
-                // Render the labels at their adjusted positions
-                labelsToDraw.forEach(l => {
-                    const fo = svg.append('foreignObject')
-                        .attr('x', l.lastPoint[0] + 5)
-                        .attr('y', l.y - 14 * scale) // Vertically center based on font size
-                        .attr('width', 200 * scale) // Generous width
-                        .attr('height', 30 * scale)
-                        .style('overflow', 'visible');
-
-                    const refDiv = fo.append('xhtml:div')
-                        .style('font-size', `${.875 * scale}rem`)
-                        .style('color', 'gray');
-                    const refText = l.refSetting.text;
-                    if (mathjaxCache.has(refText)) {
-                        refDiv.html(mathjaxCache.get(refText));
-                    } else {
-                        refDiv.html(parseText(refText))
-                            .classed('needs-typeset', true)
-                            .attr('data-raw-text', refText);
-                    }
-                });
-            }
-        }
+        // Draw reference lines and labels
+        drawReferenceLines(plotCtx);
 
         // Active curve label (rendered independently at exact curve tip)
-        if (plotConfig.activeLabel) {
-            let activeText = plotConfig.activeLabel;
-            activeText = activeText.replace(/\{([^}]+)\}/g, (_, key) => {
-                const val = state[key];
-                if (typeof val === 'number') {
-                    return Number.isInteger(val) ? val.toFixed(1) : parseFloat(val.toFixed(4)).toString();
-                }
-                return val !== undefined ? val : '';
-            });
-
-            let lastPoint = null;
-            const activeData = solidData.length > 0 ? solidData : dottedData;
-            for (let i = activeData.length - 1; i >= 0; i--) {
-                if (activeData[i] && !isNaN(activeData[i][1])) {
-                    lastPoint = activeData[i];
-                    break;
-                }
-            }
-
-            if (lastPoint) {
-                const fo = svg.append('foreignObject')
-                    .attr('x', lastPoint[0] + 5)
-                    .attr('y', lastPoint[1] - 14 * scale)
-                    .attr('width', 200 * scale)
-                    .attr('height', 30 * scale)
-                    .style('overflow', 'visible');
-
-                const activeDiv = fo.append('xhtml:div')
-                    .style('font-size', `${.875 * scale}rem`)
-                    .style('font-weight', 'bold')
-                    .style('color', '#0075ff');
-
-                if (mathjaxCache.has(activeText)) {
-                    activeDiv.html(mathjaxCache.get(activeText));
-                } else {
-                    activeDiv.html(parseText(activeText))
-                        .classed('needs-typeset', true)
-                        .attr('data-raw-text', activeText);
-                }
-            }
-        }
+        drawActiveLabel(solidData, dottedData, plotCtx);
 
         // Draw Draggable Point at current vals
         const currentXVal = state[plotConfig.x];
@@ -1281,6 +1178,251 @@ function injectPlots(state, pageData) {
                 });
             })
             .catch(err => console.error("MathJax typesetting error on plot:", err));
+    }
+}
+
+// ---------------------------------------------------------
+// Helper functions for Reference Lines and Labels Drawing
+// ---------------------------------------------------------
+
+function drawReferenceLines(plotCtx) {
+    const { svg, plotConfig, state, accessibleVals, getPoint, clipId } = plotCtx;
+    const refSettings = plotConfig.reference;
+    if (!refSettings) return;
+
+    const labelsToDraw = [];
+
+    refSettings.forEach(refSetting => {
+        const refState = { ...state, ...refSetting };
+        const refData = accessibleVals.map(v => getPoint(v, refState));
+
+        svg.append('path').attr('class', 'curve-reference')
+            .attr('clip-path', `url(#${clipId})`)
+            .style('stroke-dasharray', '4 4')
+            .style('opacity', '0.6')
+            .style('stroke', 'gray')
+            .style('fill', 'none')
+            .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
+
+        const isMatched = Object.keys(refSetting).every(key => {
+            if (key === 'text' || key === 'labelPosition') return true;
+            const refVal = refSetting[key];
+            const stateVal = state[key];
+            if (typeof refVal === 'number' && typeof stateVal === 'number') {
+                return Math.abs(refVal - stateVal) < 1e-4;
+            }
+            return refVal === stateVal;
+        });
+
+        const shouldHideRefLabel = isMatched && plotConfig.activeLabel;
+
+        if (!shouldHideRefLabel && refSetting.text) {
+            positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx);
+        }
+    });
+
+    if (labelsToDraw.length > 0) {
+        resolveLabelOverlaps(labelsToDraw, plotCtx);
+    }
+}
+
+function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
+    const { svg, m, ih, iw, scale, plot_x_offset } = plotCtx;
+
+    if (refSetting.labelPosition === 'above' || refSetting.labelPosition === 'below') {
+        // Find the last point in refData that is within the plot's Y viewport
+        let lastValidPoint = null;
+        let lastValidIndex = -1;
+        for (let i = 0; i < refData.length; i++) {
+            const pt = refData[i];
+            if (pt && !isNaN(pt[0]) && !isNaN(pt[1])) {
+                if (pt[1] >= m.t && pt[1] <= (m.t + ih)) {
+                    lastValidPoint = pt;
+                    lastValidIndex = i;
+                }
+            }
+        }
+
+        if (lastValidPoint) {
+            const foHeight = 25 * scale;
+            let foWidth = 150 * scale;
+            let foX, foY, textAlign;
+
+            // Check if the curve exited early before the right edge of the plot
+            const exitedEarly = lastValidIndex < refData.length - 1;
+
+            if (exitedEarly) {
+                // Exited top or bottom of the plot area
+                const nextPoint = refData[lastValidIndex + 1];
+                const exitedTop = nextPoint && nextPoint[1] < m.t;
+
+                if (exitedTop) {
+                    foY = m.t + 4 * scale; // Position just below the top edge
+                } else {
+                    foY = m.t + ih - foHeight - 4 * scale; // Position just above the bottom edge
+                }
+
+                // Place label to the right of the exit point
+                const availableWidth = (plot_x_offset + iw) - lastValidPoint[0];
+                if (availableWidth >= 100 * scale) {
+                    foX = lastValidPoint[0] + 5 * scale;
+                    foWidth = availableWidth - 10 * scale;
+                    textAlign = 'left';
+                } else {
+                    foX = plot_x_offset + iw - 100 * scale - 5 * scale;
+                    foWidth = 100 * scale;
+                    textAlign = 'right';
+                }
+            } else {
+                // Exited through the right edge of the plot (standard inline right-aligned)
+                foX = plot_x_offset + iw - foWidth - 5 * scale;
+                textAlign = 'right';
+
+                if (refSetting.labelPosition === 'above') {
+                    foY = lastValidPoint[1] - foHeight - 4 * scale;
+                } else {
+                    foY = lastValidPoint[1] + foHeight + 4 * scale;
+                }
+            }
+
+            // Clamp Y within plot boundaries plus a small margin
+            const minYBound = m.t + 2 * scale;
+            const maxYBound = m.t + ih - foHeight - 2 * scale;
+            foY = Math.max(minYBound, Math.min(maxYBound, foY));
+
+            const fo = svg.append('foreignObject')
+                .attr('x', foX)
+                .attr('y', foY)
+                .attr('width', foWidth)
+                .attr('height', foHeight)
+                .style('overflow', 'visible');
+
+            const refDiv = fo.append('xhtml:div')
+                .style('font-size', `${.875 * scale}rem`)
+                .style('color', 'gray')
+                .style('text-align', textAlign)
+                .style('width', '100%');
+
+            const refText = refSetting.text;
+            if (mathjaxCache.has(refText)) {
+                refDiv.html(mathjaxCache.get(refText));
+            } else {
+                refDiv.html(parseText(refText))
+                    .classed('needs-typeset', true)
+                    .attr('data-raw-text', refText);
+            }
+        }
+    } else {
+        // Standard right-edge label (handled via overlap resolution)
+        let lastPoint = null;
+        for (let i = refData.length - 1; i >= 0; i--) {
+            if (refData[i] && !isNaN(refData[i][1])) {
+                lastPoint = refData[i];
+                break;
+            }
+        }
+
+        if (lastPoint) {
+            labelsToDraw.push({
+                refSetting,
+                lastPoint,
+                y: lastPoint[1]
+            });
+        }
+    }
+}
+
+function resolveLabelOverlaps(labelsToDraw, plotCtx) {
+    const { svg, m, ih, scale } = plotCtx;
+
+    // Sort by y position ascending
+    labelsToDraw.sort((a, b) => a.y - b.y);
+
+    const minDist = 14 * scale;
+    let iterations = 10;
+    while (iterations-- > 0) {
+        let changed = false;
+        for (let j = 0; j < labelsToDraw.length - 1; j++) {
+            const a = labelsToDraw[j];
+            const b = labelsToDraw[j + 1];
+            const overlap = minDist - (b.y - a.y);
+            if (overlap > 0) {
+                a.y -= overlap / 2;
+                b.y += overlap / 2;
+                changed = true;
+            }
+        }
+        labelsToDraw.forEach(l => {
+            l.y = Math.max(m.t + 10, Math.min(m.t + ih + 10, l.y));
+        });
+        if (!changed) break;
+    }
+
+    // Render the labels at their adjusted positions
+    labelsToDraw.forEach(l => {
+        const fo = svg.append('foreignObject')
+            .attr('x', l.lastPoint[0] + 5)
+            .attr('y', l.y - 14 * scale) // Vertically center based on font size
+            .attr('width', 200 * scale) // Generous width
+            .attr('height', 30 * scale)
+            .style('overflow', 'visible');
+
+        const refDiv = fo.append('xhtml:div')
+            .style('font-size', `${.875 * scale}rem`)
+            .style('color', 'gray');
+        const refText = l.refSetting.text;
+        if (mathjaxCache.has(refText)) {
+            refDiv.html(mathjaxCache.get(refText));
+        } else {
+            refDiv.html(parseText(refText))
+                .classed('needs-typeset', true)
+                .attr('data-raw-text', refText);
+        }
+    });
+}
+
+function drawActiveLabel(solidData, dottedData, plotCtx) {
+    const { svg, plotConfig, state, scale } = plotCtx;
+    if (!plotConfig.activeLabel) return;
+
+    let activeText = plotConfig.activeLabel;
+    activeText = activeText.replace(/\{([^}]+)\}/g, (_, key) => {
+        const val = state[key];
+        if (typeof val === 'number') {
+            return Number.isInteger(val) ? val.toFixed(1) : parseFloat(val.toFixed(4)).toString();
+        }
+        return val !== undefined ? val : '';
+    });
+
+    let lastPoint = null;
+    const activeData = solidData.length > 0 ? solidData : dottedData;
+    for (let i = activeData.length - 1; i >= 0; i--) {
+        if (activeData[i] && !isNaN(activeData[i][1])) {
+            lastPoint = activeData[i];
+            break;
+        }
+    }
+
+    if (lastPoint) {
+        const fo = svg.append('foreignObject')
+            .attr('x', lastPoint[0] + 5)
+            .attr('y', lastPoint[1] - 14 * scale)
+            .attr('width', 200 * scale)
+            .attr('height', 30 * scale)
+            .style('overflow', 'visible');
+
+        const activeDiv = fo.append('xhtml:div')
+            .style('font-size', `${.875 * scale}rem`)
+            .style('font-weight', 'bold')
+            .style('color', '#0075ff');
+
+        if (mathjaxCache.has(activeText)) {
+            activeDiv.html(mathjaxCache.get(activeText));
+        } else {
+            activeDiv.html(parseText(activeText))
+                .classed('needs-typeset', true)
+                .attr('data-raw-text', activeText);
+        }
     }
 }
 

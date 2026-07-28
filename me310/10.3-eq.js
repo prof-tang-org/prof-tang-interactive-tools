@@ -35,13 +35,13 @@ const pageData = {
             "header": "Variables",
             "content": [
                 {
-                    "text": "$c$ — wave speed [m/s]"
+                    "text": "$c$ — wave speed"
                 },
                 {
-                    "text": "$g$ — gravitational acceleration [m/s²]"
+                    "text": "$g$ — gravitational acceleration"
                 },
                 {
-                    "text": "$y$ — depth of open channel flow [m]"
+                    "text": "$y$ — depth of open channel flow"
                 }
             ]
         }
@@ -50,7 +50,7 @@ const pageData = {
         "fixedInputs": [
             {
                 "id": "g",
-                "text": "Gravitational acceleration ($g$)",
+                "text": "Gravitational acceleration, $g$ [m/s²]",
                 "value": 9.81
             }
         ],
@@ -58,7 +58,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "y",
-                "text": "Depth of open channel flow ($y$)",
+                "text": "Depth of open channel flow, $y$ [m]",
                 "min": 0.1,
                 "max": 5,
                 "initialValue": 2,
@@ -67,7 +67,7 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "Wave speed ($c$)",
+                "text": "Wave speed, $c$ [m/s]",
                 "id": "wave-speed",
                 "type": "calculation",
                 "value": "sqrt(g * y)"

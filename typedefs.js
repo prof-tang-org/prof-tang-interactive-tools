@@ -97,6 +97,7 @@
  * @typedef {Object.<string, any>} ReferenceSetting
  * @description Key-value mapping of input IDs to target values for plotting static reference curves (e.g. polytropic-n: 1.4), alongside an optional text label.
  * @property {string} [text] - Label indicating the parameters of the reference curve (supports MathJax, e.g. "$n = 1.4$")
+ * @property {'above' | 'below'} [labelPosition] - Direction to render label text relative to the reference curve within the plot (if set, overrides default right-aligned labels)
  */
 
 /**
@@ -113,6 +114,8 @@
  * @property {number | number[]} [yTickInterval] - Tick spacing on the Y-axis (supports arrays)
  * @property {number} [xTickRotation] - Angle of rotation for X-axis tick labels (e.g. 45)
  * @property {number} [yTickRotation] - Angle of rotation for Y-axis tick labels (e.g. 45)
+ * @property {boolean} [xExponential] - If true, format X-axis tick labels in exponential form
+ * @property {boolean} [yExponential] - If true, format Y-axis tick labels in exponential form
  * @property {number} [dottedMin] - Start boundary of dotted range along the X-axis (useful for showing physically impossible regions)
  * @property {number} [dottedMax] - End boundary of dotted range along the X-axis
  * @property {string} [activeLabel] - Optional text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$")

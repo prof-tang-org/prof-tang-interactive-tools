@@ -31,22 +31,22 @@ const pageData = {
             "header": "Variables",
             "content": [
                 {
-                    "text": "$Re_x$ — local Reynolds number"
+                    "text": "$Re_x$ — Reynolds number"
                 },
                 {
-                    "text": "$U$ — upstream or freestream velocity [m/s]"
+                    "text": "$U$ — upstream or freestream velocity"
                 },
                 {
-                    "text": "$x$ — distance measured from the leading edge [m]"
+                    "text": "$x$ — distance measured from the leading edge"
                 },
                 {
-                    "text": "$\\rho$ — density of fluid [kg/m³]"
+                    "text": "$\\rho$ — density"
                 },
                 {
-                    "text": "$\\mu$ — dynamic viscosity of fluid [Pa·s]"
+                    "text": "$\\mu$ — dynamic viscosity"
                 },
                 {
-                    "text": "$\\nu$ — kinematic viscosity of fluid [m²/s]"
+                    "text": "$\\nu$ — kinematic viscosity"
                 }
             ]
         }
@@ -60,7 +60,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "U",
-                "text": "Velocity ($U$) [m/s]",
+                "text": "Velocity, $U$ [m/s]",
                 "min": 0.5,
                 "max": 5,
                 "initialValue": 2,
@@ -69,16 +69,16 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "x",
-                "text": "Distance ($x$) [m]",
+                "text": "Distance, $x$ [m]",
                 "min": 0.1,
                 "max": 1,
                 "initialValue": 0.5,
-                "step": 0.05
+                "step": 0.01
             },
             {
                 "type": "dropdown",
                 "id": "kinematic-viscosity",
-                "text": "Kinematic Viscosity ($\\nu$) [m²/s]",
+                "text": "Kinematic Viscosity, $\\nu$ [m²/s]",
                 "min": 1e-6,
                 "max": 1e-4,
                 "step": 1e-7,
@@ -102,7 +102,7 @@ const pageData = {
         ],
         "outputs": [
             {
-                "text": "Reynolds Number ($Re_x$)",
+                "text": "Reynolds Number, $Re_x$",
                 "id": "reynolds",
                 "type": "calculation",
                 "value": "U * x / kinematic-viscosity"
@@ -110,26 +110,29 @@ const pageData = {
         ]
     },
     "plots": {
-        "aspectRatio": 3,
+        "aspectRatio": 2,
         "settings": [
             {
                 "x": "U",
                 "y": "reynolds",
                 "xLabel": "$U \\text{ [m/s]}$",
                 "yLabel": "$Re_x$",
-                "xMin": 0.5,
+                "xMin": 0,
                 "xMax": 5,
                 "yMin": 0,
                 "yMax": [1e4, 1e5, 1e6, 5e6],
                 "yTickInterval": [2e3, 2e4, 2e5, 1e6],
+                "yExponential": true,
                 "reference": [
                     {
                         "x": 0.1,
-                        "text": "$x = 0.1\\text{ m}$"
+                        "text": "$x = 0.1\\text{ m}$",
+                        "labelPosition": "above"
                     },
                     {
                         "x": 1.0,
-                        "text": "$x = 1\\text{ m}$"
+                        "text": "$x = 1\\text{ m}$",
+                        "labelPosition": "above"
                     }
                 ]
             },
@@ -138,19 +141,22 @@ const pageData = {
                 "y": "reynolds",
                 "xLabel": "$x \\text{ [m]}$",
                 "yLabel": "$Re_x$",
-                "xMin": 0.1,
+                "xMin": 0,
                 "xMax": 1,
                 "yMin": 0,
                 "yMax": [1e4, 1e5, 1e6, 5e6],
                 "yTickInterval": [2e3, 2e4, 2e5, 1e6],
+                "yExponential": true,
                 "reference": [
                     {
                         "U": 0.5,
-                        "text": "$U = 0.5\\text{ m/s}$"
+                        "text": "$U = 0.5\\text{ m/s}$",
+                        "labelPosition": "above"
                     },
                     {
                         "U": 5.0,
-                        "text": "$U = 5\\text{ m/s}$"
+                        "text": "$U = 5\\text{ m/s}$",
+                        "labelPosition": "above"
                     }
                 ]
             }
