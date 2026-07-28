@@ -184,22 +184,6 @@
             <div class="val"><span id="kpi-output">—</span> <span id="output-unit">m³</span></div>
           </div>
         </div>
-        <div class="kpi" style="grid-template-columns:1fr 1fr;margin-top:8px">
-          <div>
-            <div class="lab">State 1: \(p_1,\;V_1\)</div>
-            <div class="val"><span id="kpi-p1">—</span> kPa, <span id="kpi-V1">—</span> m³</div>
-          </div>
-          <div>
-            <div class="lab">State 2: \(p_2,\;V_2\)</div>
-            <div class="val"><span id="kpi-p2">—</span> kPa, <span id="kpi-V2">—</span> m³</div>
-          </div>
-        </div>
-        <div class="kpi" style="grid-template-columns:1fr;margin-top:8px">
-          <div>
-            <div class="lab">Constant \(p_1 V_1 = p_2 V_2\)</div>
-            <div class="val"><span id="kpi-const">—</span> kPa·m³</div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -273,12 +257,6 @@ function compute() {
   const labEl = document.getElementById('output-lab');
   labEl.innerHTML = outLab;
   if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([labEl]);
-
-  document.getElementById('kpi-p1').textContent = fmt(state.p1, 0);
-  document.getElementById('kpi-V1').textContent = fmt(state.V1, 3);
-  document.getElementById('kpi-p2').textContent = fmt(state.p2, 1);
-  document.getElementById('kpi-V2').textContent = fmt(state.V2, 4);
-  document.getElementById('kpi-const').textContent = fmt(C, 2);
 
   drawPlot();
 }
