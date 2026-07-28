@@ -209,7 +209,7 @@ function syncInput(p, el){
     // Ensure TH > TC
     if(S.TH <= S.TC){ S.TH = S.TC + 1; setVal('TH', S.TH); }
   } else {
-    v = Math.max(S.TC + 1, Math.min(2000, v));
+    v = Math.max(325, S.TC + 1, Math.min(2000, v));
     S.TH = v;
   }
   setVal(p, S[p]);
@@ -274,7 +274,7 @@ function drawPlot(){
   // Curve generator
   const pts = d3.range(1, 2001, 5);
   const lineFn = (TC) => d3.line()
-    .defined(d => d > TC)
+    .defined(d => d >= 325 && d > TC)
     .x(d => xSc(d))
     .y(d => ySc(calcEta(d, TC)));
 
@@ -324,7 +324,7 @@ function drawPlot(){
   hitRect.call(d3.drag().on('start drag end', function(event){
     const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
     let   val = Math.round(xSc.invert(xm));
-    val = Math.max(S.TC + 1, Math.min(2000, val));
+    val = Math.max(325, S.TC + 1, Math.min(2000, val));
     S.TH = val;
     setVal('TH', val);
     compute();
