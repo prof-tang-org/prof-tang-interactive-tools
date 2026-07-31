@@ -162,16 +162,16 @@
         <div class="ctl" id="p2-row">
           <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Final pressure \(p_2\) &nbsp;<span style="font-size:11px;color:#6b7280">[100, 1000] kPa</span></label>
           <div class="inline">
-            <input type="number" id="p2-out" min="100" max="1000" step="10" value="750" onchange="syncVar('p2',this,'num')" />
-            <input type="range" id="p2-in" min="100" max="1000" step="10" value="750" oninput="syncVar('p2',this,'range')" />
+            <input type="number" id="p2-out" min="100" max="1000" step="10" value="600" onchange="syncVar('p2',this,'num')" />
+            <input type="range" id="p2-in" min="100" max="1000" step="10" value="600" oninput="syncVar('p2',this,'range')" />
           </div>
         </div>
 
         <div class="ctl hidden" id="T2-row">
           <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Final temperature \(T_2\) &nbsp;<span style="font-size:11px;color:#6b7280">[300, 1000] K</span></label>
           <div class="inline">
-            <input type="number" id="T2-out" min="300" max="1000" step="10" value="600" onchange="syncVar('T2',this,'num')" />
-            <input type="range" id="T2-in" min="300" max="1000" step="10" value="600" oninput="syncVar('T2',this,'range')" />
+            <input type="number" id="T2-out" min="300" max="1000" step="10" value="750" onchange="syncVar('T2',this,'num')" />
+            <input type="range" id="T2-in" min="300" max="1000" step="10" value="750" oninput="syncVar('T2',this,'range')" />
           </div>
         </div>
       </div>
@@ -209,7 +209,7 @@
 
 <script>
 // ─── State ───
-let state = { T1: 500, p1: 400, mode: 'p2', p2: 750, T2: 600 };
+let state = { T1: 500, p1: 400, mode: 'p2', p2: 600, T2: 750 };
 
 const RANGE = {
   T1: [300, 1000],
