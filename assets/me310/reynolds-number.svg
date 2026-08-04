@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 520 230"
+   width="100%"
+   height="100%"
+   version="1.1"
+   id="svg5990"
+   sodipodi:docname="reynolds-number.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   inkscape:export-filename="reynolds-number.png"
+   inkscape:export-xdpi="311.79001"
+   inkscape:export-ydpi="311.79001"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview5992"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.5570866"
+     inkscape:cx="258.49558"
+     inkscape:cy="115.92162"
+     inkscape:window-width="2400"
+     inkscape:window-height="1261"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg5990" />
+  <defs
+     id="defs5930">
+    <rect
+       x="481.8231"
+       y="212.98307"
+       width="362.84322"
+       height="174.83685"
+       id="rect13942" />
+    <rect
+       x="471.83243"
+       y="126.24583"
+       width="39.508586"
+       height="72.659469"
+       id="rect13002" />
+    <marker
+       id="arrow-blue"
+       viewBox="0 0 8 8"
+       refX="5"
+       refY="5"
+       markerWidth="4"
+       markerHeight="4"
+       orient="auto-start-reverse"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,1 8,5 0,9 Z"
+         fill="#0088cc"
+         id="path5924" />
+    </marker>
+    <marker
+       id="arrow-green"
+       viewBox="0 0 10 10"
+       refX="6"
+       refY="5"
+       markerWidth="5"
+       markerHeight="5"
+       orient="auto-start-reverse">
+      <path
+         d="M 0,1 8,5 0,9 Z"
+         fill="#008a3b"
+         id="path5927" />
+    </marker>
+    <marker
+       id="arrow-blue-9"
+       viewBox="0 0 8 8"
+       refX="5"
+       refY="5"
+       markerWidth="4"
+       markerHeight="4"
+       orient="auto-start-reverse"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,1 8,5 0,9 Z"
+         fill="#0088cc"
+         id="path5924-7" />
+    </marker>
+    <marker
+       id="arrow-green-7"
+       viewBox="0 0 10 10"
+       refX="6"
+       refY="5"
+       markerWidth="5"
+       markerHeight="5"
+       orient="auto-start-reverse">
+      <path
+         d="M 0,1 8,5 0,9 Z"
+         fill="#008a3b"
+         id="path5927-6" />
+    </marker>
+    <marker
+       id="marker2056"
+       viewBox="0 0 10 10"
+       refX="6"
+       refY="5"
+       markerWidth="5"
+       markerHeight="5"
+       orient="auto-start-reverse">
+      <path
+         d="M 0,1 8,5 0,9 Z"
+         fill="#008a3b"
+         id="path2054" />
+    </marker>
+  </defs>
+  <style
+     id="style5932">
+    .label {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 14px;
+      font-style: italic;
+    }
+    .blue-flow { stroke: #0088cc; fill: #0088cc; }
+    .green-axis { stroke: #008a3b; fill: #008a3b; }
+    .thick-stroke { stroke-width: 3px; }
+    .thin-stroke { stroke-width: 2px; }
+  </style>
+  <rect
+     x="134.72655"
+     y="193.82854"
+     width="361.66586"
+     height="11.66664"
+     fill="#ffffff"
+     stroke="#000000"
+     class="thick-stroke"
+     id="rect5936"
+     style="stroke-width:4.39389;stroke-dasharray:none" />
+  <g
+     class="blue-flow thin-stroke"
+     id="g5950"
+     transform="matrix(1.1666641,0,0,1.1666641,-11.266343,-4.5043653)"
+     style="stroke-width:2.51002;stroke-dasharray:none">
+    <line
+       x1="30"
+       y1="55"
+       x2="90"
+       y2="55"
+       marker-end="url(#arrow-blue)"
+       id="line5938"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="80"
+       x2="90"
+       y2="80"
+       marker-end="url(#arrow-blue)"
+       id="line5940"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="105"
+       x2="90"
+       y2="105"
+       marker-end="url(#arrow-blue)"
+       id="line5942"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="130"
+       x2="90"
+       y2="130"
+       marker-end="url(#arrow-blue)"
+       id="line5944"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <line
+       x1="30"
+       y1="155"
+       x2="90"
+       y2="155"
+       marker-end="url(#arrow-blue)"
+       id="line5946"
+       style="stroke-width:2.51002;stroke-dasharray:none" />
+    <text
+       x="55"
+       y="42"
+       class="label"
+       text-anchor="middle"
+       id="text5948"
+       style="font-size:22.836px;stroke-width:2.51002;stroke-dasharray:none"><tspan
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.836px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Italic';stroke:none;stroke-width:2.51002;stroke-dasharray:none"
+         id="tspan13938">U</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.95150131,0,0,0.95150131,-1.1376246,-7.792215)"
+       id="text13940"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Italic';text-align:center;white-space:pre;shape-inside:url(#rect13942);display:inline;fill:#008a3b;fill-opacity:1;stroke:none;stroke-width:2.63795;stroke-miterlimit:2.8;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000" />
+  </g>
+  <g
+     class="green-axis thin-stroke"
+     id="g5960"
+     transform="matrix(1.0509707,0,0,1.0509707,-6.5110903,8.1893897)"
+     style="stroke-width:2.51002;stroke-dasharray:none">
+    <line
+       x1="134.38782"
+       y1="176.63589"
+       x2="206.54318"
+       y2="176.63589"
+       marker-end="url(#arrow-green)"
+       id="line5952"
+       style="stroke-width:2.78632;stroke-dasharray:none" />
+    <text
+       x="211.66525"
+       y="169.10872"
+       class="label"
+       id="text5954"
+       style="font-size:25.3498px;fill:#008a3b;fill-opacity:1;stroke-width:2.78633;stroke-dasharray:none"
+       inkscape:transform-center-x="7.1292329"
+       inkscape:transform-center-y="3.921079"><tspan
+         style="font-size:25.3498px;stroke:none;stroke-width:2.78633;stroke-dasharray:none"
+         id="tspan13486">x</tspan></text>
+    <line
+       x1="134.38782"
+       y1="176.63589"
+       x2="134.38782"
+       y2="121.13176"
+       marker-end="url(#arrow-green)"
+       id="line5956"
+       style="stroke-width:2.78632;stroke-dasharray:none" />
+    <text
+       x="132.43489"
+       y="115.36893"
+       class="label"
+       text-anchor="end"
+       id="text5958"
+       style="font-size:25.3498px;stroke-width:2.78633;stroke-dasharray:none"><tspan
+         style="font-size:25.3498px;stroke:none;stroke-width:2.78633;stroke-dasharray:none"
+         id="tspan13380">y</tspan></text>
+  </g>
+  <text
+     xml:space="preserve"
+     id="text13000"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;font-family:'Times New ROman';-inkscape-font-specification:'Times New ROman, ';text-align:center;white-space:pre;shape-inside:url(#rect13002);display:inline;fill:#0088cc;fill-opacity:1;stroke:none;stroke-width:4.74334;stroke-miterlimit:2.8;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+     transform="translate(9.6333757)" />
+</svg>
