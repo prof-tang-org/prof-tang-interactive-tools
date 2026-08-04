@@ -67,7 +67,7 @@ const pageData = {
                 "type": "slider",
                 "id": "U",
                 "text": "Upstream Velocity, $U$ [m/s]",
-                "min": 0.1,
+                "min": 0.2,
                 "max": 1,
                 "initialValue": 0.6,
                 "step": 0.01
@@ -76,10 +76,10 @@ const pageData = {
                 "type": "slider",
                 "id": "x",
                 "text": "Distance, $x$ [m]",
-                "min": 0.01,
+                "min": 0.03,
                 "max": 0.2,
                 "initialValue": 0.15,
-                "step": 0.01
+                "step": 0.001
             }
         ],
         "outputs": [
@@ -132,16 +132,17 @@ const pageData = {
                 "y": "delta-mm",
                 "xLabel": "$x \\text{ [m]}$",
                 "yLabel": "$\\delta \\text{ [mm]}$",
-                "xMin": 0.01,
+                "xMin": 0,
                 "xMax": 0.2,
                 "yMin": 0,
-                "yMax": [2.5, 10],
-                "yTickInterval": [0.5, 2],
+                "yMax": [6, 20],
+                "yTickInterval": [1, 4],
+                "key": "fluid",
                 "reference": [
                     {
                         "U": 1.0,
                         "text": "$U = 1\\text{ m/s}$",
-                        "labelPosition": "above"
+                        "labelPosition": "below"
                     }
                 ]
             },
@@ -150,11 +151,12 @@ const pageData = {
                 "y": "shear-stress",
                 "xLabel": "$x \\text{ [m]}$",
                 "yLabel": "$\\tau_w \\text{ [Pa]}$",
-                "xMin": 0.01,
+                "xMin": 0,
                 "xMax": 0.2,
                 "yMin": 0,
-                "yMax": [0.004, 0.8],
-                "yTickInterval": [0.0005, 0.1],
+                "yMax": [2, 0.009],
+                "yTickInterval": [0.2, 0.001],
+                "key": "fluid",
                 "reference": [
                     {
                         "U": 1.0,

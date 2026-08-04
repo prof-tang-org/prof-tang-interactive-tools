@@ -110,7 +110,8 @@
  * @property {number | string} xMin - X-axis lower boundary (number or JS conditional expression)
  * @property {number | string} xMax - X-axis upper boundary (number or JS conditional expression)
  * @property {number} yMin - Y-axis lower boundary
- * @property {number | number[]} yMax - Y-axis upper boundary (number, or array of numbers for dynamic scaling options depending on curve values)
+ * @property {number | number[]} yMax - Y-axis upper boundary (number, or array of numbers for dynamic scaling options depending on curve values or dropdown choices)
+ * @property {string} [key] - Unique ID of the dropdown input parameter to map array values of yMax/yTickInterval/xMin/xMax/xTickInterval to choices
  * @property {number | string | number[]} [xTickInterval] - Tick spacing on the X-axis (supports formulas and arrays)
  * @property {number | number[]} [yTickInterval] - Tick spacing on the Y-axis (supports arrays)
  * @property {number} [xTickRotation] - Angle of rotation for X-axis tick labels (e.g. 45)

@@ -102,8 +102,8 @@ const pageData = {
                 "xMin": 0,
                 "xMax": 5,
                 "yMin": 0,
-                "yMax": [1e4, 1e5, 1e6, 5e6],
-                "yTickInterval": [2e3, 2e4, 2e5, 1e6],
+                "yMax": "(5 / kinematic-viscosity) < 5e5 ? 5e5 : 5e6",
+                "yTickInterval": "(5 / kinematic-viscosity) < 5e5 ? 1e5 : 1e6",
                 "yExponential": true,
                 "reference": [
                     {
@@ -126,8 +126,8 @@ const pageData = {
                 "xMin": 0,
                 "xMax": 1,
                 "yMin": 0,
-                "yMax": [1e4, 1e5, 1e6, 5e6],
-                "yTickInterval": [2e3, 2e4, 2e5, 1e6],
+                "yMax": "(5 / kinematic-viscosity) < 5e5 ? 5e5 : 5e6",
+                "yTickInterval": "(5 / kinematic-viscosity) < 5e5 ? 1e5 : 1e6",
                 "yExponential": true,
                 "reference": [
                     {
