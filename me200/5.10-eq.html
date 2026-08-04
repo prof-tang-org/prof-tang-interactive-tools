@@ -305,7 +305,7 @@ function drawPlot(){
 
   // Operating point on each curve at the current TC
   const b = calcBeta(S.TH, S.TC);
-   if(c.labelTC <= 265 && c.labelTC <= c.TH - 10 && b <= 30){
+   if(S.TC <= 265 && S.TC <= S.TH - 10 && b <= 30){
      svg.append('circle')
         .attr('class','dragpt')
         .attr('cx', xSc(S.TC))

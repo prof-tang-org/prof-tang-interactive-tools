@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Isothermal Processes of Ideal Gases</title>
+  <title>Isochoric Processes of Ideal Gases</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -77,7 +77,7 @@
 <header class="site-header">
   <div class="container">
     <div class="header-row">
-      <h1>Isothermal Processes of Ideal Gases</h1>
+      <h1>Isochoric Processes of Ideal Gases</h1>
       <a class="btn primary" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
     </div>
   </div>
@@ -93,20 +93,20 @@
   <section class="top-grid">
     <div class="ctl">
       <div class="eqwrap">
-        <div class="title-xl"><b>Isothermal (Constant-Temperature) Processes of Ideal Gases in a Closed System</b></div>
+        <div class="title-xl"><b>Isochoric (Constant-Volume) Processes of Ideal Gases in a Closed System</b></div>
         <div class="eqbig">
-          \(\displaystyle pV = \text{constant}\)
+          \(\displaystyle \frac{T}{p} = \text{constant}\)
         </div>
         <div class="eqbig" style="margin-top:10px">
-          \(\displaystyle p_1 V_1 = p_2 V_2\)
+          \(\displaystyle \frac{T_1}{p_1} = \frac{T_2}{p_2}\)
         </div>
         <div class="eqbig">
-          \(\displaystyle V_2 = V_1\,\frac{p_1}{p_2} \qquad \text{and} \qquad p_2 = p_1\,\frac{V_1}{V_2}\)
+          \(\displaystyle T_2 = T_1\,\frac{p_2}{p_1} \qquad \text{and} \qquad p_2 = p_1\,\frac{T_2}{T_1}\)
         </div>
         <div style="font-size:13px;font-weight:600;color:#111;margin-top:10px;margin-bottom:4px">Symbols</div>
         <ul style="margin:8px 0 0 0;padding-left:40px">
+          <li>\(T\) — thermodynamic temperature</li>
           <li>\(p\) — absolute pressure</li>
-          <li>\(V\) — volume</li>
           <li>subscript \(1\) — initial state</li>
           <li>subscript \(2\) — final state</li>
         </ul>
@@ -123,18 +123,18 @@
       <div style="display:flex;flex-direction:column;gap:10px">
 
         <div class="ctl">
-          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Initial pressure \(p_1\) &nbsp;<span style="font-size:11px;color:#6b7280">[100, 1000] kPa</span></label>
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Initial temperature \(T_1\) &nbsp;<span style="font-size:11px;color:#6b7280">[300, 1000] K</span></label>
           <div class="inline">
-            <input type="number" id="p1-out" min="100" max="1000" step="10" value="300" onchange="syncVar('p1',this,'num')" />
-            <input type="range" id="p1-in" min="100" max="1000" step="10" value="300" oninput="syncVar('p1',this,'range')" />
+            <input type="number" id="T1-out" min="300" max="1000" step="10" value="500" onchange="syncVar('T1',this,'num')" />
+            <input type="range" id="T1-in" min="300" max="1000" step="10" value="500" oninput="syncVar('T1',this,'range')" />
           </div>
         </div>
 
         <div class="ctl">
-          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Initial volume \(V_1\) &nbsp;<span style="font-size:11px;color:#6b7280">[0.1, 1] m³</span></label>
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Initial pressure \(p_1\) &nbsp;<span style="font-size:11px;color:#6b7280">[100, 1000] kPa</span></label>
           <div class="inline">
-            <input type="number" id="V1-out" min="0.1" max="1" step="0.01" value="0.3" onchange="syncVar('V1',this,'num')" />
-            <input type="range" id="V1-in" min="0.1" max="1" step="0.01" value="0.3" oninput="syncVar('V1',this,'range')" />
+            <input type="number" id="p1-out" min="100" max="1000" step="10" value="400" onchange="syncVar('p1',this,'num')" />
+            <input type="range" id="p1-in" min="100" max="1000" step="10" value="400" oninput="syncVar('p1',this,'range')" />
           </div>
         </div>
 
@@ -142,23 +142,23 @@
           <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Select second input</label>
           <select id="mode-select" onchange="onModeChange(this)" style="width:100%;max-width:280px">
             <option value="p2" selected>Final pressure, p₂</option>
-            <option value="V2">Final volume, V₂</option>
+            <option value="T2">Final temperature, T₂</option>
           </select>
         </div>
 
         <div class="ctl" id="p2-row">
           <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Final pressure \(p_2\) &nbsp;<span style="font-size:11px;color:#6b7280">[100, 1000] kPa</span></label>
           <div class="inline">
-            <input type="number" id="p2-out" min="100" max="1000" step="10" value="450" onchange="syncVar('p2',this,'num')" />
-            <input type="range" id="p2-in" min="100" max="1000" step="10" value="450" oninput="syncVar('p2',this,'range')" />
+            <input type="number" id="p2-out" min="100" max="1000" step="10" value="600" onchange="syncVar('p2',this,'num')" />
+            <input type="range" id="p2-in" min="100" max="1000" step="10" value="600" oninput="syncVar('p2',this,'range')" />
           </div>
         </div>
 
-        <div class="ctl hidden" id="V2-row">
-          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Final volume \(V_2\) &nbsp;<span style="font-size:11px;color:#6b7280">[0.1, 1] m³</span></label>
+        <div class="ctl hidden" id="T2-row">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:6px">Final temperature \(T_2\) &nbsp;<span style="font-size:11px;color:#6b7280">[300, 1000] K</span></label>
           <div class="inline">
-            <input type="number" id="V2-out" min="0.1" max="1" step="0.01" value="0.2" onchange="syncVar('V2',this,'num')" />
-            <input type="range" id="V2-in" min="0.1" max="1" step="0.01" value="0.2" oninput="syncVar('V2',this,'range')" />
+            <input type="number" id="T2-out" min="300" max="1000" step="10" value="750" onchange="syncVar('T2',this,'num')" />
+            <input type="range" id="T2-in" min="300" max="1000" step="10" value="750" oninput="syncVar('T2',this,'range')" />
           </div>
         </div>
       </div>
@@ -167,8 +167,8 @@
       <div>
         <div class="kpi" style="grid-template-columns:1fr">
           <div>
-            <div class="lab" id="output-lab">Final volume \(V_2\)</div>
-            <div class="val"><span id="kpi-output">—</span> <span id="output-unit">m³</span></div>
+            <div class="lab" id="output-lab">Final temperature \(T_2\)</div>
+            <div class="val"><span id="kpi-output">—</span> <span id="output-unit">K</span></div>
           </div>
         </div>
       </div>
@@ -179,10 +179,10 @@
   <section class="ctl" style="margin-top:12px">
     <h2 style="margin:4px 0 6px;font-size:1.25rem">Plot</h2>
     <div class="viz">
-      <svg id="plot" viewBox="0 0 700 480" aria-label="Isothermal process output plot"></svg>
+      <svg id="plot" viewBox="0 0 700 480" aria-label="Isochoric process output plot"></svg>
     </div>
     <div style="margin-top:6px;font-size:11px;color:#6b7280">
-      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current final state. Drag it along the curve, or use the inputs above to change the final state.
+      The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current final state. Drag it along the line, or use the inputs above to change the final state.
     </div>
   </section>
 
@@ -196,13 +196,13 @@
 
 <script>
 // ─── State ───
-let state = { p1: 300, V1: 0.3, mode: 'p2', p2: 450, V2: 0.2 };
+let state = { T1: 500, p1: 400, mode: 'p2', p2: 600, T2: 750 };
 
 const RANGE = {
+  T1: [300, 1000],
   p1: [100, 1000],
-  V1: [0.1, 1],
   p2: [100, 1000],
-  V2: [0.1, 1],
+  T2: [300, 1000],
 };
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
@@ -220,11 +220,11 @@ function syncVar(key, el, from) {
 function onModeChange(sel) {
   state.mode = sel.value;
   document.getElementById('p2-row').classList.toggle('hidden', state.mode !== 'p2');
-  document.getElementById('V2-row').classList.toggle('hidden', state.mode !== 'V2');
+  document.getElementById('T2-row').classList.toggle('hidden', state.mode !== 'T2');
   if (state.mode === 'p2') {
     state.p2 = parseFloat(document.getElementById('p2-out').value);
   } else {
-    state.V2 = parseFloat(document.getElementById('V2-out').value);
+    state.T2 = parseFloat(document.getElementById('T2-out').value);
   }
   compute();
 }
@@ -233,18 +233,18 @@ function fmt(n, dec) { return isNaN(n) ? '—' : n.toFixed(dec); }
 
 
 function compute() {
-  const C = state.p1 * state.V1;
+  const K = state.T1 / state.p1; // T/p = constant = K
   let outVal, outLab, outUnit;
 
   if (state.mode === 'p2') {
-    state.V2 = C / state.p2;
-    outVal = state.V2; outLab = 'Final volume \\(V_2\\)'; outUnit = 'm³';
+    state.T2 = K * state.p2;
+    outVal = state.T2; outLab = 'Final temperature \\(T_2\\)'; outUnit = 'K';
   } else {
-    state.p2 = C / state.V2;
+    state.p2 = state.T2 / K;
     outVal = state.p2; outLab = 'Final pressure \\(p_2\\)'; outUnit = 'kPa';
   }
 
-  document.getElementById('kpi-output').textContent = fmt(outVal, state.mode === 'p2' ? 4 : 1);
+  document.getElementById('kpi-output').textContent = fmt(outVal, 1);
   document.getElementById('output-unit').textContent = outUnit;
   const labEl = document.getElementById('output-lab');
   labEl.innerHTML = outLab;
@@ -262,31 +262,29 @@ function drawPlot() {
   const pW = W - mg.left - mg.right;
   const pH = H - mg.top - mg.bottom;
 
-  const C = state.p1 * state.V1;
+  const K = state.T1 / state.p1; // T = K * p
 
   let xDom, yDom, xLabel, yLabel, xKey, yKey, curveXDom;
   if (state.mode === 'p2') {
     xDom = [0, 1000];
-    curveXDom = [100, 1000];
-    const V2max = C / curveXDom[0];
-    yDom = [0, V2max < 1 ? 1 : 10];
-    xLabel = 'p\u2082  [kPa]'; yLabel = 'V\u2082  [m\u00b3]';
-    xKey = 'p2'; yKey = 'V2';
+    curveXDom = RANGE.p2.slice();
+    const T2max = K * curveXDom[1];
+    yDom = [0, T2max < 2000 ? 2000 : 10000];
+    xLabel = 'p\u2082  [kPa]'; yLabel = 'T\u2082  [K]';
+    xKey = 'p2'; yKey = 'T2';
   } else {
-    xDom = [0,1];
-    curveXDom = RANGE.V2.slice();
-    const p2max = C / curveXDom[0];
-    yDom = [0, p2max < 1000 ? 1000 : 10000];
-    xLabel = 'V\u2082  [m\u00b3]'; yLabel = 'p\u2082  [kPa]';
-    xKey = 'V2'; yKey = 'p2';
+    xDom = [0, 1000];
+    curveXDom = RANGE.T2.slice();
+    const p2max = curveXDom[1] / K;
+    yDom = [0, p2max < 500 ? 500 : 3500];
+    xLabel = 'T\u2082  [K]'; yLabel = 'p\u2082  [kPa]';
+    xKey = 'T2'; yKey = 'p2';
   }
 
   const xSc = d3.scaleLinear().domain(xDom).range([mg.left, mg.left + pW]);
   const ySc = d3.scaleLinear().domain(yDom).range([mg.top + pH, mg.top]);
 
-  const xAxis = state.mode === 'V2'
-    ? d3.axisBottom(xSc).tickValues([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
-    : d3.axisBottom(xSc).tickValues([0, 200, 400, 600, 800, 1000]);
+  const xAxis = d3.axisBottom(xSc).tickValues([0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]);
   const yAxis = d3.axisLeft(ySc).ticks(6);
 
   svg.append('g').attr('class', 'axis')
@@ -308,31 +306,26 @@ function drawPlot() {
     .y(d => ySc(clamp(d.y, yDom[0], yDom[1])))
     .defined(d => d.y >= yDom[0] * 0.999 && d.y <= yDom[1] * 1.001);
 
-  function curvePts(constant) {
+  function curvePts(Kc) {
     const pts = [];
     const n = 60;
     for (let i = 0; i <= n; i++) {
       const x = curveXDom[0] + (curveXDom[1] - curveXDom[0]) * (i / n);
-      pts.push({ x: x, y: constant / x });
+      const y = state.mode === 'p2' ? Kc * x : x / Kc;
+      pts.push({ x: x, y: y });
     }
     return pts;
   }
 
-  // current highlighted curve
-  svg.append('path').datum(curvePts(C))
-     .attr('class', 'curve')
-     .style('stroke', 'var(--accent)')
-     .attr('d', lineFn);
-  // current highlighted curve
-
-  svg.append('path').datum(curvePts(C))
+  // current highlighted line (T/p = K)
+  svg.append('path').datum(curvePts(K))
      .attr('class', 'curve')
      .style('stroke', 'var(--accent)')
      .attr('d', lineFn);
 
-  // state point 1 marker (on same curve family, at x = p1 or V1 depending on mode)
-  const x1 = state.mode === 'p2' ? state.p1 : state.V1;
-  const y1 = C / x1;
+  // state point 1 marker
+  const x1 = state.mode === 'p2' ? state.p1 : state.T1;
+  const y1 = state.mode === 'p2' ? state.T1 : state.p1;
   if (x1 >= xDom[0] && x1 <= xDom[1] && y1 >= yDom[0] && y1 <= yDom[1]) {
     svg.append('circle')
        .attr('cx', xSc(x1)).attr('cy', ySc(y1)).attr('r', 4)
