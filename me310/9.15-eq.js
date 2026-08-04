@@ -15,57 +15,30 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Prandtl-Blasius boundary layer solution"
-        },
-        {
-            "type": "note",
-            "text": "**Assumptions**: Steady, incompressible, viscous, laminar flow over a large flat plate."
-        },
-        {
-            "type": "note",
-            "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "\\delta = 5 \\sqrt{\\frac{\\nu x}{U}} = \\frac{5 x}{\\sqrt{Re_x}}"
-        },
-        {
-            "type": "equation",
-            "text": "\\tau_w = 0.332 U^{3/2} \\sqrt{\\frac{\\rho \\mu}{x}} = 0.332 \\rho U^2 Re_x^{-1/2}"
-        },
-        {
-            "type": "equation",
-            "text": "Re_x = \\frac{\\rho U x}{\\mu} = \\frac{U x}{\\nu}"
-        },
-        {
-            "type": "list",
-            "header": "Variables",
+            "type": "assumptions",
             "content": [
-                {
-                    "text": "$\\delta$ — boundary layer thickness"
-                },
-                {
-                    "text": "$\\tau_w$ — wall shear stress"
-                },
-                {
-                    "text": "$Re_x$ — Reynolds number"
-                },
-                {
-                    "text": "$U$ — upstream/free stream velocity"
-                },
-                {
-                    "text": "$x$ — distance measured from the leading edge"
-                },
-                {
-                    "text": "$\\rho$ — density"
-                },
-                {
-                    "text": "$\\mu$ — dynamic viscosity"
-                },
-                {
-                    "text": "$\\nu$ — kinematic viscosity"
-                }
+                "Steady, incompressible, viscous, laminar flow over a large flat plate."
+            ]
+        },
+        {
+            "type": "equations",
+            "content": [
+                "\\delta = 5 \\sqrt{\\frac{\\nu x}{U}} = \\frac{5 x}{\\sqrt{Re_x}}",
+                "\\tau_w = 0.332 U^{3/2} \\sqrt{\\frac{\\rho \\mu}{x}} = 0.332 \\rho U^2 Re_x^{-1/2}",
+                "Re_x = \\frac{\\rho U x}{\\mu} = \\frac{U x}{\\mu / \\rho} = \\frac{U x}{\\nu}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$\\delta$", "definition": "boundary layer thickness" },
+                { "symbol": "$\\tau_w$", "definition": "wall shear stress" },
+                { "symbol": "$Re_x$", "definition": "Reynolds number" },
+                { "symbol": "$U$", "definition": "upstream/free stream velocity" },
+                { "symbol": "$x$", "definition": "distance measured from the leading edge" },
+                { "symbol": "$\\rho$", "definition": "density" },
+                { "symbol": "$\\mu$", "definition": "dynamic viscosity" },
+                { "symbol": "$\\nu$", "definition": "kinematic viscosity" }
             ]
         }
     ],

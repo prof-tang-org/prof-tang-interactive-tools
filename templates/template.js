@@ -11,24 +11,23 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Core Concept Header"
-        },
-        {
-            "type": "note",
-            "text": "This is a note explaining that **bold**, *italics*, and __underlines__ are supported."
-        },
-        {
-            "type": "equation",
-            "text": "E = m c^2"
-        },
-        {
-            "type": "list",
-            "header": "Variable Definitions",
+            "type": "assumptions",
             "content": [
-                { "text": "$E$ — energy (J)" },
-                { "text": "$m$ — mass (kg)" },
-                { "text": "$c$ — speed of light ($3 \\times 10^8$ m/s)" }
+                "Assumption description goes here (single assumption renders on new line, no bullet)"
+            ]
+        },
+        {
+            "type": "equations",
+            "content": [
+                "E = m c^2"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$E$", "definition": "energy" },
+                { "symbol": "$m$", "definition": "mass" },
+                { "symbol": "$c$", "definition": "speed of light" }
             ]
         }
     ],

@@ -61,6 +61,7 @@
  * @property {number | string} [max] - Maximum boundary value or JS conditional expression
  * @property {number | string} [step] - Value step interval or JS conditional expression
  * @property {number} [initialValue] - Default starting value for the input (for slider, number, dropdown, and slider-dropdown)
+ * @property {'standard' | 'scientific'} [notation] - Number formatting notation (defaults to standard)
  * @property {DropdownChoice[]} [choices] - Array of options (for dropdown and slider-dropdown)
  * @property {number} [initialChoiceIndex] - Index of the initial selected choice (for dropdown and slider-dropdown)
  * @property {string} [notes] - Small descriptive notes rendered under the control (for dropdown and slider-dropdown)

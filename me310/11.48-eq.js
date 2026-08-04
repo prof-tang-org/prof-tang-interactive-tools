@@ -2,39 +2,26 @@ const pageData = {
     "title": "Mach Number of Ideal Gas Isentropic Flows",
     "equationElements": [
         {
-            "type": "header",
-            "text": "Mach number of ideal gas isentropic flows",
-        },
-        {
-            "type": "note",
-            "text": "**Assumptions**: Isentropic flow of an ideal gas with constant specific heats"
-        },
-        {
-            "type": "equation",
-            "text": "Ma = \\frac{v}{c} =  \\frac{v}{\\sqrt{kRT}}, \\text{where } R = \\frac{ \\bar{R}}{M}"
-        },
-        {
-            "type": "list",
-            "header": "Symbols",
+            "type": "assumptions",
             "content": [
-                {
-                    "text": "$Ma$ — Mach number"
-                }, 
-                {
-                    "text": "$v$ — Velocity of the gas"
-                },
-                {
-                    "text": "$c$ — Speed of sound in the gas"
-                },
-                {
-                    "text": "$k$ — Specific heat ratio"
-                },
-                {
-                    "text": "$R$ — Gas constant"
-                },
-                {
-                    "text": "$T$ — Absolute temperature"
-                }
+                "Isentropic flow of an ideal gas with constant specific heats"
+            ]
+        },
+        {
+            "type": "equations",
+            "content": [
+                "Ma = \\frac{v}{c} =  \\frac{v}{\\sqrt{kRT}}, \\text{where } R = \\frac{ \\bar{R}}{M}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$Ma$", "definition": "Mach number" },
+                { "symbol": "$v$", "definition": "Velocity of the gas" },
+                { "symbol": "$c$", "definition": "Speed of sound in the gas" },
+                { "symbol": "$k$", "definition": "Specific heat ratio" },
+                { "symbol": "$R$", "definition": "Gas constant" },
+                { "symbol": "$T$", "definition": "Absolute temperature" }
             ]
         }
     ],

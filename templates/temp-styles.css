@@ -135,8 +135,19 @@ html {
   top: 30%;
 }
 
-.card h3 {
-  margin: 0.375rem 0 0.375rem
+.card h1,
+.note h1 {
+  margin: 0.625rem 0 0.375rem;
+}
+
+.card h2,
+.note h2 {
+  margin: 0.5rem 0 0.375rem;
+}
+
+.card h3,
+.note h3 {
+  margin: 0.375rem 0 0.375rem;
 }
 
 .card p {
@@ -230,10 +241,10 @@ html {
   gap: 0.625rem;
   margin-top: 0.625rem;
   grid-template-columns: repeat(2, minmax(120px, 1fr));
-  background: #fcfcff;
-  border: 1px solid var(--line);
+  /* background: #fcfcff; */
+  /* border: 1px solid var(--line); */
   border-radius: 0.75rem;
-  padding: 0.625rem 0.75rem;
+  /* padding: 0.625rem 0.75rem; */
 }
 
 .value-group .value-container {
@@ -394,9 +405,11 @@ section {
   min-width: 0;
 }
 
-/* .num-sm {
-  width: 10.625rem;
-} */
+#controls .inline input.num-sm {
+  width: 6.5rem;
+  flex: 0 0 6.5rem;
+  min-width: 0;
+}
 
 input:disabled {
   background: #f3f4f6 !important;
@@ -406,8 +419,19 @@ input:disabled {
 }
 
 input[type="number"],
+input[type="text"],
 select {
   font: inherit;
+}
+
+h1 {
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.25rem;
+  line-height: 1.2;
 }
 
 h3 {

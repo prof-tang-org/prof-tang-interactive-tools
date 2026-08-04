@@ -15,34 +15,23 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Wave speed"
-        },
-        {
-            "type": "note",
-            "text": "**Assumptions**: 1-D open channel flow"
-        },
-        {
-            "type": "note",
-            "text": "**Equation**"
-        },
-        {
-            "type": "equation",
-            "text": "c = \\sqrt{gy}"
-        },
-        {
-            "type": "list",
-            "header": "Variables",
+            "type": "assumptions",
             "content": [
-                {
-                    "text": "$c$ — wave speed"
-                },
-                {
-                    "text": "$g$ — gravitational acceleration"
-                },
-                {
-                    "text": "$y$ — depth of open channel flow"
-                }
+                "1-D open channel flow"
+            ]
+        },
+        {
+            "type": "equations",
+            "content": [
+                "c = \\sqrt{gy}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$c$", "definition": "wave speed" },
+                { "symbol": "$g$", "definition": "gravitational acceleration" },
+                { "symbol": "$y$", "definition": "depth of open channel flow" }
             ]
         }
     ],

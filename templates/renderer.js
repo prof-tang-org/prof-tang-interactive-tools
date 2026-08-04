@@ -57,7 +57,26 @@ function parseText(text) {
         .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italics: *text*
         .replace(/__(.*?)__/g, '<u>$1</u>');              // Underline: __text__
 
+    // 5. Handle Headers: # h1, ## h2, ### h3
+    parsed = parsed
+        .replace(/^###[ \t]+(.*)$/gm, '<h3>$1</h3>')
+        .replace(/^##[ \t]+(.*)$/gm, '<h2>$1</h2>')
+        .replace(/^#[ \t]+(.*)$/gm, '<h1>$1</h1>');
+
     return parsed;
+}
+
+function parseTextToElement(text, defaultTag = 'span') {
+    const parsed = parseText(text);
+    const headingMatch = parsed.match(/^\s*<(h[1-3])>([\s\S]*?)<\/\1>\s*$/i);
+    if (headingMatch) {
+        const el = document.createElement(headingMatch[1]);
+        el.innerHTML = headingMatch[2];
+        return el;
+    }
+    const el = document.createElement(defaultTag);
+    el.innerHTML = parsed;
+    return el;
 }
 
 function renderContent(data, containerId) {
@@ -70,7 +89,7 @@ function renderContent(data, containerId) {
     // Isolate the dark-card that holds the equations to preserve schematic layout
     // const eqCard = container.querySelector('.dark-card:not(.schem)');
     const card = document.createElement('div'); // Create a new div to hold content within container
-    card.className = 'dark-card';
+    // card.className = 'dark-card';
 
     if (card) {
         // 1. Safe, efficient way to clear filler content without innerHTML
@@ -78,10 +97,8 @@ function renderContent(data, containerId) {
 
         data.forEach(item => {
             if (item.type === 'header') {
-                const h3 = document.createElement('h3');
-                // Safely inject parsed markdown tags
-                h3.insertAdjacentHTML('beforeend', parseText(item.text));
-                card.appendChild(h3);
+                const el = parseTextToElement(item.text, 'h3');
+                card.appendChild(el);
             } else if (item.type === 'equation') {
                 const div = document.createElement('div');
                 div.className = 'eqbig';
@@ -94,9 +111,8 @@ function renderContent(data, containerId) {
                 div.className = 'note';
                 if (item.text instanceof Array) {
                     item.text.forEach(line => {
-                        const p = document.createElement('p');
-                        p.insertAdjacentHTML('beforeend', parseText(line));
-                        div.appendChild(p);
+                        const el = parseTextToElement(line, 'p');
+                        div.appendChild(el);
                     });
                 } else {
                     div.insertAdjacentHTML('beforeend', parseText(item.text));
@@ -114,9 +130,75 @@ function renderContent(data, containerId) {
                 const ul = document.createElement('ul');
                 item.content.forEach(sym => {
                     const li = document.createElement('li');
-                    li.insertAdjacentHTML('beforeend', parseText(sym.text));
+                    let displayText = '';
+                    if (sym.symbol && sym.definition) {
+                        displayText = `${sym.symbol} — ${sym.definition}`;
+                    } else {
+                        displayText = sym.text || '';
+                    }
+                    li.insertAdjacentHTML('beforeend', parseText(displayText));
                     ul.appendChild(li);
                 });
+
+                div.appendChild(ul);
+                card.appendChild(div);
+            } else if (item.type === 'assumptions') {
+                const div = document.createElement('div');
+                div.className = 'note';
+                if (item.content && item.content.length === 1) {
+                    const pHeader = parseTextToElement("### Assumptions")
+                    div.appendChild(pHeader);
+
+                    const pText = document.createElement('p');
+                    pText.insertAdjacentHTML('beforeend', parseText(item.content[0]));
+                    div.appendChild(pText);
+                } else if (item.content) {
+                    const pHeader = parseTextToElement("### Assumptions")
+                    div.appendChild(pHeader);
+
+                    const ul = document.createElement('ul');
+                    item.content.forEach(text => {
+                        const li = document.createElement('li');
+                        li.insertAdjacentHTML('beforeend', parseText(text));
+                        ul.appendChild(li);
+                    });
+                    div.appendChild(ul);
+                }
+                card.appendChild(div);
+            } else if (item.type === 'equations') {
+                if (item.content && item.content.length > 0) {
+                    const headerText = item.content.length === 1 ? '### Equation' : '### Equations';
+                    const divHeader = parseTextToElement(headerText);
+                    card.appendChild(divHeader);
+
+                    item.content.forEach(eqText => {
+                        const div = document.createElement('div');
+                        div.className = 'eqbig';
+                        div.textContent = `\\( \\displaystyle ${eqText} \\)`;
+                        card.appendChild(div);
+                    });
+                }
+            } else if (item.type === 'symbols') {
+                const div = document.createElement('div');
+                div.className = 'note';
+
+                const pHeader = parseTextToElement("### Symbols")
+                div.appendChild(pHeader);
+
+                const ul = document.createElement('ul');
+                if (item.content) {
+                    item.content.forEach(sym => {
+                        const li = document.createElement('li');
+                        let displayText = '';
+                        if (sym.symbol && sym.definition) {
+                            displayText = `${sym.symbol} — ${sym.definition}`;
+                        } else {
+                            displayText = sym.text || '';
+                        }
+                        li.insertAdjacentHTML('beforeend', parseText(displayText));
+                        ul.appendChild(li);
+                    });
+                }
 
                 div.appendChild(ul);
                 card.appendChild(div);
@@ -173,9 +255,15 @@ function renderSchematic(schematic) {
 function clampInputValue(e, inputDef) {
     let val = parseFloat(e.target.value);
     if (!isNaN(val)) {
-        if (inputDef.min !== undefined) val = Math.max(inputDef.min, val);
-        if (inputDef.max !== undefined) val = Math.min(inputDef.max, val);
-        e.target.value = val; // Forces the input box value to snap visually on change
+        const minAttr = e.target.getAttribute('min');
+        const maxAttr = e.target.getAttribute('max');
+        const minVal = minAttr !== null ? parseFloat(minAttr) : (typeof inputDef.min === 'number' ? inputDef.min : undefined);
+        const maxVal = maxAttr !== null ? parseFloat(maxAttr) : (typeof inputDef.max === 'number' ? inputDef.max : undefined);
+
+        if (minVal !== undefined) val = Math.max(minVal, val);
+        if (maxVal !== undefined) val = Math.min(maxVal, val);
+
+        e.target.value = inputDef.notation === 'scientific' ? formatScientific(val, inputDef) : val;
         return val;
     }
     return null;
@@ -204,7 +292,7 @@ function createDropdownSelect(input, selectId) {
 
 function createSliderControl(input, numId, rangeId, initialValOverride) {
     const num = document.createElement('input');
-    num.type = 'number';
+    num.type = input.notation === 'scientific' ? 'text' : 'number';
     num.id = numId;
     num.className = 'num-sm';
 
@@ -218,13 +306,29 @@ function createSliderControl(input, numId, rangeId, initialValOverride) {
         if (input.min !== undefined) el.min = input.min;
         if (input.max !== undefined) el.max = input.max;
         if (input.step !== undefined) el.step = input.step;
-        el.value = startVal;
     });
+
+    if (input.notation === 'scientific') {
+        num.value = formatScientific(startVal, input);
+    } else {
+        num.value = startVal;
+    }
+    range.value = startVal;
 
     // 2-way data binding
     num.addEventListener('input', e => { range.value = e.target.value; });
     num.addEventListener('change', e => { clampInputValue(e, input); });
-    range.addEventListener('input', e => { num.value = e.target.value; });
+
+    if (input.notation === 'scientific') {
+        range.addEventListener('input', e => {
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+                num.value = formatScientific(val, input);
+            }
+        });
+    } else {
+        range.addEventListener('input', e => { num.value = e.target.value; });
+    }
 
     const rangeAndLabelsContainer = document.createElement('div');
     rangeAndLabelsContainer.className = 'range-labels-container';
@@ -237,7 +341,7 @@ function createSliderControl(input, numId, rangeId, initialValOverride) {
         const minLabel = document.createElement('span');
         minLabel.className = 'min-label';
         minLabel.id = `label_${input.id}_min`;
-        minLabel.textContent = formatNumber(input.min);
+        minLabel.textContent = formatInputLabel(input.min, input);
         minMaxLabels.appendChild(minLabel);
     }
 
@@ -245,7 +349,7 @@ function createSliderControl(input, numId, rangeId, initialValOverride) {
         const maxLabel = document.createElement('span');
         maxLabel.className = 'max-label';
         maxLabel.id = `label_${input.id}_max`;
-        maxLabel.textContent = formatNumber(input.max);
+        maxLabel.textContent = formatInputLabel(input.max, input);
         minMaxLabels.appendChild(maxLabel);
     }
     rangeAndLabelsContainer.appendChild(minMaxLabels);
@@ -275,13 +379,18 @@ function renderControls(inputs) {
 
             if (input.choices && input.choices.some(c => c.value === 'custom')) {
                 const customInput = document.createElement('input');
-                customInput.type = 'number';
+                customInput.type = input.notation === 'scientific' ? 'text' : 'number';
                 customInput.id = `input_${input.id}_custom`;
                 customInput.className = 'num-sm hidden';
                 if (input.min !== undefined) customInput.min = input.min;
                 if (input.max !== undefined) customInput.max = input.max;
                 if (input.step !== undefined) customInput.step = input.step;
-                customInput.value = initCustomVal;
+
+                if (input.notation === 'scientific') {
+                    customInput.value = formatScientific(initCustomVal, input);
+                } else {
+                    customInput.value = initCustomVal;
+                }
 
                 if (select.value === 'custom') {
                     customInput.classList.remove('hidden');
@@ -293,7 +402,7 @@ function renderControls(inputs) {
                     if (e.target.value === 'custom') {
                         customInput.classList.remove('hidden');
                         if (!customInput.value) {
-                            customInput.value = initCustomVal;
+                            customInput.value = input.notation === 'scientific' ? formatScientific(initCustomVal, input) : initCustomVal;
                         }
                     } else {
                         customInput.classList.add('hidden');
@@ -347,6 +456,12 @@ function renderControls(inputs) {
 
             const { num, range, rangeAndLabelsContainer } = createSliderControl(input, `input_${input.id}_num`, `input_${input.id}`, startVal);
 
+            const hasCustomOption = input.choices && input.choices.some(c => c.value === 'custom');
+            if (hasCustomOption && select.value !== 'custom') {
+                inline.classList.add('hidden');
+            }
+
+            /*
             const syncSelectFromNumeric = (val) => {
                 if (input.choices) {
                     const matchingChoice = input.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - val) < 1e-6);
@@ -357,17 +472,24 @@ function renderControls(inputs) {
                     }
                 }
             };
+            */
 
             select.addEventListener('change', e => {
                 if (e.target.value === 'custom') {
+                    if (hasCustomOption) {
+                        inline.classList.remove('hidden');
+                    }
                     if (!num.value) {
-                        num.value = initCustomVal;
+                        num.value = input.notation === 'scientific' ? formatScientific(initCustomVal, input) : initCustomVal;
                         range.value = initCustomVal;
                     }
                 } else {
+                    if (hasCustomOption) {
+                        inline.classList.add('hidden');
+                    }
                     const parsed = parseFloat(e.target.value);
                     if (!isNaN(parsed)) {
-                        num.value = parsed;
+                        num.value = input.notation === 'scientific' ? formatScientific(parsed, input) : parsed;
                         range.value = parsed;
                     }
                 }
@@ -375,21 +497,21 @@ function renderControls(inputs) {
 
             num.addEventListener('input', e => {
                 const val = parseFloat(e.target.value);
-                if (!isNaN(val)) syncSelectFromNumeric(val);
+                // if (!isNaN(val)) syncSelectFromNumeric(val);
             });
             num.addEventListener('change', e => {
                 const val = parseFloat(e.target.value);
-                if (!isNaN(val)) syncSelectFromNumeric(val);
+                // if (!isNaN(val)) syncSelectFromNumeric(val);
             });
             range.addEventListener('input', e => {
                 const val = parseFloat(e.target.value);
-                if (!isNaN(val)) syncSelectFromNumeric(val);
+                // if (!isNaN(val)) syncSelectFromNumeric(val);
             });
 
             inline.appendChild(num);
-            inline.appendChild(selectWrapper);
+            inline.appendChild(rangeAndLabelsContainer);
+            wrapper.appendChild(selectWrapper);
             wrapper.appendChild(inline);
-            wrapper.appendChild(rangeAndLabelsContainer);
         }
 
         container.appendChild(wrapper);
@@ -488,6 +610,31 @@ function formatNumber(val, decimals) {
     return parseFloat(val.toPrecision(decimals !== undefined ? decimals + 1 : 4)).toString();
 }
 
+function formatScientific(val, input) {
+    if (!Number.isFinite(val)) return '—';
+    let dec = input.decimals;
+    if (dec !== undefined && !isNaN(dec)) {
+        return val.toExponential(dec);
+    }
+    let str = val.toExponential(12);
+    let parts = str.split(/[eE]/);
+    let significand = parts[0];
+    let exponent = parts[1];
+    significand = significand.replace(/0+$/, '');
+    if (significand.endsWith('.')) {
+        significand += '0';
+    }
+    return significand + 'e' + exponent;
+}
+
+function formatInputLabel(val, input) {
+    if (input && input.notation === 'scientific') {
+        return formatScientific(val, input);
+    }
+    return formatNumber(val);
+}
+
+
 function setupCalculationEngine(pageData) {
     const controlsContainer = document.getElementById('controls');
     if (!controlsContainer) return;
@@ -568,17 +715,19 @@ function setupCalculationEngine(pageData) {
                         if (maxVal !== undefined) clampedVal = Math.min(maxVal, clampedVal);
                         if (clampedVal !== currentVal) {
                             primaryEl.value = clampedVal;
-                            if (numEl) numEl.value = clampedVal;
+                            if (numEl) {
+                                numEl.value = input.notation === 'scientific' ? formatScientific(clampedVal, input) : clampedVal;
+                            }
                             state[input.id] = clampedVal;
                         }
                     }
                 }
 
                 const minLabel = document.getElementById(`label_${input.id}_min`);
-                if (minLabel && minVal !== undefined) minLabel.textContent = formatNumber(minVal);
+                if (minLabel && minVal !== undefined) minLabel.textContent = formatInputLabel(minVal, input);
 
                 const maxLabel = document.getElementById(`label_${input.id}_max`);
-                if (maxLabel && maxVal !== undefined) maxLabel.textContent = formatNumber(maxVal);
+                if (maxLabel && maxVal !== undefined) maxLabel.textContent = formatInputLabel(maxVal, input);
             }
         });
     }
@@ -1279,7 +1428,7 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
                 textAlign = 'right';
 
                 if (refSetting.labelPosition === 'above') {
-                    foY = lastValidPoint[1] - foHeight - 4 * scale;
+                    foY = lastValidPoint[1] - foHeight + 2 * scale;
                 } else {
                     foY = lastValidPoint[1] + foHeight + 4 * scale;
                 }

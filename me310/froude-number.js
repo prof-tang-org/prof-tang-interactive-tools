@@ -3,40 +3,25 @@ const pageData = {
     "title": "Froude Number",
     "equationElements": [
         {
-            "type": "header",
-            "text": "Froude number"
-        },
-        {
-            "type": "note",
-            "text": "**Assumptions**: 1-D open channel flow"
-        },
-        {
-            "type": "note",
-            "text": "**Equation**"
-        },
-        {
-            "type": "equation",
-            "text": "Fr = \\frac{v}{\\sqrt{gy}}"
-        },
-        {
-            "type": "list",
-            "header": "Symbols",
+            "type": "assumptions",
             "content": [
-                {
-                    "text": "$Fr$ — Froude number"
-                },
-                {
-                    "text": "$c$ — wave speed"
-                },
-                {
-                    "text": "$g$ — gravitational acceleration"
-                },
-                {
-                    "text": "$y$ — flow depth"
-                },
-                {
-                    "text": "$v$ — flow velocity"
-                }
+                "1-D open channel flow"
+            ]
+        },
+        {
+            "type": "equations",
+            "content": [
+                "Fr = \\frac{v}{\\sqrt{gy}}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$Fr$", "definition": "Froude number" },
+                { "symbol": "$c$", "definition": "wave speed" },
+                { "symbol": "$g$", "definition": "gravitational acceleration" },
+                { "symbol": "$y$", "definition": "flow depth" },
+                { "symbol": "$v$", "definition": "flow velocity" }
             ]
         }
     ],

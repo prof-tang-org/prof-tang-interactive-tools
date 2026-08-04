@@ -14,60 +14,30 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Steady internally reversible polytropic process work of ideal gas flows"
-        },
-        {
-            "type": "list",
-            "header": "Assumptions",
+            "type": "assumptions",
             "content": [
-                {
-                    "text": "The open system operates under steady flow conditions with one inlet and one outlet."
-                },
-                {
-                    "text": "The process is internally reversible."
-                },
-                {
-                    "text": "Changes in kinetic energy and potential energy are negligible."
-                },
-                {
-                    "text": "The working fluid behaves as an ideal gas and undergoes a polytropic process."
-                }
+                "The open system operates under steady flow conditions with one inlet and one outlet.",
+                "The process is internally reversible.",
+                "Changes in kinetic energy and potential energy are negligible.",
+                "The working fluid behaves as an ideal gas and undergoes a polytropic process."
             ]
         },
         {
-            "type": "note",
-            "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "\\left(\\frac{\\dot{W}_{cv}}{\\dot{m}}\\right)_{\\text{int. rev.}} = \\int_1^2{vdp} = \\begin{cases} -RT \\ln\\left(\\frac{p_2}{p_1}\\right) & \\text{if } n = 1 \\\\ -\\frac{nRT_1}{n-1}\\left[\\left(\\frac{p_2}{p_1}\\right)^{\\frac{n-1}{n}} - 1\\right] & \\text{if } n \\neq 1 \\end{cases}"
-        },
-        {
-            "type": "list",
-            "header": "Symbols",
+            "type": "equations",
             "content": [
-                {
-                    "text": "$\\left(\\frac{\\dot{W}_{cv}}{\\dot{m}}\\right)_{\\text{int. rev.}}$ — work per unit mass"
-                },
-                {
-                    "text": "$\\dot{m}$ — mass flow rate"
-                },
-                {
-                    "text": "$p_1, p_2$ — inlet and outlet pressures (absolute)"
-                },
-                {
-                    "text": "$T_1, T_2$ — inlet and outlet temperatures (thermodynamic)"
-                },
-                {
-                    "text": "$v_1, v_2$ — inlet and outlet specific volumes"
-                },
-                {
-                    "text": "$R$ — specific gas constant ($R = \\bar{R}/M$)"
-                },
-                {
-                    "text": "$n$ — polytropic index"
-                }
+                "\\left(\\frac{\\dot{W}_{cv}}{\\dot{m}}\\right)_{\\text{int. rev.}} = \\int_1^2{vdp} = \\begin{cases} -RT \\ln\\left(\\frac{p_2}{p_1}\\right) & \\text{if } n = 1 \\\\ -\\frac{nRT_1}{n-1}\\left[\\left(\\frac{p_2}{p_1}\\right)^{\\frac{n-1}{n}} - 1\\right] & \\text{if } n \\neq 1 \\end{cases}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$\\left(\\frac{\\dot{W}_{cv}}{\\dot{m}}\\right)_{\\text{int. rev.}}$", "definition": "work per unit mass" },
+                { "symbol": "$\\dot{m}$", "definition": "mass flow rate" },
+                { "symbol": "$p_1, p_2$", "definition": "inlet and outlet pressures (absolute)" },
+                { "symbol": "$T_1, T_2$", "definition": "inlet and outlet temperatures (thermodynamic)" },
+                { "symbol": "$v_1, v_2$", "definition": "inlet and outlet specific volumes" },
+                { "symbol": "$R$", "definition": "specific gas constant ($R = \\bar{R}/M$)" },
+                { "symbol": "$n$", "definition": "polytropic index" }
             ]
         },
         {

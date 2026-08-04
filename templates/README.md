@@ -152,7 +152,10 @@ An ordered series of blocks rendered inside the equations card.
 | **`header`** | `text` (String) | Renders a level 3 heading (`<h3>`). Supports rich formatting. |
 | **`equation`** | `text` (String) | Renders a MathJax display block (`\( equation \)`). Do **not** wrap in `$$` or `$` delimiters. |
 | **`note`** | `text` (String or Array) | Renders notes styled with the `.note` class. If an array of strings is passed, each string generates a separate paragraph (`<p>`). |
-| **`list`** | `header` (String), `content` (Array) | Renders a bulleted list. The header is bolded, and the `content` is an array of objects of the form `{ "text": "item text" }`. |
+| **`list`** | `header` (String), `content` (Array) | Renders a bulleted list. The header is bolded, and the `content` is an array of objects of the form `{ "text": "item text" }` or `{ "symbol": "$x$", "definition": "desc" }`. |
+| **`assumptions`** | `content` (Array) | Renders the assumptions section. Displays header and text on separate lines without a bullet if content contains only 1 item, or as a bulleted list if there are multiple. |
+| **`equations`** | `content` (Array) | Renders equation blocks, automatically adding `**Equation**` or `**Equations**` above them. |
+| **`symbols`** | `content` (Array) | Renders the symbols list with the header `"Symbols"`. Symbol items must be structured: `{ "symbol": "$x$", "definition": "desc" }`. |
 | **`schematic`** | `src` (String), `alt` (String) | Sets a local schematic image URL and alt text. (Equivalent to setting a top-level `schematic` object). |
 
 > [!NOTE]
@@ -165,6 +168,15 @@ An ordered series of blocks rendered inside the equations card.
 > * **MathJax Block**: `$$x = y$$` &rarr; `\[ x = y \]`
 >
 > *Escaping:* Standard HTML characters (`&`, `<`, `>`) are automatically escaped to prevent syntax breakages.
+
+> [!IMPORTANT]
+> **Standard Guidelines for `equationElements`**
+> For consistency across all courses and topics, adhere to these standard conventions:
+> * **Assumptions:** Always use `type: "assumptions"` rather than custom note/list headers.
+> * **Equations:** Always use `type: "equations"` rather than custom note/list headers.
+> * **Symbols:** Always use `type: "symbols"` rather than custom `list` headers.
+>   * *No Units:* Symbol definitions must **never** contain units (e.g. use "mass", not "mass (kg)" or "mass in kg").
+>   * *Structure:* Items must use `{ "symbol": "$x$", "definition": "description" }` to automatically join them with standard spacing and em-dashes (` — `).
 
 ---
 
@@ -199,6 +211,8 @@ Interactive controls rendered inside the `#controls` container.
 * `initialValue` (Number): Default starting numeric value for `slider`, `number`, `dropdown`, or `slider-dropdown`.
 * `choices` (Array of Objects): Preset choices for `dropdown` and `slider-dropdown`.
 * `initialChoiceIndex` (Number, optional): Default selected index for `choices` (defaults to 0).
+* `notation` (String, optional): `"standard"` | `"scientific"`. Determines how numeric values are formatted and rendered. Defaults to `"standard"`.
+
 
 #### 3. `outputs` (Array of Objects)
 Dynamically updated outputs rendered under `#outputs`.
