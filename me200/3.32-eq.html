@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Equation of State of Ideal Gases</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* ─── variables ─── */
+    :root{
+      --ink:#1f2937;--ink2:#374151;
+      --bg:#f6f7fb;--card:#fff;--line:#e5e7eb;
+      --accent:#0ea5e9;
+      --ok:#10b981;--warn:#f59e0b;--danger:#ef4444;
+      --r-sm:10px;--r-md:12px;--r-lg:14px;
+      --shadow-sm:0 6px 16px rgba(0,0,0,.04);
+      --shadow-md:0 10px 22px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45;background:var(--bg);color:var(--ink)}
+    html{scroll-behavior:smooth}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    /* header / footer */
+    .site-header{background:linear-gradient(135deg,var(--ink),var(--ink2));color:#fff;padding:28px 0}
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .header-row h1{font-size:clamp(1.4rem,2.1vw,2rem);line-height:1.12;margin:0}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none;cursor:pointer;font-size:14px}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.primary:hover{filter:brightness(1.06)}
+    .site-footer{border-top:1px solid var(--line);background:#fff;padding:16px 0;margin-top:28px}
+    .back-row{display:flex;align-items:center;margin:12px 0 14px}
+    .back-home{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#0ea5e9;text-decoration:none;font-size:14px}
+    .back-home:hover{background:#f0f9ff}
+    .back-home .chev{font-size:16px;line-height:1}
+
+    /* cards */
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:var(--r-md);background:#fcfcff;margin-bottom:10px;overflow-x:auto}
+    .eqbig{font-size:1.05em;margin-bottom:8px}
+    .title-xl{font-size:18px;line-height:1.22;color:#111;margin-bottom:10px}
+    .note{font-size:13px;color:#4b5563;margin-bottom:6px}
+
+    /* top two-column grid */
+    .top-grid{display:grid;gap:12px}
+    @media(min-width:1024px){.top-grid{grid-template-columns:1.2fr 0.9fr}}
+
+    /* schematic box */
+    .schem{min-height:260px;border:1px solid var(--line);border-radius:12px;background:#fafcff;
+           display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+
+    /* controls / inputs */
+    .inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    input[type="number"]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;
+                         background:#fff;color:inherit;width:88px;text-align:right}
+    input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
+    input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
+    label{font-size:13px;color:#4b5563}
+    select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
+
+    /* two-column inputs / output layout */
+    .inputs-two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media(max-width:760px){.inputs-two{grid-template-columns:1fr}}
+
+    /* KPI strip */
+    .kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(3,minmax(100px,1fr));
+         background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    @media(max-width:480px){.kpi{grid-template-columns:1fr}}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    /* plots */
+    .plots-grid{display:grid;gap:14px;grid-template-columns:1fr}
+    @media(min-width:880px){.plots-grid{grid-template-columns:1fr 1fr}}
+    .viz{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px;margin-top:12px}
+    .viz-inner{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px}
+    svg{width:100%;height:auto;display:block}
+    .axis text{font-size:10px;fill:#111}
+    .axis-title{font-size:11px;fill:#111}
+    .curve{fill:none;stroke-width:2}
+    .dragpt{stroke:#111;stroke-width:1.2;cursor:ew-resize}
+    .hit{fill:transparent;cursor:ew-resize}
+
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="header-row">
+      <h1>Equation of State of Ideal Gases</h1>
+      <a class="btn primary" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="back-row">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </nav>
+
+  <!-- ── TOP GRID: equation card + schematic ── -->
+  <section class="top-grid">
+
+    <div class="ctl">
+      <!-- Equation + Symbols in unified gray box -->
+      <div style="background:#fafcff;border:1px solid var(--line);border-radius:10px;padding:16px 18px">
+        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:12px">Equation of state of ideal gases relating pressure, specific volume, and temperature, i.e., ideal gas law</div>
+        \(\displaystyle pv = RT \quad \text{where} \quad R = \frac{\bar R}{M}\)
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:16px;margin-bottom:4px">Symbols</div>
+        <ul style="margin:8px 0 0 0;padding-left:38px">
+          <li>\(p\) — absolute pressure</li>
+          <li>\(v\) — specific volume</li>
+          <li>\(T\) — thermodynamic temperature</li>
+          <li>\(R\) — gas constant</li>
+          <li>\(\bar R\) — universal gas constant, 8314 [J/(kmol·K)]</li>
+          <li>\(M\) — molar mass</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Schematic -->
+    <div>
+      <div class="ctl" style="position:sticky;top:20px">
+        <h2 style="margin:4px 0 8px;font-size:1.25rem">Schematic</h2>
+        <div class="schem" aria-label="Ideal gas system schematic">
+          <img src="../assets/me200/3.32-eq.png" alt="Ideal gas equation of state schematic" style="max-height:240px; width:100%; object-fit:contain" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INPUTS & OUTPUTS ── -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Inputs &amp; Outputs</h2>
+
+    <div class="inputs-two">
+      <!-- Left: inputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="ctl">
+          <label>Gas</label>
+          <div class="inline" style="margin-top:6px">
+            <select id="gas-select" onchange="onGasChange(this)" style="width:100%">
+              <option value="air" selected>Air</option>
+              <option value="o2">O₂</option>
+              <option value="n2">N₂</option>
+              <option value="co2">CO₂</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>\(T\) — thermodynamic temperature [K]</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="T-out" min="300" max="1000" step="1" value="500"
+                   onchange="syncInput('T',this)" />
+            <input type="range" id="T-in" min="300" max="1000" step="1" value="500"
+                   oninput="syncInput('T',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>\(p\) — absolute pressure [kPa]</label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="p-out" min="100" max="1000" step="1" value="300"
+                   onchange="syncInput('p',this)" />
+            <input type="range" id="p-in" min="100" max="1000" step="1" value="300"
+                   oninput="syncInput('p',this)" style="flex:1" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: outputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">M [kg/kmol]</div>
+          <div class="val"><span id="M-kpi">—</span></div>
+        </div>
+        <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">R [J/(kg·K)]</div>
+          <div class="val"><span id="R-kpi">—</span></div>
+        </div>
+        <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">v [m³/kg]</div>
+          <div class="val"><span id="v-kpi">—</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PLOTS ── -->
+  <section class="ctl" style="margin-top:14px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Plots</h2>
+    <div class="plots-grid">
+      <div class="viz-inner">
+        <div style="text-align:center;font-weight:700;font-size:13px;color:#111;margin-bottom:4px">v&ndash;T</div>
+        <svg id="plotVT" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="viz-inner">
+        <div style="text-align:center;font-weight:700;font-size:13px;color:#111;margin-bottom:4px">v&ndash;p</div>
+        <svg id="plotVp" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:#6b7280">
+      All properties are computed from the ideal gas law \(pv=RT\). The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current state point for the input temperature, pressure, and gas selection. Use the inputs above to move the <span style="color:#ef4444;font-weight:600">red dot</span>, or drag it directly on either plot.
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </div>
+</footer>
+
+<script>
+/* ─── state ─── */
+const S = { gas: 'air', T: 500, p: 300 };
+
+const RBAR = 8314; // J/(kmol-K)
+const MOLAR_MASS = { air: 28.97, o2: 32.00, n2: 28.01, co2: 44.01 }; // kg/kmol
+
+function getM(){ return MOLAR_MASS[S.gas]; }
+function getR(){ return RBAR / getM(); }               // J/(kg-K)
+function calcV(T, p, R){                                 // v [m3/kg], p in kPa
+  R = (R === undefined) ? getR() : R;
+  return R * T / (p * 1000);
+}
+
+/* ─── gas select ─── */
+function onGasChange(el){
+  S.gas = el.value;
+  compute();
+}
+
+/* ─── sync number ↔ range ─── */
+function syncInput(k, el){
+  let v = parseFloat(el.value);
+  if(isNaN(v)) return;
+  if(k === 'T'){
+    v = Math.max(300, Math.min(1000, v));
+  } else {
+    v = Math.max(100, Math.min(1000, v));
+  }
+  S[k] = v;
+  setVal(k, v);
+  compute();
+}
+
+function setVal(k, v){
+  document.getElementById(k+'-out').value = v;
+  document.getElementById(k+'-in').value  = v;
+}
+
+/* ─── compute outputs ─── */
+function compute(){
+  const M = getM();
+  const R = getR();
+  const v = calcV(S.T, S.p, R);
+  document.getElementById('M-kpi').textContent = M.toFixed(2);
+  document.getElementById('R-kpi').textContent = R.toFixed(4);
+  document.getElementById('v-kpi').textContent = v.toFixed(6);
+  drawPlotVT();
+  drawPlotVp();
+}
+
+/* ─── shared axis/label helper ─── */
+function setupAxes(svg, mg, pW, pH, H, xDomain, xTicks, xLabelText, yLabelText){
+  const xSc = d3.scaleLinear().domain(xDomain).range([mg.left, mg.left + pW]);
+  const ySc = d3.scaleLinear().domain([0, 3]).range([mg.top + pH, mg.top]);
+
+  const xAxis = d3.axisBottom(xSc).tickValues(xTicks).tickFormat(d3.format('d'));
+  const yAxis = d3.axisLeft(ySc).ticks(6).tickFormat(d3.format('~g'));
+
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(0,${mg.top+pH})`)
+     .call(xAxis);
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(${mg.left},0)`)
+     .call(yAxis);
+
+  svg.append('text').attr('class','axis-title')
+     .attr('transform','rotate(-90)')
+     .attr('x', -(mg.top + pH/2)).attr('y', 14)
+     .attr('text-anchor','middle')
+     .text(yLabelText);
+  svg.append('text').attr('class','axis-title')
+     .attr('x', mg.left + pW/2).attr('y', H - 8)
+     .attr('text-anchor','middle')
+     .text(xLabelText);
+
+  return { xSc, ySc };
+}
+
+/* ─── plot: v vs T (curves at fixed p) ─── */
+function drawPlotVT(){
+  const svg = d3.select('#plotVT');
+  svg.selectAll('*').remove();
+
+  const W = 520, H = 300;
+  const mg = { top: 22, right: 20, bottom: 40, left: 46 };
+  const pW = W - mg.left - mg.right;
+  const pH = H - mg.top - mg.bottom;
+
+  const { xSc, ySc } = setupAxes(svg, mg, pW, pH, H, [0, 1000],
+    [0,200,400,600,800,1000], 'T [K]', 'v [m³/kg]');
+
+  const R = getR();
+  const pts = d3.range(300, 1001, 5);
+  const lineFn = (pVal) => d3.line()
+    .x(d => xSc(d))
+    .y(d => ySc(calcV(d, pVal, R)));
+
+  const curves = [
+    { p: S.p, color: '#3b82f6', dashed: false, labelT: 950, labelOffset: -8, isInput: true },
+    { p: 100, color: '#9ca3af', dashed: true,  labelT: 600, labelOffset: -16 },
+    { p: 1000, color: '#9ca3af', dashed: true,  labelT: 900, labelOffset: 12 }
+];
+
+  curves.forEach(c => {
+    svg.append('path')
+       .datum(pts)
+       .attr('class','curve')
+       .style('stroke', c.color)
+       .style('stroke-dasharray', c.dashed ? '6 3' : null)
+       .attr('d', lineFn(c.p)(pts));
+  });
+
+  curves.forEach(c => {
+    const vAtLabel = calcV(c.labelT, c.p, R);
+    if(vAtLabel <= 3){
+      svg.append('text')
+         .attr('x', xSc(c.labelT))
+         .attr('y', ySc(vAtLabel) + c.labelOffset)
+         .attr('text-anchor', 'middle')
+         .style('font-size', '10px')
+         .style('font-weight', '600')
+         .style('fill', c.color)
+         .text(c.isInput ? `p = input (${c.p} kPa)` : `p = ${c.p} kPa`);
+    }
+  });
+
+  // Operating point on the input-p curve
+  const vOp = calcV(S.T, S.p, R);
+  svg.append('circle')
+     .attr('class','dragpt')
+     .attr('cx', xSc(S.T))
+     .attr('cy', ySc(Math.min(vOp, 3)))
+     .attr('r', 5)
+     .style('fill', '#ef4444');
+
+  const hitRect = svg.append('rect')
+    .attr('class','hit')
+    .attr('x', mg.left).attr('y', mg.top)
+    .attr('width', pW).attr('height', pH);
+
+  hitRect.call(d3.drag().on('start drag end', function(event){
+    const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
+    let   val = Math.round(xSc.invert(xm));
+    val = Math.max(300, Math.min(1000, val));
+    S.T = val;
+    setVal('T', val);
+    compute();
+  }));
+}
+
+/* ─── plot: v vs p (curves at fixed T) ─── */
+function drawPlotVp(){
+  const svg = d3.select('#plotVp');
+  svg.selectAll('*').remove();
+
+  const W = 520, H = 300;
+  const mg = { top: 22, right: 20, bottom: 40, left: 46 };
+  const pW = W - mg.left - mg.right;
+  const pH = H - mg.top - mg.bottom;
+
+  const { xSc, ySc } = setupAxes(svg, mg, pW, pH, H, [0, 1000],
+    [0,200,400,600,800,1000], 'p [kPa]', 'v [m³/kg]');
+
+  const R = getR();
+  const pts = d3.range(100, 1001, 5);
+  const lineFn = (TVal) => d3.line()
+    .x(d => xSc(d))
+    .y(d => ySc(Math.min(calcV(TVal, d, R), 3)));
+
+  const curves = [
+    { T: S.T, color: '#3b82f6', dashed: false, labelP: 300, labelOffset: -16, isInput: true },
+    { T: 300, color: '#9ca3af', dashed: true,  labelP: 200, labelOffset: 16 },
+    { T: 1000, color: '#9ca3af', dashed: true,  labelP: 550, labelOffset: -8 }
+  ];
+
+  curves.forEach(c => {
+    svg.append('path')
+       .datum(pts)
+       .attr('class','curve')
+       .style('stroke', c.color)
+       .style('stroke-dasharray', c.dashed ? '6 3' : null)
+       .attr('d', lineFn(c.T)(pts));
+  });
+
+  curves.forEach(c => {
+    const vAtLabel = calcV(c.T, c.labelP, R);
+    if(vAtLabel <= 3){
+      svg.append('text')
+         .attr('x', xSc(c.labelP))
+         .attr('y', ySc(vAtLabel) + c.labelOffset)
+         .attr('text-anchor', 'middle')
+         .style('font-size', '10px')
+         .style('font-weight', '600')
+         .style('fill', c.color)
+         .text(c.isInput ? `T = input (${c.T} K)` : `T = ${c.T} K`);
+    }
+  });
+
+  // Operating point on the input-T curve
+  const vOp = calcV(S.T, S.p, R);
+  svg.append('circle')
+     .attr('class','dragpt')
+     .attr('cx', xSc(S.p))
+     .attr('cy', ySc(Math.min(vOp, 3)))
+     .attr('r', 5)
+     .style('fill', '#ef4444');
+
+  const hitRect = svg.append('rect')
+    .attr('class','hit')
+    .attr('x', mg.left).attr('y', mg.top)
+    .attr('width', pW).attr('height', pH);
+
+  hitRect.call(d3.drag().on('start drag end', function(event){
+    const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
+    let   val = Math.round(xSc.invert(xm));
+    val = Math.max(100, Math.min(1000, val));
+    S.p = val;
+    setVal('p', val);
+    compute();
+  }));
+}
+
+/* ─── init ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  compute();
+  window.addEventListener('resize', compute);
+});
+</script>
+
+</body>
+</html>
