@@ -2,42 +2,22 @@ const pageData = {
     "title": "Manning Equation for Turbulent Uniform Open-Channel Flow",
     "equationElements": [
         {
-            "type": "header",
-            "text": "Manning equation for turbulent uniform open-channel flow"
-        },
-        {
-            "type": "equation",
-            "text": "V = \\frac{\\kappa}{n} R_h^{\\frac{2}{3}} S_0^{\\frac{1}{2}}"
-        },
-        {
-            "type": "equation",
-            "text": "Re_R = \\frac{V R_h}{\\nu}"
-        },
-        {
-            "type": "list",
-            "header": "Variables",
+            "type": "equations",
             "content": [
-                {
-                    "text": "$V$ — velocity"
-                },
-                {
-                    "text": "$\\kappa$ — unit conversion factor"
-                },
-                {
-                    "text": "$n$ — Manning roughness coefficient"
-                },
-                {
-                    "text": "$R_h$ — hydraulic radius"
-                },
-                {
-                    "text": "$S_0$ — bottom slope"
-                },
-                {
-                    "text": "$Re_R$ — Reynolds number based on hydraulic radius"
-                },
-                {
-                    "text": "$\\nu$ — kinematic viscosity"
-                }
+                "V = \\frac{\\kappa}{n} R_h^{\\frac{2}{3}} S_0^{\\frac{1}{2}}",
+                "Re_R = \\frac{V R_h}{\\nu}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$V$", "definition": "velocity" },
+                { "symbol": "$\\kappa$", "definition": "unit conversion factor" },
+                { "symbol": "$n$", "definition": "Manning roughness coefficient" },
+                { "symbol": "$R_h$", "definition": "hydraulic radius" },
+                { "symbol": "$S_0$", "definition": "bottom slope" },
+                { "symbol": "$Re_R$", "definition": "Reynolds number based on hydraulic radius" },
+                { "symbol": "$\\nu$", "definition": "kinematic viscosity" }
             ]
         }
     ],

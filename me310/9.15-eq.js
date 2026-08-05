@@ -15,57 +15,30 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Prandtl-Blasius boundary layer solution"
-        },
-        {
-            "type": "note",
-            "text": "**Assumptions**: Steady, incompressible, viscous, laminar flow over a large flat plate."
-        },
-        {
-            "type": "note",
-            "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "\\delta = 5 \\sqrt{\\frac{\\nu x}{U}} = \\frac{5 x}{\\sqrt{Re_x}}"
-        },
-        {
-            "type": "equation",
-            "text": "\\tau_w = 0.332 U^{3/2} \\sqrt{\\frac{\\rho \\mu}{x}} = 0.332 \\rho U^2 Re_x^{-1/2}"
-        },
-        {
-            "type": "equation",
-            "text": "Re_x = \\frac{\\rho U x}{\\mu} = \\frac{U x}{\\nu}"
-        },
-        {
-            "type": "list",
-            "header": "Variables",
+            "type": "assumptions",
             "content": [
-                {
-                    "text": "$\\delta$ — boundary layer thickness"
-                },
-                {
-                    "text": "$\\tau_w$ — wall shear stress"
-                },
-                {
-                    "text": "$Re_x$ — Reynolds number"
-                },
-                {
-                    "text": "$U$ — upstream/free stream velocity"
-                },
-                {
-                    "text": "$x$ — distance measured from the leading edge"
-                },
-                {
-                    "text": "$\\rho$ — density"
-                },
-                {
-                    "text": "$\\mu$ — dynamic viscosity"
-                },
-                {
-                    "text": "$\\nu$ — kinematic viscosity"
-                }
+                "Steady, incompressible, viscous, laminar flow over a large flat plate."
+            ]
+        },
+        {
+            "type": "equations",
+            "content": [
+                "\\delta = 5 \\sqrt{\\frac{\\nu x}{U}} = \\frac{5 x}{\\sqrt{Re_x}}",
+                "\\tau_w = 0.332 U^{3/2} \\sqrt{\\frac{\\rho \\mu}{x}} = 0.332 \\rho U^2 Re_x^{-1/2}",
+                "Re_x = \\frac{\\rho U x}{\\mu} = \\frac{U x}{\\mu / \\rho} = \\frac{U x}{\\nu}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$\\delta$", "definition": "boundary layer thickness" },
+                { "symbol": "$\\tau_w$", "definition": "wall shear stress" },
+                { "symbol": "$Re_x$", "definition": "Reynolds number" },
+                { "symbol": "$U$", "definition": "upstream/free stream velocity" },
+                { "symbol": "$x$", "definition": "distance measured from the leading edge" },
+                { "symbol": "$\\rho$", "definition": "density" },
+                { "symbol": "$\\mu$", "definition": "dynamic viscosity" },
+                { "symbol": "$\\nu$", "definition": "kinematic viscosity" }
             ]
         }
     ],
@@ -94,7 +67,7 @@ const pageData = {
                 "type": "slider",
                 "id": "U",
                 "text": "Upstream Velocity, $U$ [m/s]",
-                "min": 0.1,
+                "min": 0.2,
                 "max": 1,
                 "initialValue": 0.6,
                 "step": 0.01
@@ -103,10 +76,10 @@ const pageData = {
                 "type": "slider",
                 "id": "x",
                 "text": "Distance, $x$ [m]",
-                "min": 0.01,
+                "min": 0.03,
                 "max": 0.2,
                 "initialValue": 0.15,
-                "step": 0.01
+                "step": 0.001
             }
         ],
         "outputs": [
@@ -159,16 +132,17 @@ const pageData = {
                 "y": "delta-mm",
                 "xLabel": "$x \\text{ [m]}$",
                 "yLabel": "$\\delta \\text{ [mm]}$",
-                "xMin": 0.01,
+                "xMin": 0,
                 "xMax": 0.2,
                 "yMin": 0,
-                "yMax": [2.5, 10],
-                "yTickInterval": [0.5, 2],
+                "yMax": [6, 20],
+                "yTickInterval": [1, 4],
+                "key": "fluid",
                 "reference": [
                     {
                         "U": 1.0,
                         "text": "$U = 1\\text{ m/s}$",
-                        "labelPosition": "above"
+                        "labelPosition": "below"
                     }
                 ]
             },
@@ -177,11 +151,12 @@ const pageData = {
                 "y": "shear-stress",
                 "xLabel": "$x \\text{ [m]}$",
                 "yLabel": "$\\tau_w \\text{ [Pa]}$",
-                "xMin": 0.01,
+                "xMin": 0,
                 "xMax": 0.2,
                 "yMin": 0,
-                "yMax": [0.004, 0.8],
-                "yTickInterval": [0.0005, 0.1],
+                "yMax": [2, 0.009],
+                "yTickInterval": [0.2, 0.001],
+                "key": "fluid",
                 "reference": [
                     {
                         "U": 1.0,

@@ -61,6 +61,7 @@
  * @property {number | string} [max] - Maximum boundary value or JS conditional expression
  * @property {number | string} [step] - Value step interval or JS conditional expression
  * @property {number} [initialValue] - Default starting value for the input (for slider, number, dropdown, and slider-dropdown)
+ * @property {'standard' | 'scientific'} [notation] - Number formatting notation (defaults to standard)
  * @property {DropdownChoice[]} [choices] - Array of options (for dropdown and slider-dropdown)
  * @property {number} [initialChoiceIndex] - Index of the initial selected choice (for dropdown and slider-dropdown)
  * @property {string} [notes] - Small descriptive notes rendered under the control (for dropdown and slider-dropdown)
@@ -109,7 +110,8 @@
  * @property {number | string} xMin - X-axis lower boundary (number or JS conditional expression)
  * @property {number | string} xMax - X-axis upper boundary (number or JS conditional expression)
  * @property {number} yMin - Y-axis lower boundary
- * @property {number | number[]} yMax - Y-axis upper boundary (number, or array of numbers for dynamic scaling options depending on curve values)
+ * @property {number | number[]} yMax - Y-axis upper boundary (number, or array of numbers for dynamic scaling options depending on curve values or dropdown choices)
+ * @property {string} [key] - Unique ID of the dropdown input parameter to map array values of yMax/yTickInterval/xMin/xMax/xTickInterval to choices
  * @property {number | string | number[]} [xTickInterval] - Tick spacing on the X-axis (supports formulas and arrays)
  * @property {number | number[]} [yTickInterval] - Tick spacing on the Y-axis (supports arrays)
  * @property {number} [xTickRotation] - Angle of rotation for X-axis tick labels (e.g. 45)

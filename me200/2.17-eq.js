@@ -15,36 +15,20 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Polytropic process work equation for a closed system"
-        },
-        {
-            "type": "equation",
-            "text": "\\text{Polytropic process: } pV^n = \\text{constant}"
-        },
-        {
-            "type": "equation",
-            "text": "W = \\begin{cases} p_1 V_1 \\ln\\left(\\frac{V_2}{V_1}\\right) & \\text{if } n = 1.0 \\\\ \\frac{p_2 V_2 - p_1 V_1}{1 - n} & \\text{if } n \\neq 1.0 \\end{cases}"
-        },
-        {
-            "type": "list",
-            "header": "Symbols",
+            "type": "equations",
             "content": [
-                {
-                    "text": "$W$ — work done by the gas"
-                },
-                {
-                    "text": "$V_1$ — initial volume"
-                },
-                {
-                    "text": "$V_2$ — final volume"
-                },
-                {
-                    "text": "$p$ — absolute pressure"
-                },
-                {
-                    "text": "$n$ — polytropic index"
-                }
+                "\\text{Polytropic process: } pV^n = \\text{constant}",
+                "W = \\begin{cases} p_1 V_1 \\ln\\left(\\frac{V_2}{V_1}\\right) & \\text{if } n = 1.0 \\\\ \\frac{p_2 V_2 - p_1 V_1}{1 - n} & \\text{if } n \\neq 1.0 \\end{cases}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$W$", "definition": "work done by the gas" },
+                { "symbol": "$V_1$", "definition": "initial volume" },
+                { "symbol": "$V_2$", "definition": "final volume" },
+                { "symbol": "$p$", "definition": "absolute pressure" },
+                { "symbol": "$n$", "definition": "polytropic index" }
             ]
         },
         {

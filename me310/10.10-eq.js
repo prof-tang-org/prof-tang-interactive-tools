@@ -15,46 +15,22 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Specific energy of an open-channel flow"
-        },
-        {
-            "type": "note",
-            "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "E = y + \\frac{q^2}{2gy^2}"
-        },
-        {
-            "type": "equation",
-            "text": "E_1 + z_1 = E_2 + z_2"
-        },
-        {
-            "type": "list",
-            "header": "Variables",
+            "type": "equations",
             "content": [
-                {
-                    "text": "$E$ — specific energy"
-                },
-                {
-                    "text": "$y$ — depth of open-channel flow"
-                },
-                {
-                    "text": "$q$ — flow rate per unit width"
-                },
-                {
-                    "text": "$g$ — gravitational acceleration"
-                },
-                {
-                    "text": "$z$ — elevation of the channel bottom"
-                },
-                {
-                    "text": "$y_c$ — critical depth"
-                },
-                {
-                    "text": "$z_c$ — maximum bump height to maintain subcritical flow without choking"
-                }
+                "E = y + \\frac{q^2}{2gy^2}",
+                "E_1 + z_1 = E_2 + z_2"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$E$", "definition": "specific energy" },
+                { "symbol": "$y$", "definition": "depth of open-channel flow" },
+                { "symbol": "$q$", "definition": "flow rate per unit width" },
+                { "symbol": "$g$", "definition": "gravitational acceleration" },
+                { "symbol": "$z$", "definition": "elevation of the channel bottom" },
+                { "symbol": "$y_c$", "definition": "critical depth" },
+                { "symbol": "$z_c$", "definition": "maximum bump height to maintain subcritical flow without choking" }
             ]
         }
     ],

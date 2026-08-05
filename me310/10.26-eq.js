@@ -14,62 +14,30 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Hydraulic Jump",
-        },
-        {
-            "type": "list",
-            "header": "Assumptions",
+            "type": "assumptions",
             "content": [
-                {
-                    "text": "The open channel is horizontal and rectangular with constant width $b$."
-                },
-                {
-                    "text": "The flow is steady, uniform, and one-dimensional before the jump (section 1) and after the jump (section 2)."
-                },
-                {
-                    "text": "Shear stress caused by wall friction is negligible ($\\tau_w = 0$)."
-                },
-                {
-                    "text": "Chaotic flow in the jump region leads to head loss ($h_L$)."
-                }
+                "The open channel is horizontal and rectangular with constant width $b$.",
+                "The flow is steady, uniform, and one-dimensional before the jump (section 1) and after the jump (section 2).",
+                "Shear stress caused by wall friction is negligible ($\\tau_w = 0$).",
+                "Chaotic flow in the jump region leads to head loss ($h_L$)."
             ]
         },
         {
-            "type": "note",
-            "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "\\frac{y_2}{y_1} = \\frac{1}{2} \\left( -1 + \\sqrt{1 + 8 Fr_1^2} \\right)",
-        },
-        {
-            "type": "equation",
-            "text": "\\frac{h_L}{y_1} = 1 - \\frac{y_2}{y_1} + \\frac{1}{2} Fr_1^2 \\left[ 1 - \\left(\\frac{y_1}{y_2}\\right)^2 \\right]",
-        },
-        {
-            "type": "equation",
-            "text": "Fr_2 = Fr_1 \\left( \\frac{y_1}{y_2} \\right)^{\\frac{3}{2}}",
-        },
-        {
-            "type": "list",
-            "header": "Symbols",
+            "type": "equations",
             "content": [
-                {
-                    "text": "$y_1$ — depth at section (1)"
-                },
-                {
-                    "text": "$y_2$ — depth at section (2)"
-                },
-                {
-                    "text": "$Fr_1$ — Froude number at section (1), $Fr_1 = \\frac{V_1}{\\sqrt{gy_1}}$"
-                },
-                {
-                    "text": "$Fr_2$ — Froude number at section (2), $Fr_2 = \\frac{V_2}{\\sqrt{gy_2}}$"
-                },
-                {
-                    "text": "$h_L$ — head loss in the jump region"
-                }
+                "\\frac{y_2}{y_1} = \\frac{1}{2} \\left( -1 + \\sqrt{1 + 8 Fr_1^2} \\right)",
+                "\\frac{h_L}{y_1} = 1 - \\frac{y_2}{y_1} + \\frac{1}{2} Fr_1^2 \\left[ 1 - \\left(\\frac{y_1}{y_2}\\right)^2 \\right]",
+                "Fr_2 = Fr_1 \\left( \\frac{y_1}{y_2} \\right)^{\\frac{3}{2}}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$y_1$", "definition": "depth at section (1)" },
+                { "symbol": "$y_2$", "definition": "depth at section (2)" },
+                { "symbol": "$Fr_1$", "definition": "Froude number at section (1), $Fr_1 = \\frac{V_1}{\\sqrt{gy_1}}$" },
+                { "symbol": "$Fr_2$", "definition": "Froude number at section (2), $Fr_2 = \\frac{V_2}{\\sqrt{gy_2}}$" },
+                { "symbol": "$h_L$", "definition": "head loss in the jump region" }
             ]
         }
     ],

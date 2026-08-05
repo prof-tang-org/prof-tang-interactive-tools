@@ -1,67 +1,48 @@
-/** @type {PageData} */
 const pageData = {
     "title": "Terminal Velocity of Small Spherical Particles",
     "layout": {
         "grid": [
-            { "desktop": "1.2fr 0.8fr", "mobile": "100%" }, // skipped since no schematic
+            { "desktop": "1.2fr 0.8fr", "mobile": "100%" },
             { "desktop": "0.7fr 1fr", "mobile": "100%" },
         ]
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Terminal velocity of small spherical particles"
-        },
-        {
-            "type": "note",
-            "text": "**Assumptions**: Spherical particle settling down in a stationary fluid with $Re_D < 1$."
-        },
-        {
-            "type": "note",
-            "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "U = \\frac{D^2 g (\\rho_{\\text{particle}} - \\rho_{\\text{fluid}})}{18 \\mu_{\\text{fluid}}}"
-        },
-        {
-            "type": "equation",
-            "text": "Re_D = \\frac{\\rho_{\\text{fluid}} U D}{\\mu_{\\text{fluid}}}"
-        },
-        {
-            "type": "list",
-            "header": "Variables",
+            "type": "equations",
             "content": [
-                {
-                    "text": "$U$ — terminal velocity"
-                },
-                {
-                    "text": "$D$ — diameter of particle"
-                },
-                {
-                    "text": "$g$ — gravitational acceleration"
-                },
-                {
-                    "text": "$\\rho_{\\text{particle}}$ — density of particle"
-                },
-                {
-                    "text": "$\\rho_{\\text{fluid}}$ — density of fluid"
-                },
-                {
-                    "text": "$\\mu_{\\text{fluid}}$ — dynamic viscosity of fluid"
-                },
-                {
-                    "text": "$Re_D$ — Reynolds number"
-                }
+                "'For a small spherical particle settling down in a stationary fluid with $Re_D < 1$, the terminal velocity can be estimated by:'",
+                "U = \\frac{D^2 g (\\rho_{\\text{particle}} - \\rho_{\\text{fluid}})}{18 \\mu_{\\text{fluid}}}",
+                "Re_D = \\frac{\\rho_{\\text{fluid}} U D}{\\mu_{\\text{fluid}}}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$U$", "definition": "terminal velocity" },
+                { "symbol": "$D$", "definition": "diameter of particle" },
+                { "symbol": "$g$", "definition": "gravitational acceleration" },
+                { "symbol": "$\\rho_{\\text{particle}}$", "definition": "density of particle" },
+                { "symbol": "$\\rho_{\\text{fluid}}$", "definition": "density of fluid" },
+                { "symbol": "$\\mu_{\\text{fluid}}$", "definition": "dynamic viscosity of fluid" },
+                { "symbol": "$Re_D$", "definition": "Reynolds number" }
             ]
         }
     ],
+    "schematic": {
+        "src": "../assets/me310/9.10-ex.png",
+        "alt": "Schematic of a spherical particle falling through a fluid, with forces and velocity vectors indicated."
+    },
     "inputOutput": {
         "fixedInputs": [
             {
                 "id": "g",
                 "text": "Gravitational acceleration, $g$ [m/s²]",
                 "value": 9.81
+            },
+            {
+                "id": "fluid",
+                "text": "Fluid",
+                "value": "Air"
             },
             {
                 "id": "rho-fluid",
@@ -77,15 +58,15 @@ const pageData = {
         "inputs": [
             {
                 "type": "dropdown",
-                "id": "particle-type",
-                "text": "Particle Type",
+                "id": "material",
+                "text": "Material",
                 "choices": [
                     {
-                        "text": "Water droplet in air (ρ = 998.2 kg/m³)",
+                        "text": "Water droplet in air",
                         "value": "998.2"
                     },
                     {
-                        "text": "Dust particle in air (ρ = 2500 kg/m³)",
+                        "text": "Dust particle in air",
                         "value": "2500"
                     }
                 ]
@@ -106,7 +87,7 @@ const pageData = {
                 "id": "rho-particle",
                 "type": "map",
                 "value": [998.2, 2500],
-                "key": "particle-type"
+                "key": "material"
             },
             {
                 "text": "Terminal Velocity, $U$ [m/s]",

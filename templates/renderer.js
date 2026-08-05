@@ -5,6 +5,7 @@
 
 const mathjaxCache = new Map();
 const formulaCache = new Map();
+const referenceCurveCache = new Map();
 
 // ---------------------------------------------------------
 // SECTION 0: Layout Configuration
@@ -57,7 +58,26 @@ function parseText(text) {
         .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italics: *text*
         .replace(/__(.*?)__/g, '<u>$1</u>');              // Underline: __text__
 
+    // 5. Handle Headers: # h1, ## h2, ### h3
+    parsed = parsed
+        .replace(/^###[ \t]+(.*)$/gm, '<h3>$1</h3>')
+        .replace(/^##[ \t]+(.*)$/gm, '<h2>$1</h2>')
+        .replace(/^#[ \t]+(.*)$/gm, '<h1>$1</h1>');
+
     return parsed;
+}
+
+function parseTextToElement(text, defaultTag = 'span') {
+    const parsed = parseText(text);
+    const headingMatch = parsed.match(/^\s*<(h[1-3])>([\s\S]*?)<\/\1>\s*$/i);
+    if (headingMatch) {
+        const el = document.createElement(headingMatch[1]);
+        el.innerHTML = headingMatch[2];
+        return el;
+    }
+    const el = document.createElement(defaultTag);
+    el.innerHTML = parsed;
+    return el;
 }
 
 function renderContent(data, containerId) {
@@ -70,7 +90,7 @@ function renderContent(data, containerId) {
     // Isolate the dark-card that holds the equations to preserve schematic layout
     // const eqCard = container.querySelector('.dark-card:not(.schem)');
     const card = document.createElement('div'); // Create a new div to hold content within container
-    card.className = 'dark-card';
+    // card.className = 'dark-card';
 
     if (card) {
         // 1. Safe, efficient way to clear filler content without innerHTML
@@ -78,10 +98,8 @@ function renderContent(data, containerId) {
 
         data.forEach(item => {
             if (item.type === 'header') {
-                const h3 = document.createElement('h3');
-                // Safely inject parsed markdown tags
-                h3.insertAdjacentHTML('beforeend', parseText(item.text));
-                card.appendChild(h3);
+                const el = parseTextToElement(item.text, 'h3');
+                card.appendChild(el);
             } else if (item.type === 'equation') {
                 const div = document.createElement('div');
                 div.className = 'eqbig';
@@ -94,9 +112,8 @@ function renderContent(data, containerId) {
                 div.className = 'note';
                 if (item.text instanceof Array) {
                     item.text.forEach(line => {
-                        const p = document.createElement('p');
-                        p.insertAdjacentHTML('beforeend', parseText(line));
-                        div.appendChild(p);
+                        const el = parseTextToElement(line, 'p');
+                        div.appendChild(el);
                     });
                 } else {
                     div.insertAdjacentHTML('beforeend', parseText(item.text));
@@ -114,9 +131,84 @@ function renderContent(data, containerId) {
                 const ul = document.createElement('ul');
                 item.content.forEach(sym => {
                     const li = document.createElement('li');
-                    li.insertAdjacentHTML('beforeend', parseText(sym.text));
+                    let displayText = '';
+                    if (sym.symbol && sym.definition) {
+                        displayText = `${sym.symbol} — ${sym.definition}`;
+                    } else {
+                        displayText = sym.text || '';
+                    }
+                    li.insertAdjacentHTML('beforeend', parseText(displayText));
                     ul.appendChild(li);
                 });
+
+                div.appendChild(ul);
+                card.appendChild(div);
+            } else if (item.type === 'assumptions') {
+                const div = document.createElement('div');
+                div.className = 'note';
+                if (item.content && item.content.length === 1) {
+                    const pHeader = parseTextToElement("### Assumptions")
+                    div.appendChild(pHeader);
+
+                    const pText = document.createElement('p');
+                    pText.insertAdjacentHTML('beforeend', parseText(item.content[0]));
+                    div.appendChild(pText);
+                } else if (item.content) {
+                    const pHeader = parseTextToElement("### Assumptions")
+                    div.appendChild(pHeader);
+
+                    const ul = document.createElement('ul');
+                    item.content.forEach(text => {
+                        const li = document.createElement('li');
+                        li.insertAdjacentHTML('beforeend', parseText(text));
+                        ul.appendChild(li);
+                    });
+                    div.appendChild(ul);
+                }
+                card.appendChild(div);
+            } else if (item.type === 'equations') {
+                if (item.content && item.content.length > 0) {
+                    const equationsCount = item.content.filter(eqText => !(eqText.startsWith("'") && eqText.endsWith("'"))).length;
+                    const headerText = equationsCount === 1 ? '### Equation' : '### Equations';
+                    const divHeader = parseTextToElement(headerText);
+                    card.appendChild(divHeader);
+
+                    item.content.forEach(eqText => {
+                        if (eqText.startsWith("'") && eqText.endsWith("'")) {
+                            const cleanText = eqText.slice(1, -1);
+                            const div = document.createElement('div');
+                            div.className = 'note';
+                            div.insertAdjacentHTML('beforeend', parseText(cleanText));
+                            card.appendChild(div);
+                        } else {
+                            const div = document.createElement('div');
+                            div.className = 'eqbig';
+                            div.textContent = `\\( \\displaystyle ${eqText} \\)`;
+                            card.appendChild(div);
+                        }
+                    });
+                }
+            } else if (item.type === 'symbols') {
+                const div = document.createElement('div');
+                div.className = 'note';
+
+                const pHeader = parseTextToElement("### Symbols")
+                div.appendChild(pHeader);
+
+                const ul = document.createElement('ul');
+                if (item.content) {
+                    item.content.forEach(sym => {
+                        const li = document.createElement('li');
+                        let displayText = '';
+                        if (sym.symbol && sym.definition) {
+                            displayText = `${sym.symbol} — ${sym.definition}`;
+                        } else {
+                            displayText = sym.text || '';
+                        }
+                        li.insertAdjacentHTML('beforeend', parseText(displayText));
+                        ul.appendChild(li);
+                    });
+                }
 
                 div.appendChild(ul);
                 card.appendChild(div);
@@ -173,9 +265,15 @@ function renderSchematic(schematic) {
 function clampInputValue(e, inputDef) {
     let val = parseFloat(e.target.value);
     if (!isNaN(val)) {
-        if (inputDef.min !== undefined) val = Math.max(inputDef.min, val);
-        if (inputDef.max !== undefined) val = Math.min(inputDef.max, val);
-        e.target.value = val; // Forces the input box value to snap visually on change
+        const minAttr = e.target.getAttribute('min');
+        const maxAttr = e.target.getAttribute('max');
+        const minVal = minAttr !== null ? parseFloat(minAttr) : (typeof inputDef.min === 'number' ? inputDef.min : undefined);
+        const maxVal = maxAttr !== null ? parseFloat(maxAttr) : (typeof inputDef.max === 'number' ? inputDef.max : undefined);
+
+        if (minVal !== undefined) val = Math.max(minVal, val);
+        if (maxVal !== undefined) val = Math.min(maxVal, val);
+
+        e.target.value = inputDef.notation === 'scientific' ? formatScientific(val, inputDef) : val;
         return val;
     }
     return null;
@@ -204,7 +302,7 @@ function createDropdownSelect(input, selectId) {
 
 function createSliderControl(input, numId, rangeId, initialValOverride) {
     const num = document.createElement('input');
-    num.type = 'number';
+    num.type = input.notation === 'scientific' ? 'text' : 'number';
     num.id = numId;
     num.className = 'num-sm';
 
@@ -218,13 +316,29 @@ function createSliderControl(input, numId, rangeId, initialValOverride) {
         if (input.min !== undefined) el.min = input.min;
         if (input.max !== undefined) el.max = input.max;
         if (input.step !== undefined) el.step = input.step;
-        el.value = startVal;
     });
+
+    if (input.notation === 'scientific') {
+        num.value = formatScientific(startVal, input);
+    } else {
+        num.value = startVal;
+    }
+    range.value = startVal;
 
     // 2-way data binding
     num.addEventListener('input', e => { range.value = e.target.value; });
     num.addEventListener('change', e => { clampInputValue(e, input); });
-    range.addEventListener('input', e => { num.value = e.target.value; });
+
+    if (input.notation === 'scientific') {
+        range.addEventListener('input', e => {
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+                num.value = formatScientific(val, input);
+            }
+        });
+    } else {
+        range.addEventListener('input', e => { num.value = e.target.value; });
+    }
 
     const rangeAndLabelsContainer = document.createElement('div');
     rangeAndLabelsContainer.className = 'range-labels-container';
@@ -237,7 +351,7 @@ function createSliderControl(input, numId, rangeId, initialValOverride) {
         const minLabel = document.createElement('span');
         minLabel.className = 'min-label';
         minLabel.id = `label_${input.id}_min`;
-        minLabel.textContent = formatNumber(input.min);
+        minLabel.textContent = formatInputLabel(input.min, input);
         minMaxLabels.appendChild(minLabel);
     }
 
@@ -245,7 +359,7 @@ function createSliderControl(input, numId, rangeId, initialValOverride) {
         const maxLabel = document.createElement('span');
         maxLabel.className = 'max-label';
         maxLabel.id = `label_${input.id}_max`;
-        maxLabel.textContent = formatNumber(input.max);
+        maxLabel.textContent = formatInputLabel(input.max, input);
         minMaxLabels.appendChild(maxLabel);
     }
     rangeAndLabelsContainer.appendChild(minMaxLabels);
@@ -275,13 +389,18 @@ function renderControls(inputs) {
 
             if (input.choices && input.choices.some(c => c.value === 'custom')) {
                 const customInput = document.createElement('input');
-                customInput.type = 'number';
+                customInput.type = input.notation === 'scientific' ? 'text' : 'number';
                 customInput.id = `input_${input.id}_custom`;
                 customInput.className = 'num-sm hidden';
                 if (input.min !== undefined) customInput.min = input.min;
                 if (input.max !== undefined) customInput.max = input.max;
                 if (input.step !== undefined) customInput.step = input.step;
-                customInput.value = initCustomVal;
+
+                if (input.notation === 'scientific') {
+                    customInput.value = formatScientific(initCustomVal, input);
+                } else {
+                    customInput.value = initCustomVal;
+                }
 
                 if (select.value === 'custom') {
                     customInput.classList.remove('hidden');
@@ -293,7 +412,7 @@ function renderControls(inputs) {
                     if (e.target.value === 'custom') {
                         customInput.classList.remove('hidden');
                         if (!customInput.value) {
-                            customInput.value = initCustomVal;
+                            customInput.value = input.notation === 'scientific' ? formatScientific(initCustomVal, input) : initCustomVal;
                         }
                     } else {
                         customInput.classList.add('hidden');
@@ -347,6 +466,12 @@ function renderControls(inputs) {
 
             const { num, range, rangeAndLabelsContainer } = createSliderControl(input, `input_${input.id}_num`, `input_${input.id}`, startVal);
 
+            const hasCustomOption = input.choices && input.choices.some(c => c.value === 'custom');
+            if (hasCustomOption && select.value !== 'custom') {
+                inline.classList.add('hidden');
+            }
+
+            /*
             const syncSelectFromNumeric = (val) => {
                 if (input.choices) {
                     const matchingChoice = input.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - val) < 1e-6);
@@ -357,17 +482,24 @@ function renderControls(inputs) {
                     }
                 }
             };
+            */
 
             select.addEventListener('change', e => {
                 if (e.target.value === 'custom') {
+                    if (hasCustomOption) {
+                        inline.classList.remove('hidden');
+                    }
                     if (!num.value) {
-                        num.value = initCustomVal;
+                        num.value = input.notation === 'scientific' ? formatScientific(initCustomVal, input) : initCustomVal;
                         range.value = initCustomVal;
                     }
                 } else {
+                    if (hasCustomOption) {
+                        inline.classList.add('hidden');
+                    }
                     const parsed = parseFloat(e.target.value);
                     if (!isNaN(parsed)) {
-                        num.value = parsed;
+                        num.value = input.notation === 'scientific' ? formatScientific(parsed, input) : parsed;
                         range.value = parsed;
                     }
                 }
@@ -375,21 +507,21 @@ function renderControls(inputs) {
 
             num.addEventListener('input', e => {
                 const val = parseFloat(e.target.value);
-                if (!isNaN(val)) syncSelectFromNumeric(val);
+                // if (!isNaN(val)) syncSelectFromNumeric(val);
             });
             num.addEventListener('change', e => {
                 const val = parseFloat(e.target.value);
-                if (!isNaN(val)) syncSelectFromNumeric(val);
+                // if (!isNaN(val)) syncSelectFromNumeric(val);
             });
             range.addEventListener('input', e => {
                 const val = parseFloat(e.target.value);
-                if (!isNaN(val)) syncSelectFromNumeric(val);
+                // if (!isNaN(val)) syncSelectFromNumeric(val);
             });
 
             inline.appendChild(num);
-            inline.appendChild(selectWrapper);
+            inline.appendChild(rangeAndLabelsContainer);
+            wrapper.appendChild(selectWrapper);
             wrapper.appendChild(inline);
-            wrapper.appendChild(rangeAndLabelsContainer);
         }
 
         container.appendChild(wrapper);
@@ -443,6 +575,43 @@ function renderGroup(values, containerId, cols = 5) {
 // SECTION C: Calculations & Live Updates
 // ---------------------------------------------------------
 
+/**
+ * Finds choice index by value match.
+ */
+function findChoiceIndex(choices, val) {
+    if (!choices || val === undefined || val === null) return -1;
+    return choices.findIndex(c => {
+        if (c.value === val) return true;
+        const f1 = parseFloat(c.value);
+        const f2 = parseFloat(val);
+        return !isNaN(f1) && !isNaN(f2) && f1 === f2;
+    });
+}
+
+/**
+ * Resolves the selected choice index of a dropdown input by its key ID.
+ */
+function getDropdownSelectedIndex(key, state) {
+    if (state && state._dropdownIndices && state._dropdownIndices[key] !== undefined) {
+        return state._dropdownIndices[key];
+    }
+    return -1;
+}
+
+/**
+ * Resolves a value (which may be mapped as an array) based on a dropdown key.
+ */
+function getMappedValue(key, value, state) {
+    if (Array.isArray(value)) {
+        const index = getDropdownSelectedIndex(key, state);
+        if (index !== -1 && value[index] !== undefined) {
+            return value[index];
+        }
+        return value[value.length - 1];
+    }
+    return value;
+}
+
 function evaluateFormula(formula, state) {
     let fn = formulaCache.get(formula);
     if (!fn) {
@@ -488,6 +657,31 @@ function formatNumber(val, decimals) {
     return parseFloat(val.toPrecision(decimals !== undefined ? decimals + 1 : 4)).toString();
 }
 
+function formatScientific(val, input) {
+    if (!Number.isFinite(val)) return '—';
+    let dec = input.decimals;
+    if (dec !== undefined && !isNaN(dec)) {
+        return val.toExponential(dec);
+    }
+    let str = val.toExponential(12);
+    let parts = str.split(/[eE]/);
+    let significand = parts[0];
+    let exponent = parts[1];
+    significand = significand.replace(/0+$/, '');
+    if (significand.endsWith('.')) {
+        significand += '0';
+    }
+    return significand + 'e' + exponent;
+}
+
+function formatInputLabel(val, input) {
+    if (input && input.notation === 'scientific') {
+        return formatScientific(val, input);
+    }
+    return formatNumber(val);
+}
+
+
 function setupCalculationEngine(pageData) {
     const controlsContainer = document.getElementById('controls');
     if (!controlsContainer) return;
@@ -496,6 +690,7 @@ function setupCalculationEngine(pageData) {
 
     function gatherInputs() {
         const state = {};
+        const dropdownIndices = {};
         pageData.inputOutput.inputs.forEach(input => {
             const el = document.getElementById(`input_${input.id}`);
             if (el) {
@@ -507,6 +702,7 @@ function setupCalculationEngine(pageData) {
                         const parsedVal = parseFloat(el.value);
                         state[input.id] = isNaN(parsedVal) ? el.value : parsedVal;
                     }
+                    dropdownIndices[input.id] = findChoiceIndex(input.choices, el.value);
                 } else {
                     state[input.id] = parseFloat(el.value);
                 }
@@ -514,6 +710,7 @@ function setupCalculationEngine(pageData) {
             const dropdownEl = document.getElementById(`input_${input.id}_dropdown`);
             if (dropdownEl) {
                 state[`${input.id}_dropdown`] = dropdownEl.value;
+                dropdownIndices[input.id] = findChoiceIndex(input.choices, dropdownEl.value);
             }
             const unitEl = document.getElementById(`input_${input.id}_unit`);
             if (unitEl) {
@@ -525,6 +722,7 @@ function setupCalculationEngine(pageData) {
                 state[input.id] = input.value;
             });
         }
+        state._dropdownIndices = dropdownIndices;
         return state;
     }
 
@@ -568,17 +766,19 @@ function setupCalculationEngine(pageData) {
                         if (maxVal !== undefined) clampedVal = Math.min(maxVal, clampedVal);
                         if (clampedVal !== currentVal) {
                             primaryEl.value = clampedVal;
-                            if (numEl) numEl.value = clampedVal;
+                            if (numEl) {
+                                numEl.value = input.notation === 'scientific' ? formatScientific(clampedVal, input) : clampedVal;
+                            }
                             state[input.id] = clampedVal;
                         }
                     }
                 }
 
                 const minLabel = document.getElementById(`label_${input.id}_min`);
-                if (minLabel && minVal !== undefined) minLabel.textContent = formatNumber(minVal);
+                if (minLabel && minVal !== undefined) minLabel.textContent = formatInputLabel(minVal, input);
 
                 const maxLabel = document.getElementById(`label_${input.id}_max`);
-                if (maxLabel && maxVal !== undefined) maxLabel.textContent = formatNumber(maxVal);
+                if (maxLabel && maxVal !== undefined) maxLabel.textContent = formatInputLabel(maxVal, input);
             }
         });
     }
@@ -639,15 +839,7 @@ function setupCalculationEngine(pageData) {
 
             let val;
             if (output.type === 'map') {
-                const keyInput = pageData.inputOutput.inputs.find(i => i.id === output.key);
-                if (keyInput && (keyInput.type === 'dropdown' || keyInput.type === 'slider-dropdown')) {
-                    const dropdownEl = document.getElementById(`input_${output.key}_dropdown`) || document.getElementById(`input_${output.key}`);
-                    const selectedValue = dropdownEl ? dropdownEl.value : state[output.key];
-                    const selectedIndex = keyInput.choices ? keyInput.choices.findIndex(c => c.value === selectedValue || parseFloat(c.value) === selectedValue) : -1;
-                    if (selectedIndex !== -1 && output.value[selectedIndex] !== undefined) {
-                        val = output.value[selectedIndex];
-                    }
-                }
+                val = getMappedValue(output.key, output.value, state);
             } else if (output.type === 'calculation') {
                 val = evaluateFormula(output.value, state);
             }
@@ -812,38 +1004,71 @@ function injectPlots(state, pageData) {
         let currentYVal = state[plotConfig.y];
         if (currentYVal === undefined || isNaN(currentYVal)) return;
 
-        let yMax = plotConfig.yMax;
-        let yIndex = 0;
-        if (Array.isArray(yMax)) {
-            // Evaluate dynamic max bounds based on current Y value
-            const matchedVal = yMax.find(maxVal => currentYVal <= maxVal);
-            if (matchedVal !== undefined) {
-                yIndex = yMax.indexOf(matchedVal);
-                yMax = matchedVal;
+        const dropdownIndex = getDropdownSelectedIndex(plotConfig.key, state);
+        let yIndex = dropdownIndex !== -1 ? dropdownIndex : 0;
+
+        let yMaxRaw = plotConfig.yMax;
+        let yMax;
+        if (Array.isArray(yMaxRaw)) {
+            if (dropdownIndex !== -1) {
+                yMax = yMaxRaw[yIndex] !== undefined ? yMaxRaw[yIndex] : yMaxRaw[yMaxRaw.length - 1];
             } else {
-                yIndex = yMax.length - 1;
-                yMax = yMax[yIndex];
+                // Evaluate dynamic max bounds based on current Y value
+                const matchedVal = yMaxRaw.find(maxVal => {
+                    const evaluatedMax = typeof maxVal === 'string' ? evaluateFormula(maxVal, state) : maxVal;
+                    return currentYVal <= evaluatedMax;
+                });
+                if (matchedVal !== undefined) {
+                    yIndex = yMaxRaw.indexOf(matchedVal);
+                    yMax = matchedVal;
+                } else {
+                    yIndex = yMaxRaw.length - 1;
+                    yMax = yMaxRaw[yIndex];
+                }
             }
+        } else {
+            yMax = yMaxRaw;
         }
 
-        const xMinVal = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
-        const xMaxVal = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
-
-        let xTickIntervalVal = plotConfig.xTickInterval;
-        if (typeof xTickIntervalVal === 'string') {
-            xTickIntervalVal = evaluateFormula(xTickIntervalVal, state);
-        } else if (Array.isArray(xTickIntervalVal)) {
-            xTickIntervalVal = xTickIntervalVal[0];
+        if (typeof yMax === 'string') {
+            yMax = evaluateFormula(yMax, state);
         }
+
+        const resolveProperty = (val) => {
+            if (Array.isArray(val)) {
+                return val[yIndex] !== undefined ? val[yIndex] : val[val.length - 1];
+            }
+            return val;
+        };
+
+        const xMinRaw = resolveProperty(plotConfig.xMin);
+        const xMinVal = typeof xMinRaw === 'string' ? evaluateFormula(xMinRaw, state) : xMinRaw;
+
+        const xMaxRaw = resolveProperty(plotConfig.xMax);
+        const xMaxVal = typeof xMaxRaw === 'string' ? evaluateFormula(xMaxRaw, state) : xMaxRaw;
+
+        const xTickIntervalRaw = resolveProperty(plotConfig.xTickInterval);
+        let xTickIntervalVal = typeof xTickIntervalRaw === 'string' ? evaluateFormula(xTickIntervalRaw, state) : xTickIntervalRaw;
+
+        const yMinRaw = resolveProperty(plotConfig.yMin);
+        const yMinVal = typeof yMinRaw === 'string' ? evaluateFormula(yMinRaw, state) : yMinRaw;
+
+        const yTickIntervalRaw = resolveProperty(plotConfig.yTickInterval);
+        let yTickIntervalVal = typeof yTickIntervalRaw === 'string' ? evaluateFormula(yTickIntervalRaw, state) : yTickIntervalRaw;
 
         const x = d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
-        const y = d3.scaleLinear().domain([plotConfig.yMin, yMax]).range([m.t + ih, m.t]);
+        const y = d3.scaleLinear().domain([yMinVal, yMax]).range([m.t + ih, m.t]);
 
         // Axes
         const xAxis = d3.axisBottom(x).ticks(5);
         if (xTickIntervalVal !== undefined) {
-            const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
-            xAxis.tickValues(ticks);
+            const tickCount = (xMaxVal - xMinVal) / xTickIntervalVal;
+            if (tickCount > 200) {
+                console.warn(`xTickIntervalVal ${xTickIntervalVal} is too small for range [${xMinVal}, ${xMaxVal}]. Skipping tickValues to prevent crash.`);
+            } else {
+                const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
+                xAxis.tickValues(ticks);
+            }
         }
         if (plotConfig.xExponential) {
             xAxis.tickFormat(d => {
@@ -864,20 +1089,21 @@ function injectPlots(state, pageData) {
             .style('text-anchor', xTextRotation > 0 ? 'end' : 'middle');
 
         const yAxis = d3.axisLeft(y).ticks(5);
-        if (plotConfig.yTickInterval !== undefined) {
-            let yTickInterval = plotConfig.yTickInterval;
-            if (Array.isArray(yTickInterval)) {
-                yTickInterval = yTickInterval[yIndex] !== undefined ? yTickInterval[yIndex] : yTickInterval[yTickInterval.length - 1];
+        if (yTickIntervalVal !== undefined) {
+            const tickCount = (yMax - yMinVal) / yTickIntervalVal;
+            if (tickCount > 200) {
+                console.warn(`yTickIntervalVal ${yTickIntervalVal} is too small for range [${yMinVal}, ${yMax}]. Skipping tickValues to prevent crash.`);
+            } else {
+                const ticks = d3.range(yMinVal, yMax + yTickIntervalVal / 2, yTickIntervalVal);
+                yAxis.tickValues(ticks);
             }
-            const ticks = d3.range(plotConfig.yMin, yMax + yTickInterval / 2, yTickInterval);
-            yAxis.tickValues(ticks);
         }
         if (plotConfig.yExponential) {
             yAxis.tickFormat(d => {
                 if (d === 0) return '0';
                 return d.toExponential().replace(/e\+/, 'e');
             });
-        } else if (plotConfig.yTickInterval !== undefined) {
+        } else if (yTickIntervalVal !== undefined) {
             yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
         }
         const yAxisG = svg.append('g').attr('class', 'axis')
@@ -1186,7 +1412,7 @@ function injectPlots(state, pageData) {
 // ---------------------------------------------------------
 
 function drawReferenceLines(plotCtx) {
-    const { svg, plotConfig, state, accessibleVals, getPoint, clipId } = plotCtx;
+    const { svg, plotConfig, state, accessibleVals, getPoint, clipId, pageData } = plotCtx;
     const refSettings = plotConfig.reference;
     if (!refSettings) return;
 
@@ -1194,7 +1420,29 @@ function drawReferenceLines(plotCtx) {
 
     refSettings.forEach(refSetting => {
         const refState = { ...state, ...refSetting };
-        const refData = accessibleVals.map(v => getPoint(v, refState));
+
+        // Cache the reference curve data to avoid recalculation on drag.
+        // The curve only depends on page inputs that are NOT the independent variable (plotConfig.x)
+        // and NOT overridden by the reference settings.
+        const cacheKeyObj = {
+            plotY: plotConfig.y,
+            refText: refSetting.text,
+            inputs: {}
+        };
+        pageData.inputOutput.inputs.forEach(input => {
+            if (input.id !== plotConfig.x && !(input.id in refSetting)) {
+                cacheKeyObj.inputs[input.id] = state[input.id];
+            }
+        });
+        const cacheKey = JSON.stringify(cacheKeyObj);
+
+        let refData;
+        if (referenceCurveCache.has(cacheKey)) {
+            refData = referenceCurveCache.get(cacheKey);
+        } else {
+            refData = accessibleVals.map(v => getPoint(v, refState));
+            referenceCurveCache.set(cacheKey, refData);
+        }
 
         svg.append('path').attr('class', 'curve-reference')
             .attr('clip-path', `url(#${clipId})`)
@@ -1278,10 +1526,23 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
                 foX = plot_x_offset + iw - foWidth - 5 * scale;
                 textAlign = 'right';
 
+                // Calculate if the dotted plot intersects anywhere along the actual width of the text.
+                // Since the text is right-aligned, it occupies the rightmost portion of the label box.
+                const textWidth = 80 * scale;
+                const checkStartX = plot_x_offset + iw - textWidth - 5 * scale;
+                const spanYVals = refData
+                    .filter(pt => pt && !isNaN(pt[0]) && !isNaN(pt[1]) && pt[0] >= checkStartX)
+                    .map(pt => pt[1]);
+
+                const offset = 2 * scale;
+
                 if (refSetting.labelPosition === 'above') {
-                    foY = lastValidPoint[1] - foHeight - 4 * scale;
+                    const minY = spanYVals.length > 0 ? Math.min(...spanYVals) : lastValidPoint[1];
+                    const approxTextHeight = 14 * scale;
+                    foY = minY - approxTextHeight - offset;
                 } else {
-                    foY = lastValidPoint[1] + foHeight + 4 * scale;
+                    const maxY = spanYVals.length > 0 ? Math.max(...spanYVals) : lastValidPoint[1];
+                    foY = maxY + offset;
                 }
             }
 

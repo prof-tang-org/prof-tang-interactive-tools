@@ -15,39 +15,20 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Reynolds number of viscous flow over a flat plate"
-        },
-        {
-            "type": "note",
-            "text": "**Equations**"
-        },
-        {
-            "type": "equation",
-            "text": "Re_x = \\frac{\\rho U x}{\\mu} = \\frac{U x}{\\nu}"
-        },
-        {
-            "type": "list",
-            "header": "Variables",
+            "type": "equations",
             "content": [
-                {
-                    "text": "$Re_x$ — Reynolds number"
-                },
-                {
-                    "text": "$U$ — upstream or freestream velocity"
-                },
-                {
-                    "text": "$x$ — distance measured from the leading edge"
-                },
-                {
-                    "text": "$\\rho$ — density"
-                },
-                {
-                    "text": "$\\mu$ — dynamic viscosity"
-                },
-                {
-                    "text": "$\\nu$ — kinematic viscosity"
-                }
+                "Re_x = \\frac{\\rho U x}{\\mu} = \\frac{U x}{\\mu / \\rho} = \\frac{U x}{\\nu}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$Re_x$", "definition": "Reynolds number" },
+                { "symbol": "$U$", "definition": "upstream or freestream velocity" },
+                { "symbol": "$x$", "definition": "distance measured from the leading edge" },
+                { "symbol": "$\\rho$", "definition": "density" },
+                { "symbol": "$\\mu$", "definition": "dynamic viscosity" },
+                { "symbol": "$\\nu$", "definition": "kinematic viscosity" }
             ]
         }
     ],
@@ -76,7 +57,7 @@ const pageData = {
                 "step": 0.01
             },
             {
-                "type": "dropdown",
+                "type": "slider-dropdown",
                 "id": "kinematic-viscosity",
                 "text": "Kinematic Viscosity, $\\nu$ [m²/s]",
                 "min": 1e-6,
@@ -84,6 +65,7 @@ const pageData = {
                 "step": 1e-7,
                 "initialValue": 1.12e-6,
                 "initialChoiceIndex": 1,
+                "notation": "scientific",
                 "choices": [
                     {
                         "text": "Custom...",
@@ -120,8 +102,8 @@ const pageData = {
                 "xMin": 0,
                 "xMax": 5,
                 "yMin": 0,
-                "yMax": [1e4, 1e5, 1e6, 5e6],
-                "yTickInterval": [2e3, 2e4, 2e5, 1e6],
+                "yMax": "(5 / kinematic-viscosity) < 5e5 ? 5e5 : 5e6",
+                "yTickInterval": "(5 / kinematic-viscosity) < 5e5 ? 1e5 : 1e6",
                 "yExponential": true,
                 "reference": [
                     {
@@ -144,8 +126,8 @@ const pageData = {
                 "xMin": 0,
                 "xMax": 1,
                 "yMin": 0,
-                "yMax": [1e4, 1e5, 1e6, 5e6],
-                "yTickInterval": [2e3, 2e4, 2e5, 1e6],
+                "yMax": "(5 / kinematic-viscosity) < 5e5 ? 5e5 : 5e6",
+                "yTickInterval": "(5 / kinematic-viscosity) < 5e5 ? 1e5 : 1e6",
                 "yExponential": true,
                 "reference": [
                     {
