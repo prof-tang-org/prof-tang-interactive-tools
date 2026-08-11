@@ -56,7 +56,7 @@
                          background:#fff;color:inherit;width:88px;text-align:right}
     input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
     input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
-    label{font-size:13px;color:#4b5563}
+    label{font-size:13px;font-weight:600;color:#334155}
     select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
 
     /* two-column inputs / output layout */
@@ -133,7 +133,8 @@
           <li>\(M\) — molar mass</li>
           <li>\(c_v\) — constant-volume specific heat</li>
           <li>\(c_p\) — constant-pressure specific heat</li>
-          <li>subscript 1 — state 1, subscript 2 — state 2</li>
+          <li>subscript 1 — state 1</li>
+          <li>subscript 2 — state 2</li>
         </ul>
       </div>
     </div>
@@ -161,7 +162,7 @@
         </div>
 
         <div class="ctl">
-          <label>Select</label>
+          <label>Select input properties</label>
           <div class="inline" style="margin-top:6px">
             <select id="mode-select" onchange="onModeChange(this)" style="width:100%">
               <option value="Tv" selected>T and v</option>
@@ -172,7 +173,7 @@
 
         <!-- T1 (always shown) -->
         <div class="ctl">
-          <label>\(T_1\) — temperature, state 1 [K]</label>
+          <label>Initial temperature \(T_1\)&nbsp; <span style="font-weight:400;font-size:12px">[300, 1000] K</span></label>
           <div class="inline" style="margin-top:6px">
             <input type="number" id="T1-out" min="300" max="1000" step="1" value="300"
                    onchange="syncInput('T1',this)" />
@@ -183,7 +184,7 @@
 
         <!-- v1 (T&v mode) -->
         <div class="ctl" id="v1-row">
-          <label>\(v_1\) — specific volume, state 1 [m³/kg]</label>
+          <label>Initial specific volume \(v_1\)&nbsp; <span style="font-weight:400;font-size:12px">[0.1, 3] m³/kg</span></label>
           <div class="inline" style="margin-top:6px">
             <input type="number" id="v1-out" min="0.1" max="3" step="0.01" value="0.8"
                    onchange="syncInput('v1',this)" />
@@ -194,7 +195,7 @@
 
         <!-- p1 (T&p mode) -->
         <div class="ctl hidden" id="p1-row">
-          <label>\(p_1\) — pressure, state 1 [kPa]</label>
+          <label>Initial pressure \(p_1\)&nbsp; <span style="font-weight:400;font-size:12px">[100, 1000] kPa</span></label>
           <div class="inline" style="margin-top:6px">
             <input type="number" id="p1-out" min="100" max="1000" step="1" value="100"
                    onchange="syncInput('p1',this)" />
@@ -205,7 +206,7 @@
 
         <!-- T2 (always shown) -->
         <div class="ctl">
-          <label>\(T_2\) — temperature, state 2 [K]</label>
+          <label>Final temperature \(T_2\)&nbsp; <span style="font-weight:400;font-size:12px">[300, 1000] K</span></label>
           <div class="inline" style="margin-top:6px">
             <input type="number" id="T2-out" min="300" max="1000" step="1" value="500"
                    onchange="syncInput('T2',this)" />
@@ -216,7 +217,7 @@
 
         <!-- v2 (T&v mode) -->
         <div class="ctl" id="v2-row">
-          <label>\(v_2\) — specific volume, state 2 [m³/kg]</label>
+          <label>Final specific volume \(v_2\)&nbsp; <span style="font-weight:400;font-size:12px">[0.1, 3] m³/kg</span></label>
           <div class="inline" style="margin-top:6px">
             <input type="number" id="v2-out" min="0.1" max="3" step="0.01" value="0.5"
                    onchange="syncInput('v2',this)" />
@@ -227,7 +228,7 @@
 
         <!-- p2 (T&p mode) -->
         <div class="ctl hidden" id="p2-row">
-          <label>\(p_2\) — pressure, state 2 [kPa]</label>
+          <label>Final pressure \(p_2\)&nbsp; <span style="font-weight:400;font-size:12px">[100, 1000] kPa</span></label>
           <div class="inline" style="margin-top:6px">
             <input type="number" id="p2-out" min="100" max="1000" step="1" value="200"
                    onchange="syncInput('p2',this)" />
@@ -440,7 +441,7 @@ function setupAxes(svg, mg, pW, pH, H, xDomain, xTicks, xLabelText, yLabelText){
 }
 
 /* ─── generic draggable ds-vs-variable plot ─── */
-function drawDsPlot(svgId, varName, xDomain, xTicks, xLabelText){
+function drawDsPlot(svgId, varName, dataDomain, xTicks, xLabelText){
   const svg = d3.select('#'+svgId);
   svg.selectAll('*').remove();
 
@@ -449,11 +450,13 @@ function drawDsPlot(svgId, varName, xDomain, xTicks, xLabelText){
   const pW = W - mg.left - mg.right;
   const pH = H - mg.top - mg.bottom;
 
-  const { xSc, ySc } = setupAxes(svg, mg, pW, pH, H, xDomain, xTicks, xLabelText, 's\u2082\u2212s\u2081 [kJ/(kg\u00b7K)]');
+  const [lo, hi] = dataDomain;
+  const axisDomain = [0, hi]; // axis always starts at 0
 
-  const [lo, hi] = xDomain;
+  const { xSc, ySc } = setupAxes(svg, mg, pW, pH, H, axisDomain, xTicks, xLabelText, 's\u2082\u2212s\u2081 [kJ/(kg\u00b7K)]');
+
   const step = (hi - lo) / 120;
-  const pts = d3.range(lo + step, hi, step);
+  const pts = d3.range(lo + step, hi, step); // curve only spans the valid input range
 
   const clampY = v => Math.max(-2, Math.min(2, v));
   const lineFn = d3.line()
@@ -494,7 +497,7 @@ function drawDsPlot(svgId, varName, xDomain, xTicks, xLabelText){
 }
 
 function drawAllPlots(){
-  const TDomain = [300,1000], TTicks = [300,400,500,600,700,800,900,1000];
+  const TDomain = [300,1000], TTicks = [0,100,200,300,400,500,600,700,800,900,1000];
   drawDsPlot('plotT1', 'T1', TDomain, TTicks, 'T\u2081 [K]');
   drawDsPlot('plotT2', 'T2', TDomain, TTicks, 'T\u2082 [K]');
 
@@ -503,7 +506,7 @@ function drawAllPlots(){
     drawDsPlot('plotX1', 'v1', vDomain, vTicks, 'v\u2081 [m\u00b3/kg]');
     drawDsPlot('plotX2', 'v2', vDomain, vTicks, 'v\u2082 [m\u00b3/kg]');
   } else {
-    const pDomain = [100,1000], pTicks = [100,200,300,400,500,600,700,800,900,1000];
+    const pDomain = [100,1000], pTicks = [0,100,200,300,400,500,600,700,800,900,1000];
     drawDsPlot('plotX1', 'p1', pDomain, pTicks, 'p\u2081 [kPa]');
     drawDsPlot('plotX2', 'p2', pDomain, pTicks, 'p\u2082 [kPa]');
   }
