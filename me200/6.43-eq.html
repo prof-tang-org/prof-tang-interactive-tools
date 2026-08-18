@@ -290,7 +290,7 @@ function drawPlot() {
     xKey = 'p2'; yKey = 'T2';
     xTicks = [0, 200, 400, 600, 800, 1000];
   } else {
-    xDom = [300, 1000];
+    xDom = [0, 1000];
     curveXDom = RANGE.T2.slice(); // [300,1000]
     const p2max = state.p1 * Math.pow(curveXDom[1] / state.T1, 1 / n);
     let yMax;
@@ -301,7 +301,7 @@ function drawPlot() {
     yDom = [0, yMax];
     xLabel = 'T\u2082  [K]'; yLabel = 'p\u2082  [kPa]';
     xKey = 'T2'; yKey = 'p2';
-    xTicks = [300, 400, 500, 600, 700, 800, 900, 1000];
+    xTicks = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
   }
 
   const xSc = d3.scaleLinear().domain(xDom).range([mg.left, mg.left + pW]);
