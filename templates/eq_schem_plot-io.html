@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title></title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="../templates/temp-styles.css" />
-  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script>window.MathJax = { chtml: { scale: 0.9 }, options: { renderActions: { addMenu: [] } } }</script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count"
-          async src="https://gc.zgo.at/count.js"></script>
+  <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count" async
+    src="https://gc.zgo.at/count.js"></script>
   <script defer src="../analytics.js"></script>
 </head>
+
 <body>
   <header class="site-header">
     <div class="container">
@@ -28,23 +30,26 @@
     </nav>
 
     <section class="grid">
-      <div class="card">
-        <!-- Adds class="eq-schem" here if schematic enabled -->
-        <div id="eqschem-container">
-          <div id="equation-container"> 
+      <div>
+        <div class="card">
+          <!-- Adds class="eq-schem" here if schematic enabled -->
+          <div id="eqschem-container">
+            <div id="equation-container">
 
-          </div>
-          <!-- Schematic hidden unless enabled -->
-          <div class="card float hidden" id="schematic-card-container">
-            <h3>Schematic</h3>
-            <div class="dark-card schem" id="schematic-image-container" aria-label="Schematic">
-              <img src="" alt="">
+            </div>
+            <!-- Schematic hidden unless enabled -->
+            <div class="card float hidden" id="schematic-card-container">
+              <h3>Schematic</h3>
+              <div class="dark-card schem" id="schematic-image-container" aria-label="Schematic">
+                <img src="" alt="">
+              </div>
             </div>
           </div>
+
+
         </div>
-        
         <!-- Plot -->
-        <div>
+        <div class="card">
           <h3>Plots</h3>
           <svg id="plot" viewBox="0 0 760 320" aria-label="Plots"></svg>
           <div class="note" id="plot-note"></div>
@@ -77,4 +82,5 @@
 
   <script src="../templates/renderer.js"></script>
 </body>
+
 </html>

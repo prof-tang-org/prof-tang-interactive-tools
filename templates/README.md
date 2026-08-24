@@ -296,11 +296,9 @@ For a fast, error-free workflow, follow these steps to add a new interactive top
 8. **Configure Plots (D3)**: If using plots, set mapping IDs, titles, tick intervals, and bounds under `plots.settings`.
 9. **Test locally**: Load your page using the `?course=meXXX&topic=YYY` query parameters on your local server to verify interactivity.
 
----
-
 ## 7. Prompting an Agentic AI to Generate `pageData`
 
-When utilizing an agentic AI coding assistant to create these topic files, you can get highly accurate results on the first try by providing a structured prompt. 
+When utilizing an agentic AI coding assistant to create these topic files, you can get highly accurate results on the first try by providing a structured prompt. By following the prompt blueprint below, the assistant will have all necessary constraints and context, even without access to a repository-specific `.skills` folder or external rule files.
 
 > [!WARNING]
 > **Take Care with Editing Core Engine Files**
@@ -318,31 +316,97 @@ Here are the specifications for the topic:
 - **Title**: "[Insert Topic Title]"
 - **Course**: "meXXX"
 - **Equations to show**:
-  * [Equation 1 as LaTeX] (e.g., $$T_2 = T_1 (p_2 / p_1)^{(n-1)/n}$$)
+  * [Equation 1 as LaTeX]
   * [Equation 2 as LaTeX]
 - **Variable definitions**:
-  * [Variable 1 symbol] - [Description] (e.g., T_1 - inlet temperature)
-  * [Variable 2 symbol] - [Description] (e.g., p_1 - inlet pressure)
+  * [Variable 1 symbol] - [Description]
+  * [Variable 2 symbol] - [Description]
 - **Schematic**:
   * Path: "../assets/meXXX/YYY-eq.png"
   * Alt: "[Descriptive alt text]"
 - **Inputs**:
-  * [Input 1 ID]: "[Input 1 Name]" (Slider from [Min] to [Max], step [Step], initial [Value])
-  * [Input 2 ID]: "[Input 2 Name]" (Dropdown with options: [Option 1], [Option 2])
+  * [Input 1 ID]: "[Input 1 Name]" (Slider from [Min] to [Max], step [Step], initial [Value], notation: [standard/scientific])
+  * [Input 2 ID]: "[Input 2 Name]" (Dropdown with options: [Option 1], [Option 2], with notes: "[Helper note text]")
 - **Fixed Constants**:
-  * [Constant ID]: "[Constant Name]" = [Value]
+  * [Constant ID]: "[Constant Name]" = [Value] (decimals: [Decimals value or conditional expression], type: [optional 'calculation'])
 - **Outputs & Formulas**:
-  * [Output 1 ID]: [Formula] (e.g., `volume = (R * temp) / pressure`)
+  * [Output 1 ID]: [Formula]
   * [Output 2 ID]: [Formula]
 - **Plots**:
   * Plot 1: [Y-axis variable ID] vs [X-axis variable ID], bounds X:[Min, Max], Y:[Min, Max], tick interval [Value].
   * Note below plot: "[Text]"
 
 Guidelines for the AI:
-1. Reference the existing topic file `me310/10.26-eq.js` as a structural reference.
-2. Ensure math functions in the output calculations (like sqrt, sin, pow, abs) are written as simple strings; the renderer will automatically prepend `Math.`.
-3. Wrap hyphenated variable IDs properly if using ternary logic (e.g., `abs(polytropic-n - 1) < 1e-4`).
-4. Ensure all notes, list items, and headers use proper LaTeX notation wrapping (single `$` for inline, double `$$` for blocks) so MathJax parses them correctly.
-5. Do NOT modify `templates/renderer.js` or `templates/temp-styles.css` unless explicit approval has been given.
-6. Print out the local test link/URL for this page (e.g., `/templates/[template_name].html?course=meXXX&topic=YYY-eq`).
+
+### 1. Reference & Structure
+- Reference the existing topic file `me310/10.26-eq.js` as a structural reference.
+- Explicitly import type definitions by placing `/** @type {PageData} */` right above the `pageData` declaration to enable IDE auto-completion and typing.
+
+### 2. Equation Card Layout (`equationElements` & `derivationElements`)
+- Support element layout types: `'header'`, `'equation'`, `'note'`, `'list'`, `'assumptions'`, `'equations'`, `'symbols'`, and `'schematic'`.
+- Content formatting:
+  - **Bold**: `**text**` &rarr; `<strong>`
+  - **Italics**: `*text*` &rarr; `<em>`
+  - **Underline**: `__text__` &rarr; `<u>`
+  - **MathJax Inline**: `$x = y$` &rarr; `\( x = y \)`
+  - **MathJax Block**: `$$x = y$$` &rarr; `\[ x = y \]`
+  - A `'note'` block can accept an array of strings representing separate paragraphs.
+- **Assumptions**: Use `type: "assumptions"`.
+  - *Single assumption:* Place the description in a single-item array under `content` (e.g. `["One-dimensional open channel flow"]`). This renders the header and text on separate lines without a bullet.
+  - *Multiple assumptions:* Place them as multiple strings in the `content` array to render them as a bulleted list.
+- **Equations**: Place equations inside `type: "equations"`. The renderer automatically injects the note header (`**Equation**` or `**Equations**` depending on the count). Do not manually wrap equations in `$$` or `$`. If you need explanatory text/note *between* equations in the list, wrap that string in single quotes (e.g., `["c = \\sqrt{gy}", "'where the depth is:'", "y = \\text{depth}"]`).
+- **Symbols**: Define symbols using `type: "symbols"`. Each item in `content` must have `symbol` (LaTeX math, e.g. `"$x$"`) and `definition` (description string).
+  - *CRITICAL:* Symbol definitions must **never** contain units (e.g., use "mass", not "mass (kg)" or "mass in kg").
+
+### 3. Inputs & Outputs (`inputOutput` config)
+- **Fixed Inputs (`fixedInputs`)**: Represents read-only constant values in calculations.
+  - Fields: `id`, `text`, `value` (can be a constant number or a formula string).
+  - Optional fields: `type: "calculation"`, and `decimals` (integer number or conditional JS expression string, e.g., `"conversion-factor == 1.0 ? 3 : 2"`).
+- **Interactive Controls (`inputs`)**:
+  - Support four types: `slider`, `number`, `dropdown`, and `slider-dropdown` (combines slider and dropdown next to each other).
+  - Fields: `type`, `id`, `text` (supports MathJax).
+  - Slider/Number fields: `min`, `max`, `step` (can be numbers or conditional JS expression strings, e.g. `"fluid == 'water' ? 0.1 : 0.5"`), `initialValue`.
+  - Dropdown/Slider-dropdown fields: `choices` (array of `{ "text": "Label", "value": "val" }`), `initialChoiceIndex`, and optional `notes` rendered under the control.
+  - Custom user input: Add a choice with value `"custom"` to expose an editable numeric input box.
+  - Optional `notation`: `"standard" | "scientific"` (defaults to `"standard"`).
+- **Computed Outputs (`outputs`)**:
+  - `type: "calculation"`: mathematical formulas must be standard JS expression strings (e.g., `"rho * U * x / mu"`). Common math functions like `pow`, `sqrt`, `exp`, `log`, `sin`, `cos`, `tan`, `abs` should be written as plain strings; the renderer will automatically prepend `Math.`.
+  - `type: "map"`: evaluates a value from an array based on dropdown index selection. Requires `key` (dropdown ID) and `value` (array of values ordered to match the dropdown choices).
+  - Optional fields: `decimals` (integer or conditional JS expression string).
+- **Layout and Notes**:
+  - Customize output columns layout using `outputColumns` (e.g. `3`).
+  - Add a conceptual simulation note using `note: { text: "..." }`.
+  - Highlight/gray-out ranges: Add `dottedRange` (object or array of objects: `{ "variable": "input_id", "min": 0, "max": 0.5 }`) to specify ranges where inputs/outputs are greyed out.
+
+### 4. Interactive Plotting (`plots` config)
+- **Aspect Ratio**: Set using `aspectRatio` (width-to-height ratio of the SVG wrapper).
+- **Curve Bounds (`xMin`, `xMax`, `yMin`, `yMax`, `yTickInterval`, `xTickInterval`)**:
+  - Must specify `x` (must be input ID) and `y` (input or output ID), `xLabel`, and `yLabel`.
+  - `xMin`, `xMax`, `xTickInterval` can be numbers or conditional JS expressions.
+  - `yMin` must be a number.
+  - `yMax` and `yTickInterval` can be numbers, arrays, or JS formula strings (e.g., `"yMax": "(5 / kinematic-viscosity) < 5e5 ? 5e5 : 5e6"`).
+  - Connect array bounds to a dropdown choices index using `key` (dropdown ID).
+- **Crash Prevention**: Ensure `yTickInterval` is large enough so that `(yMax - yMin) / yTickInterval` is not excessively high. If the ratio exceeds 200, the browser can freeze/crash.
+- **Tick Properties**:
+  - Rotate tick labels using `xTickRotation` / `yTickRotation` (integer angle).
+  - Format tick labels in exponential form using `xExponential: true` / `yExponential: true`.
+- **Dotted Range**: Add `dottedMin` / `dottedMax` bounds along the X-axis to display theoretical/impossible regions as dotted lines.
+- **Curve Annotations**:
+  - `activeLabel`: Text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. `"$n = {polytropic-n}$"`).
+  - `reference`: Array of static auxiliary reference curves. Each item maps input IDs to target values (e.g. `"U": 1.0`), alongside a `text` label and optional `labelPosition` (`"above" | "below"`).
+
+### 5. Wide Layout Guidelines (`io_wide` template)
+- If the layout uses wide templates (e.g. `eq_deriv-schem-io_wide-plot.html`), prevent vertical stretching of plots by setting a wide plot `aspectRatio` starting at `2.75` (e.g. `"aspectRatio": 2.75`).
+- Balance desktop column widths for inputs and outputs in `layout.grid` (e.g. `"desktop": "2fr 1fr"`).
+
+### 6. Artifact Formatting Constraints
+- **CRITICAL:** Do NOT use LaTeX math formatting (such as `$`, `\frac`, or symbols) in markdown implementation plans, task lists, or walkthrough files/artifacts. The markdown preview environment does not compile them. Write all formulas and math in these markdown artifacts in **plain text / unicode** (e.g. `h_L = f * (l / D) * (V^2 / 2g)`).
+
+### 7. Engine Modification Constraints
+- Do NOT modify `templates/renderer.js` or `templates/temp-styles.css` under any circumstances unless explicitly instructed.
+
+### 8. Verification & Local Testing
+- Ask for permission/confirmation before running the page validation using the `browser_subagent` tool.
+- If the required page template is not specified, prompt for clarification before starting.
+- Test local pages using `http://127.0.0.1:5500/` as the host (e.g., `http://127.0.0.1:5500/templates/[template_name].html?course=meXXX&topic=YYY-eq`) since Live Server runs on port 5500. Do not use `localhost:8000` or `localhost`.
 ```

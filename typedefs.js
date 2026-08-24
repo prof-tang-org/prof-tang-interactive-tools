@@ -121,12 +121,12 @@
  * @property {number} [dottedMin] - Start boundary of dotted range along the X-axis (useful for showing physically impossible regions)
  * @property {number} [dottedMax] - End boundary of dotted range along the X-axis
  * @property {string} [activeLabel] - Optional text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$")
+ * @property {ReferenceSetting[]} [reference] - Auxiliary static reference curves configurations
  */
 
 /**
  * @typedef {Object} PlotsConfig
  * @property {number} [aspectRatio] - Width-to-height ratio of the SVG plot wrapper
- * @property {ReferenceSetting[]} [reference-settings] - Configurations for auxiliary static reference curves
  * @property {PlotSetting[]} settings - List of active interactive charts to plot side-by-side
  * @property {string} text - Instructive annotation text shown below the chart container
  */

@@ -262,6 +262,16 @@ function renderSchematic(schematic) {
 // SECTION B: Controls & Inputs
 // ---------------------------------------------------------
 
+function clampValue(val, minVal, maxVal) {
+    if (minVal !== undefined && minVal !== null) {
+        val = Math.max(minVal, val);
+    }
+    if (maxVal !== undefined && maxVal !== null) {
+        val = Math.min(maxVal, val);
+    }
+    return val;
+}
+
 function clampInputValue(e, inputDef) {
     let val = parseFloat(e.target.value);
     if (!isNaN(val)) {
@@ -270,8 +280,7 @@ function clampInputValue(e, inputDef) {
         const minVal = minAttr !== null ? parseFloat(minAttr) : (typeof inputDef.min === 'number' ? inputDef.min : undefined);
         const maxVal = maxAttr !== null ? parseFloat(maxAttr) : (typeof inputDef.max === 'number' ? inputDef.max : undefined);
 
-        if (minVal !== undefined) val = Math.max(minVal, val);
-        if (maxVal !== undefined) val = Math.min(maxVal, val);
+        val = clampValue(val, minVal, maxVal);
 
         e.target.value = inputDef.notation === 'scientific' ? formatScientific(val, inputDef) : val;
         return val;
@@ -758,19 +767,17 @@ function setupCalculationEngine(pageData) {
                     }
                 });
 
-                if (primaryEl) {
-                    let currentVal = parseFloat(primaryEl.value);
-                    if (!isNaN(currentVal)) {
-                        let clampedVal = currentVal;
-                        if (minVal !== undefined) clampedVal = Math.max(minVal, clampedVal);
-                        if (maxVal !== undefined) clampedVal = Math.min(maxVal, clampedVal);
-                        if (clampedVal !== currentVal) {
-                            primaryEl.value = clampedVal;
-                            if (numEl) {
-                                numEl.value = input.notation === 'scientific' ? formatScientific(clampedVal, input) : clampedVal;
-                            }
-                            state[input.id] = clampedVal;
+                let currentVal = state[input.id];
+                if (currentVal !== undefined && !isNaN(currentVal)) {
+                    let clampedVal = clampValue(currentVal, minVal, maxVal);
+                    const isOutOfRange = (minVal !== undefined && currentVal < minVal) || (maxVal !== undefined && currentVal > maxVal);
+
+                    if (isOutOfRange || clampedVal !== currentVal) {
+                        if (primaryEl) primaryEl.value = clampedVal;
+                        if (numEl) {
+                            numEl.value = input.notation === 'scientific' ? formatScientific(clampedVal, input) : clampedVal;
                         }
+                        state[input.id] = clampedVal;
                     }
                 }
 
@@ -1056,27 +1063,44 @@ function injectPlots(state, pageData) {
         const yTickIntervalRaw = resolveProperty(plotConfig.yTickInterval);
         let yTickIntervalVal = typeof yTickIntervalRaw === 'string' ? evaluateFormula(yTickIntervalRaw, state) : yTickIntervalRaw;
 
-        const x = d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
-        const y = d3.scaleLinear().domain([yMinVal, yMax]).range([m.t + ih, m.t]);
+        const x = plotConfig.xLog
+            ? d3.scaleLog().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw])
+            : d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
+        const y = plotConfig.yLog
+            ? d3.scaleLog().domain([yMinVal, yMax]).range([m.t + ih, m.t])
+            : d3.scaleLinear().domain([yMinVal, yMax]).range([m.t + ih, m.t]);
 
         // Axes
         const xAxis = d3.axisBottom(x).ticks(5);
-        if (xTickIntervalVal !== undefined) {
-            const tickCount = (xMaxVal - xMinVal) / xTickIntervalVal;
-            if (tickCount > 200) {
-                console.warn(`xTickIntervalVal ${xTickIntervalVal} is too small for range [${xMinVal}, ${xMaxVal}]. Skipping tickValues to prevent crash.`);
-            } else {
-                const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
-                xAxis.tickValues(ticks);
-            }
-        }
-        if (plotConfig.xExponential) {
+        if (plotConfig.xLog) {
             xAxis.tickFormat(d => {
-                if (d === 0) return '0';
-                return d.toExponential().replace(/e\+/, 'e');
+                const log = Math.log10(d);
+                if (Math.abs(log - Math.round(log)) < 1e-9) {
+                    if (d >= 1e6 || d <= 1e-3) {
+                        return d.toExponential().replace(/\.0+e/, 'e').replace(/e\+/, 'e');
+                    }
+                    return d.toString();
+                }
+                return "";
             });
-        } else if (xTickIntervalVal !== undefined) {
-            xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
+        } else {
+            if (xTickIntervalVal !== undefined) {
+                const tickCount = (xMaxVal - xMinVal) / xTickIntervalVal;
+                if (tickCount > 200) {
+                    console.warn(`xTickIntervalVal ${xTickIntervalVal} is too small for range [${xMinVal}, ${xMaxVal}]. Skipping tickValues to prevent crash.`);
+                } else {
+                    const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
+                    xAxis.tickValues(ticks);
+                }
+            }
+            if (plotConfig.xExponential) {
+                xAxis.tickFormat(d => {
+                    if (d === 0) return '0';
+                    return d.toExponential().replace(/e\+/, 'e');
+                });
+            } else if (xTickIntervalVal !== undefined) {
+                xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
+            }
         }
         const xAxisG = svg.append('g').attr('class', 'axis')
             .attr('transform', `translate(0,${m.t + ih})`)
@@ -1089,22 +1113,35 @@ function injectPlots(state, pageData) {
             .style('text-anchor', xTextRotation > 0 ? 'end' : 'middle');
 
         const yAxis = d3.axisLeft(y).ticks(5);
-        if (yTickIntervalVal !== undefined) {
-            const tickCount = (yMax - yMinVal) / yTickIntervalVal;
-            if (tickCount > 200) {
-                console.warn(`yTickIntervalVal ${yTickIntervalVal} is too small for range [${yMinVal}, ${yMax}]. Skipping tickValues to prevent crash.`);
-            } else {
-                const ticks = d3.range(yMinVal, yMax + yTickIntervalVal / 2, yTickIntervalVal);
-                yAxis.tickValues(ticks);
-            }
-        }
-        if (plotConfig.yExponential) {
+        if (plotConfig.yLog) {
             yAxis.tickFormat(d => {
-                if (d === 0) return '0';
-                return d.toExponential().replace(/e\+/, 'e');
+                const log = Math.log10(d);
+                if (Math.abs(log - Math.round(log)) < 1e-9) {
+                    if (d >= 1e6 || d <= 1e-3) {
+                        return d.toExponential().replace(/\.0+e/, 'e').replace(/e\+/, 'e');
+                    }
+                    return d.toString();
+                }
+                return "";
             });
-        } else if (yTickIntervalVal !== undefined) {
-            yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
+        } else {
+            if (yTickIntervalVal !== undefined) {
+                const tickCount = (yMax - yMinVal) / yTickIntervalVal;
+                if (tickCount > 200) {
+                    console.warn(`yTickIntervalVal ${yTickIntervalVal} is too small for range [${yMinVal}, ${yMax}]. Skipping tickValues to prevent crash.`);
+                } else {
+                    const ticks = d3.range(yMinVal, yMax + yTickIntervalVal / 2, yTickIntervalVal);
+                    yAxis.tickValues(ticks);
+                }
+            }
+            if (plotConfig.yExponential) {
+                yAxis.tickFormat(d => {
+                    if (d === 0) return '0';
+                    return d.toExponential().replace(/e\+/, 'e');
+                });
+            } else if (yTickIntervalVal !== undefined) {
+                yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
+            }
         }
         const yAxisG = svg.append('g').attr('class', 'axis')
             .attr('transform', `translate(${plot_x_offset},0)`);
@@ -1166,7 +1203,14 @@ function injectPlots(state, pageData) {
 
         // Generate Curve
         const steps = 100;
-        let xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal) / steps, (xMaxVal - xMinVal) / steps);
+        let xVals;
+        if (plotConfig.xLog) {
+            const logMin = Math.log10(xMinVal);
+            const logMax = Math.log10(xMaxVal);
+            xVals = d3.range(0, steps + 1).map(d => Math.pow(10, logMin + (d * (logMax - logMin)) / steps));
+        } else {
+            xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal) / steps, (xMaxVal - xMinVal) / steps);
+        }
 
         const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
 
@@ -1247,6 +1291,7 @@ function injectPlots(state, pageData) {
             plot_x_offset,
             clipId,
             accessibleVals,
+            xVals,
             getPoint
         };
 
@@ -1412,7 +1457,7 @@ function injectPlots(state, pageData) {
 // ---------------------------------------------------------
 
 function drawReferenceLines(plotCtx) {
-    const { svg, plotConfig, state, accessibleVals, getPoint, clipId, pageData } = plotCtx;
+    const { svg, plotConfig, state, accessibleVals, xVals, getPoint, clipId, pageData } = plotCtx;
     const refSettings = plotConfig.reference;
     if (!refSettings) return;
 
@@ -1440,7 +1485,8 @@ function drawReferenceLines(plotCtx) {
         if (referenceCurveCache.has(cacheKey)) {
             refData = referenceCurveCache.get(cacheKey);
         } else {
-            refData = accessibleVals.map(v => getPoint(v, refState));
+            const valsToUse = xVals || accessibleVals;
+            refData = valsToUse.map(v => getPoint(v, refState));
             referenceCurveCache.set(cacheKey, refData);
         }
 

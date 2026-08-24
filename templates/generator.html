@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thermofluid Learn - Topic Page Generator</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../templates/temp-styles.css" />
+  
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    /* Premium Generator Editor styles */
+    .editor-header {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff;
+      padding: 1rem 0;
+      border-bottom: 2px solid var(--accent);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .editor-header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .editor-brand h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(to right, #38bdf8, #0ea5e9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .editor-brand p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .toggle-group {
+      display: flex;
+      background: #334155;
+      padding: 0.25rem;
+      border-radius: 8px;
+      border: 1px solid #475569;
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
+    }
+
+    /* Editable states */
+    .editable-target {
+      position: relative;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.15s, outline 0.15s;
+    }
+    .editable-target:hover {
+      background-color: rgba(14, 165, 233, 0.06);
+      outline: 1px dashed var(--accent);
+    }
+
+    .edit-inline-input {
+      font: inherit;
+      width: 100%;
+      padding: 0.25rem;
+      border: 1.5px solid var(--accent);
+      border-radius: var(--r-sm);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+      box-sizing: border-box;
+    }
+
+    textarea.edit-inline-input {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Plus dividers */
+    .plus-divider {
+      position: relative;
+      height: 6px;
+      margin: -3px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s, background-color 0.2s;
+      border-radius: 4px;
+      z-index: 5;
+    }
+    .plus-divider:hover {
+      opacity: 1;
+      background-color: rgba(14, 165, 233, 0.08);
+    }
+    .plus-divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--line);
+    }
+    .plus-divider .plus-btn {
+      position: relative;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .plus-divider .plus-btn:hover {
+      transform: scale(1.15);
+      background-color: #0284c7;
+    }
+
+    /* Card item element wrapper */
+    .editor-item-wrapper {
+      position: relative;
+    }
+
+    .editor-item-actions {
+      position: absolute;
+      right: 8px;
+      top: -8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    .editor-item-wrapper:hover .editor-item-actions {
+      opacity: 1;
+    }
+
+    .item-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #64748b;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .item-btn:hover {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    .item-btn.delete-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #ef4444;
+    }
+
+    /* Transparent assumptions placeholder */
+    .assumptions-placeholder {
+      opacity: 0.3;
+      transition: opacity 0.2s;
+      cursor: pointer;
+      border: 1px dashed var(--line);
+      border-radius: var(--r-md);
+      padding: 0.5rem;
+      text-align: center;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .assumptions-placeholder:hover {
+      opacity: 0.8;
+      background-color: rgba(14, 165, 233, 0.03);
+      border-color: var(--accent);
+    }
+
+    /* Layout resizing */
+    .grid {
+      position: relative;
+    }
+    .v-resizer {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      cursor: col-resize;
+      background: transparent;
+      z-index: 40;
+      transition: background-color 0.2s;
+    }
+    .v-resizer::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: transparent;
+      transition: background-color 0.2s;
+    }
+    .v-resizer:hover::after, .v-resizer.dragging::after {
+      background-color: var(--accent);
+    }
+    .v-resizer:hover, .v-resizer.dragging {
+      background-color: rgba(14, 165, 233, 0.08);
+    }
+
+    /* Schematic dropzone */
+    .schem-dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--r-md);
+      background: #f8fafc;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      padding: 1rem;
+    }
+    .schem-dropzone:hover, .schem-dropzone.dragover {
+      border-color: var(--accent);
+      background-color: #eff6ff;
+    }
+    .schem-dropzone img {
+      max-height: 200px;
+      object-fit: contain;
+      margin-bottom: 0.5rem;
+    }
+    .schem-dropzone input[type="file"] {
+      display: none;
+    }
+    .dropzone-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+    .dropzone-overlay svg {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 0.5rem;
+      stroke: #94a3b8;
+    }
+
+    /* Modal dialog overrides */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background: white;
+      border-radius: 14px;
+      width: 92%;
+      max-width: 550px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.5rem;
+    }
+    .modal-header h3 {
+      margin: 0;
+      color: var(--ink);
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #94a3b8;
+    }
+    .close-btn:hover {
+      color: #475569;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 0.5rem;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      outline: none;
+      font: inherit;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+    }
+
+    .choices-list-editor {
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background: #f8fafc;
+    }
+    .choice-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .choice-row input {
+      flex: 1;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      border-top: 1px solid var(--line);
+      padding-top: 0.75rem;
+    }
+
+    /* LaTeX Live Preview Editor */
+    .latex-preview-box {
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 0.75rem;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafcff;
+      font-size: 1.1rem;
+      overflow-x: auto;
+    }
+
+    /* Helper container overrides */
+    .container {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .card-settings-btn {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+    }
+    .card-settings-btn:hover {
+      color: var(--accent);
+    }
+    .card-settings-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    /* Fixed Input tag badge styles */
+    .fixed-input-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+    .fixed-input-badge .badge-val {
+      font-weight: 600;
+      color: #334155;
+    }
+
+    /* Code Modal export textarea */
+    .export-textarea {
+      width: 100%;
+      height: 250px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.85rem;
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 0.75rem;
+      border-radius: var(--r-sm);
+      resize: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Editor Header -->
+  <header class="editor-header">
+    <div class="container">
+      <div class="editor-brand">
+        <h1>PageData Builder</h1>
+        <p>Interactive Physics Page Config Generator</p>
+      </div>
+
+      <div class="toolbar-group">
+        <!-- Layout Selection Toggle -->
+        <div class="toggle-group" id="layout-toggles">
+          <button class="toggle-btn active" data-template="eq_schem_plot-io">Template 1</button>
+          <button class="toggle-btn" data-template="eq_deriv-schem-io-plot">Template 2</button>
+          <button class="toggle-btn" data-template="eq_deriv-schem-io_wide-plot">Template 3</button>
+        </div>
+
+        <button class="btn" id="btn-load-boilerplate">Load Boilerplate</button>
+        <button class="btn" id="btn-upload-js-file">Upload .js</button>
+        <input type="file" id="upload-js-file-input" accept=".js" style="display:none;">
+        <button class="btn primary" id="btn-export-js">Export .js</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation bar (Matches original templates) -->
+  <main class="container" style="margin-top: 1.5rem;">
+    <nav class="back-row">
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+    </nav>
+
+    <!-- Header Title (Editable) -->
+    <div style="margin-bottom: 1.5rem;">
+      <h1 id="header-title" class="editable-target" style="display:inline-block; min-width: 200px;">Topic Page Title</h1>
+    </div>
+
+    <!-- Workspace Area where containers are dynamically rendered -->
+    <div id="editor-workspace"></div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+    </div>
+  </footer>
+
+  <!-- REUSABLE DETACHED CARD TEMPLATE ELEMENTS (Hold actual editable contents) -->
+  <div style="display:none;">
+    
+    <!-- Equations & Assumptions Card -->
+    <div id="editor-equations-card" class="card" style="position:relative;">
+      <div id="equation-container"></div>
+    </div>
+
+    <!-- Schematic Card -->
+    <div id="editor-schematic-card" class="card float">
+      <h3>Schematic</h3>
+      <button class="card-settings-btn" id="btn-schematic-settings">
+        <svg viewBox="0 0 20 20"><path d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.53 1.53 0 0 1-2.28 1l-1.35-.83c-1.37.84-2 2.53-1.4 3.96l.73 1.42a1.53 1.53 0 0 1-1 2.28c-1.56.38-1.56 2.6 0 2.98a1.53 1.53 0 0 1 1 2.28l-.73 1.42c-.6 1.43.03 3.12 1.4 3.96l1.35-.83a1.53 1.53 0 0 1 2.28 1c.38 1.56 2.6 1.56 2.98 0a1.53 1.53 0 0 1 2.28-1l1.35.83c1.37-.84 2-2.53 1.4-3.96l-.73-1.42a1.53 1.53 0 0 1 1-2.28c1.56-.38 1.56-2.6 0-2.98a1.53 1.53 0 0 1-1-2.28l.73-1.42c.6-1.43-.03-3.12-1.4-3.96l-1.35.83a1.53 1.53 0 0 1-2.28-1zM10 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+        Paths
+      </button>
+      
+      <div class="schem-dropzone" id="schem-file-dropzone" id="schematic-image-container">
+        <div class="dropzone-overlay" id="dropzone-text">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <span>Drag & Drop image here</span>
+          <span>or click to select</span>
+        </div>
+        <img id="schematic-img" class="hidden" src="" alt="Schematic">
+        <input type="file" id="schem-file-input" accept="image/*">
+      </div>
+    </div>
+
+    <!-- Inputs & Outputs Card -->
+    <div id="editor-io-card" class="card float">
+      <div id="io-container-inner">
+        <div id="inputs-section-wrapper">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 id="inputs-header">Inputs</h3>
+          </div>
+          <!-- Fixed inputs -->
+          <div class="value-group hidden" id="fixed-inputs" style="grid-template-columns: repeat(2, minmax(120px, 1fr)); margin-bottom: 0.5rem;"></div>
+          
+          <!-- Slider/Dropdown inputs control list -->
+          <div id="controls" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+        </div>
+
+        <div id="outputs-section-wrapper">
+          <h3 id="outputs-header">Outputs</h3>
+          <div class="value-group" id="outputs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plots Card -->
+    <div id="editor-plot-card" class="card" style="position:relative;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>Plots</h3>
+        <div style="display:flex; gap: 8px;">
+          <button class="card-settings-btn" id="btn-plot-settings">
+            <svg viewBox="0 0 20 20"><path d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.53 1.53 0 0 1-2.28 1l-1.35-.83c-1.37.84-2 2.53-1.4 3.96l.73 1.42a1.53 1.53 0 0 1-1 2.28c-1.56.38-1.56 2.6 0 2.98a1.53 1.53 0 0 1 1 2.28l-.73 1.42c-.6 1.43.03 3.12 1.4 3.96l1.35-.83a1.53 1.53 0 0 1 2.28 1c.38 1.56 2.6 1.56 2.98 0a1.53 1.53 0 0 1 2.28-1l1.35.83c1.37-.84 2-2.53 1.4-3.96l-.73-1.42a1.53 1.53 0 0 1 1-2.28c1.56-.38 1.56-2.6 0-2.98a1.53 1.53 0 0 1-1-2.28l.73-1.42c.6-1.43-.03-3.12-1.4-3.96l-1.35.83a1.53 1.53 0 0 1-2.28-1zM10 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+            Plot Config
+          </button>
+          <button class="card-settings-btn" id="btn-plot-delete" style="color: #ef4444; display: none;">
+            Remove
+          </button>
+        </div>
+      </div>
+      
+      <!-- Render area for SVG -->
+      <div id="plot-render-area" style="position:relative; min-height: 200px; display:flex; align-items:center; justify-content:center; border: 1px dashed var(--line); border-radius: var(--r-md); background: #fff;">
+        <svg id="plot" viewBox="0 0 760 320" aria-label="Plots"></svg>
+        <div id="plot-empty-message" class="hidden" style="color: #94a3b8; font-size: 0.9rem;">Configure plot settings to draw plot.</div>
+      </div>
+      <div class="note editable-target" id="plot-note" style="min-height: 20px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+  
+  <!-- LaTeX Editor Dialog -->
+  <div class="modal-overlay" id="latex-editor-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="latex-modal-title">LaTeX Editor</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="latex-editor-input">LaTeX Formula String (without wrapping in $$ or $)</label>
+        <textarea id="latex-editor-input" rows="4" placeholder="Enter LaTeX here..."></textarea>
+      </div>
+      <div>
+        <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display:block; margin-bottom: 0.25rem;">Live Math Preview</label>
+        <div class="latex-preview-box" id="latex-editor-preview"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="btn-latex-cancel">Cancel</button>
+        <button class="btn primary" id="btn-latex-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Symbols Edit Dialog -->
+  <div class="modal-overlay" id="symbol-editor-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Configure Symbol Definition</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="symbol-input-latex">Symbol Math LaTeX (e.g. $Re_D$)</label>
+        <input type="text" id="symbol-input-latex" placeholder="$symbol$">
+      </div>
+      <div class="form-group">
+        <label for="symbol-input-def">Definition String (NO units! e.g. Reynolds number)</label>
+        <input type="text" id="symbol-input-def" placeholder="Definition">
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="btn-symbol-cancel">Cancel</button>
+        <button class="btn primary" id="btn-symbol-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inputs Modal -->
+  <div class="modal-overlay" id="input-editor-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="input-modal-title">Add/Edit Interactive Input</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      
+      <div class="form-group">
+        <label for="input-type">Input UI Type</label>
+        <select id="input-type">
+          <option value="slider">Slider (Numeric Range)</option>
+          <option value="dropdown">Dropdown Choice Menu</option>
+          <option value="slider-dropdown">Slider-Dropdown (Synced)</option>
+          <option value="number">Standalone Number Box</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="input-id">ID / Variable Name (Unique, alphanumeric, e.g. upstream-velocity)</label>
+        <input type="text" id="input-id" placeholder="velocity-U">
+      </div>
+
+      <div class="form-group">
+        <label for="input-text">Label Text (supports MathJax, e.g. Upstream Velocity, $U$ [m/s])</label>
+        <input type="text" id="input-text" placeholder="Label">
+      </div>
+
+      <!-- Slider specific settings -->
+      <div id="input-slider-settings" class="editor-settings-subpanel">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="form-group">
+            <label for="input-min">Min Value (or JS expr)</label>
+            <input type="text" id="input-min" value="0">
+          </div>
+          <div class="form-group">
+            <label for="input-max">Max Value (or JS expr)</label>
+            <input type="text" id="input-max" value="10">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top:0.5rem;">
+          <div class="form-group">
+            <label for="input-step">Step size (or JS expr)</label>
+            <input type="text" id="input-step" value="0.1">
+          </div>
+          <div class="form-group">
+            <label for="input-initial">Initial Value</label>
+            <input type="number" id="input-initial" value="1" step="any">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:0.5rem;">
+          <label for="input-notation">Notation format</label>
+          <select id="input-notation">
+            <option value="standard">Standard Decimal</option>
+            <option value="scientific">Scientific Notation</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dropdown choice settings -->
+      <div id="input-dropdown-settings" class="editor-settings-subpanel hidden">
+        <div class="form-group">
+          <label>Choices list</label>
+          <div class="choices-list-editor" id="dropdown-choices-container"></div>
+          <button class="btn" style="margin-top:0.5rem; padding: 4px 8px; font-size:0.8rem;" id="btn-add-dropdown-choice">+ Add Choice Option</button>
+        </div>
+        <div class="form-group" style="margin-top:0.5rem;">
+          <label for="input-choice-initial-idx">Initial Choice Option Index</label>
+          <input type="number" id="input-choice-initial-idx" value="0" min="0">
+        </div>
+        <div class="form-group" style="margin-top:0.5rem;">
+          <label for="input-notes">Notes text (shown under dropdown)</label>
+          <input type="text" id="input-notes" placeholder="Notes (optional)">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="btn-input-cancel">Cancel</button>
+        <button class="btn primary" id="btn-input-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Input Dialog -->
+  <div class="modal-overlay" id="fixed-input-editor-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="fixed-modal-title">Configure Constant / Fixed Input</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="fixed-input-id">ID / Variable Name (e.g. density-rho)</label>
+        <input type="text" id="fixed-input-id">
+      </div>
+      <div class="form-group">
+        <label for="fixed-input-text">Label Text (e.g. Gravity Acceleration, $g$ [m/s²])</label>
+        <input type="text" id="fixed-input-text">
+      </div>
+      <div class="form-group">
+        <label for="fixed-input-val">Value (e.g. 9.81 or "rho * x")</label>
+        <input type="text" id="fixed-input-val">
+      </div>
+      <div class="form-group">
+        <label for="fixed-input-type">Calculation Type</label>
+        <select id="fixed-input-type">
+          <option value="value">Static Constant Value</option>
+          <option value="calculation">Calculated Formula</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="btn-fixed-cancel">Cancel</button>
+        <button class="btn primary" id="btn-fixed-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Outputs Modal -->
+  <div class="modal-overlay" id="output-editor-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="output-modal-title">Configure Computed Output</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      
+      <div class="form-group">
+        <label for="output-id">ID / Variable Name (Unique, e.g. reynolds)</label>
+        <input type="text" id="output-id">
+      </div>
+
+      <div class="form-group">
+        <label for="output-text">Label Text (supports MathJax, e.g. Reynolds Number, $Re_x$)</label>
+        <input type="text" id="output-text">
+      </div>
+
+      <div class="form-group">
+        <label for="output-type">Output Formula Mode</label>
+        <select id="output-type">
+          <option value="calculation">Calculation Expression (Math Formula)</option>
+          <option value="map">Dropdown Selected Choice Mapping Index</option>
+        </select>
+      </div>
+
+      <!-- Calculation specific settings -->
+      <div id="output-calc-settings" class="editor-settings-subpanel">
+        <div class="form-group">
+          <label for="output-val-formula">JavaScript Math Formula Expression (e.g. rho * U * x / mu)</label>
+          <input type="text" id="output-val-formula" placeholder="rho * U * x / mu">
+        </div>
+      </div>
+
+      <!-- Mapping specific settings -->
+      <div id="output-map-settings" class="editor-settings-subpanel hidden">
+        <div class="form-group">
+          <label for="output-map-key">Dropdown Control ID Reference (Dropdown selection indexes array)</label>
+          <input type="text" id="output-map-key" placeholder="dropdown-control-id">
+        </div>
+        <div class="form-group" style="margin-top:0.5rem;">
+          <label for="output-map-vals">Values array (comma separated, e.g. 998.2, 1.204)</label>
+          <input type="text" id="output-map-vals" placeholder="998.2, 1.204">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr; gap:0.5rem; margin-top:0.5rem;">
+        <div class="form-group">
+          <label for="output-decimals">Decimals precision (optional numeric or JS conditional code)</label>
+          <input type="text" id="output-decimals" placeholder="e.g. 2">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="btn-output-cancel">Cancel</button>
+        <button class="btn primary" id="btn-output-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plots Settings & Plus Modal -->
+  <div class="modal-overlay" id="plot-editor-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="plot-modal-title">Configure D3 Plot Settings</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+        <div class="form-group">
+          <label for="plot-x-var">X-Axis Variable ID (Input)</label>
+          <select id="plot-x-var"></select>
+        </div>
+        <div class="form-group">
+          <label for="plot-y-var">Y-Axis Variable ID (Input/Output)</label>
+          <select id="plot-y-var"></select>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+        <div class="form-group">
+          <label for="plot-x-label">X-Axis Title (MathJax)</label>
+          <input type="text" id="plot-x-label" placeholder="e.g. Reynolds $Re_x$">
+        </div>
+        <div class="form-group">
+          <label for="plot-y-label">Y-Axis Title (MathJax)</label>
+          <input type="text" id="plot-y-label" placeholder="e.g. Nusselt $Nu_x$">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+        <div class="form-group">
+          <label for="plot-x-min">X Min (num or formula)</label>
+          <input type="text" id="plot-x-min" value="0">
+        </div>
+        <div class="form-group">
+          <label for="plot-x-max">X Max (num or formula)</label>
+          <input type="text" id="plot-x-max" value="10">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+        <div class="form-group">
+          <label for="plot-y-min">Y Min (number)</label>
+          <input type="number" id="plot-y-min" value="0" step="any">
+        </div>
+        <div class="form-group">
+          <label for="plot-y-max">Y Max (number, formula or array)</label>
+          <input type="text" id="plot-y-max" value="100">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+        <div class="form-group">
+          <label for="plot-y-tick">Y Tick Interval (num/formula/array)</label>
+          <input type="text" id="plot-y-tick" value="10">
+        </div>
+        <div class="form-group">
+          <label for="plot-y-key">Dynamic Selection Key ID (optional dropdown)</label>
+          <input type="text" id="plot-y-key" placeholder="fluid">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:1.5rem; margin-top:0.25rem;">
+        <label style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="plot-x-log"> Logarithmic X-Axis
+        </label>
+        <label style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="plot-y-log"> Logarithmic Y-Axis
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label for="plot-aspect-ratio">Aspect Ratio (Width/Height)</label>
+        <input type="number" id="plot-aspect-ratio" value="1.5" step="0.1" min="0.5" max="4">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="btn-plot-cancel">Cancel</button>
+        <button class="btn primary" id="btn-plot-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paths / Schematic settings modal -->
+  <div class="modal-overlay" id="schematic-settings-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Schematic Configuration</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="schematic-path-input">Image Src Path (exported relative path, e.g. ../assets/me310/my-schem.svg)</label>
+        <input type="text" id="schematic-path-input" placeholder="../assets/me310/file.svg">
+      </div>
+      <div class="form-group">
+        <label for="schematic-alt-input">Alternative Accessibility Alt Text</label>
+        <input type="text" id="schematic-alt-input" placeholder="A visual description...">
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="btn-schem-settings-cancel">Cancel</button>
+        <button class="btn primary" id="btn-schem-settings-save">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Dialog -->
+  <div class="modal-overlay" id="export-modal">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3>Export PageData Config</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div>
+        <p style="font-size:0.9rem; color:#475569; margin: 0 0 0.75rem;">Your interactive topic config is fully generated below. You can directly download the <code>.js</code> file or copy it to the clipboard.</p>
+        <textarea class="export-textarea" id="export-code-view" readonly></textarea>
+      </div>
+      <div class="modal-actions" style="justify-content: space-between; align-items:center;">
+        <span style="font-size:0.8rem; color:#64748b;" id="export-file-info">File ready: topic-config.js</span>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn" id="btn-export-copy">Copy to Clipboard</button>
+          <button class="btn primary" id="btn-export-download">Download .js File</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Inputs Creator Modal -->
+  <div class="modal-overlay" id="fixed-input-choice-modal">
+    <div class="modal-card" style="max-width:350px;">
+      <div class="modal-header">
+        <h3>Add Variable Parameter</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:#475569;">Choose the type of input parameter you want to create:</p>
+      <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+        <button class="btn primary" id="choice-btn-interactive" style="justify-content:center;">Interactive Input (Slider/Dropdown)</button>
+        <button class="btn" id="choice-btn-fixed" style="justify-content:center;">Fixed Constant / Math Variable</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INLINE MATH RENDERING CACHE AND CUSTOM CALC STUBS FOR STABILITY -->
+  <script>
+    // Define a default pageData object globally so renderer.js initializes successfully
+    // without query parameters on templates/generator.html
+    const pageData = {
+        "title": "Interactive Fluid Simulator",
+        "layout": {
+            "grid": [
+                { "desktop": "1.2fr 0.8fr", "mobile": "100%" },
+                { "desktop": "0.8fr 1.2fr", "mobile": "100%" }
+            ]
+        },
+        "equationElements": [
+            {
+                "type": "equations",
+                "content": [
+                    "Re = \\frac{\\rho U L}{\\mu}"
+                ]
+            },
+            {
+                "type": "symbols",
+                "content": [
+                    { "symbol": "$Re$", "definition": "Reynolds number" },
+                    { "symbol": "$U$", "definition": "velocity" },
+                    { "symbol": "$L$", "definition": "characteristic length" }
+                ]
+            }
+        ],
+        "schematic": {
+            "src": "../assets/me200/sample-schem.png",
+            "alt": "A visual diagram of the sample concept."
+        },
+        "inputOutput": {
+            "fixedInputs": [
+                { "id": "rho", "text": "Density, $\\rho$ [kg/m³]", "value": 998 },
+                { "id": "mu", "text": "Viscosity, $\\mu$ [Pa·s]", "value": 0.001 }
+            ],
+            "inputs": [
+                { "type": "slider", "id": "U", "text": "Velocity, $U$ [m/s]", "min": 0.1, "max": 5.0, "initialValue": 1.0, "step": 0.1 },
+                { "type": "slider", "id": "L", "text": "Length, $L$ [m]", "min": 0.1, "max": 2.0, "initialValue": 0.5, "step": 0.05 }
+            ],
+            "outputs": [
+                { "id": "Re", "text": "Reynolds Number, $Re$", "type": "calculation", "value": "rho * U * L / mu" }
+            ]
+        },
+        "plots": {
+            "aspectRatio": 1.5,
+            "settings": [
+                {
+                    "x": "L",
+                    "y": "Re",
+                    "xLabel": "Length $L$ [m]",
+                    "yLabel": "Reynolds Number $Re$",
+                    "xMin": 0.1,
+                    "xMax": 2.0,
+                    "yMin": 0,
+                    "yMax": 1000000,
+                    "yTickInterval": 200000
+                }
+            ],
+            "text": "Drag the slider or plot nodes to dynamically recalculate the Reynolds number flow characteristics."
+        }
+    };
+  </script>
+
+  <!-- Load core renderer -->
+  <script src="../templates/renderer.js"></script>
+
+  <!-- Generator Visual Logic Script -->
+  <script>
+    // State management for Generator Editor
+    let activeTemplate = 'eq_schem_plot-io';
+    let editState = {
+        activeModal: null,
+        latexTarget: null,
+        symbolTarget: null,
+        inputTarget: null,
+        outputTarget: null,
+        plotTarget: null,
+        insertIndex: null
+    };
+
+    // Helper functions to manage pageData object structures
+    function deepCopy(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
+    function saveStateAndRender() {
+        // Clear all renderer container wrappers
+        document.getElementById('equation-container').innerHTML = '';
+        document.getElementById('fixed-inputs').innerHTML = '';
+        document.getElementById('controls').innerHTML = '';
+        document.getElementById('outputs').innerHTML = '';
+        
+        // Ensure fixedInputs hide/show depending on contents
+        const fixedContainer = document.getElementById('fixed-inputs');
+        if (pageData.inputOutput && pageData.inputOutput.fixedInputs && pageData.inputOutput.fixedInputs.length > 0) {
+            fixedContainer.classList.remove('hidden');
+        } else {
+            fixedContainer.classList.add('hidden');
+        }
+
+        // Apply visual schematic settings
+        const schematicImg = document.getElementById('schematic-img');
+        const schematicText = document.getElementById('dropzone-text');
+        const schematicCard = document.getElementById('editor-schematic-card');
+        
+        if (pageData.schematic && pageData.schematic.src) {
+            schematicImg.src = pageData.schematic.src;
+            schematicImg.alt = pageData.schematic.alt || '';
+            schematicImg.classList.remove('hidden');
+            schematicText.classList.add('hidden');
+            schematicCard.classList.remove('hidden');
+        } else {
+            schematicImg.classList.add('hidden');
+            schematicText.classList.remove('hidden');
+            // Keep container visible in editor even if config-disabled so they can drop an image
+        }
+
+        // Trigger renderer.js layout and dynamic functions
+        configLayout(pageData.layout);
+        renderContent(pageData.equationElements, 'equation-container');
+        if (pageData.derivationElements) {
+            renderContent(pageData.derivationElements, 'equation-container');
+        }
+        renderInputOutput(pageData.inputOutput);
+        
+        // Re-execute calculations and inject plots
+        try {
+            setupCalculationEngine(pageData);
+        } catch(err) {
+            console.error("Calculation Engine Error: ", err);
+        }
+        
+        // Re-run MathJax rendering
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise().catch(err => console.error(err));
+        }
+
+        // Run Editor decorations pass
+        decorateEditorDOM();
+    }
+
+    // Set up Resizers between grid columns
+    function setupResizers(templateName) {
+        // Remove old resizers
+        document.querySelectorAll('.v-resizer').forEach(el => el.remove());
+
+        const gridSections = document.querySelectorAll('section.grid');
+        gridSections.forEach((gridEl, rowIndex) => {
+            // Verify if there are at least two child cards in row to warrant a resizer
+            const children = Array.from(gridEl.children).filter(c => c.tagName === 'DIV' || c.classList.contains('card'));
+            if (children.length < 2) return;
+
+            const resizer = document.createElement('div');
+            resizer.className = 'v-resizer';
+            gridEl.appendChild(resizer);
+
+            // Position it over the gap dynamically using mouse listener on drag
+            function positionResizer() {
+                const rectLeft = children[0].getBoundingClientRect();
+                const rectGrid = gridEl.getBoundingClientRect();
+                resizer.style.left = (rectLeft.right - rectGrid.left) + 'px';
+            }
+
+            positionResizer();
+            // Recalculate resizer positioning on window resize
+            window.addEventListener('resize', positionResizer);
+
+            resizer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                resizer.classList.add('dragging');
+                const gridRect = gridEl.getBoundingClientRect();
+
+                function onMouseMove(moveEvent) {
+                    const pct = (moveEvent.clientX - gridRect.left) / gridRect.width;
+                    const clampedPct = Math.max(0.15, Math.min(0.85, pct));
+                    const leftFr = clampedPct * 2;
+                    const rightFr = (1 - clampedPct) * 2;
+                    
+                    gridEl.style.gridTemplateColumns = `${leftFr.toFixed(2)}fr ${rightFr.toFixed(2)}fr`;
+                    
+                    if (!pageData.layout) pageData.layout = { grid: [] };
+                    if (!pageData.layout.grid[rowIndex]) {
+                        pageData.layout.grid[rowIndex] = { mobile: "100%" };
+                    }
+                    pageData.layout.grid[rowIndex].desktop = `${leftFr.toFixed(2)}fr ${rightFr.toFixed(2)}fr`;
+                    
+                    // Update resizer drag bar position in real-time
+                    positionResizer();
+                }
+
+                function onMouseUp() {
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', onMouseUp);
+                    resizer.classList.remove('dragging');
+                    saveStateAndRender();
+                }
+
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('mouseup', onMouseUp);
+            });
+        });
+
+        // Setup specific internal Resizer for Template 1's eqschem-container (Equation vs Schematic)
+        const eqschem = document.getElementById('eqschem-container');
+        if (eqschem && eqschem.classList.contains('eq-schem') && templateName === 'eq_schem_plot-io') {
+            const eqCard = document.getElementById('editor-equations-card');
+            const schemCard = document.getElementById('editor-schematic-card');
+            if (eqCard && schemCard && !schemCard.classList.contains('hidden')) {
+                const resizer = document.createElement('div');
+                resizer.className = 'v-resizer';
+                eqschem.style.position = 'relative';
+                eqschem.appendChild(resizer);
+
+                function posRes() {
+                    const rLeft = eqCard.getBoundingClientRect();
+                    const rGrid = eqschem.getBoundingClientRect();
+                    resizer.style.left = (rLeft.right - rGrid.left) + 'px';
+                }
+                posRes();
+                window.addEventListener('resize', posRes);
+
+                resizer.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    resizer.classList.add('dragging');
+                    const gridRect = eqschem.getBoundingClientRect();
+
+                    function onMove(evt) {
+                        const pct = (evt.clientX - gridRect.left) / gridRect.width;
+                        const clamped = Math.max(0.2, Math.min(0.8, pct));
+                        const lFr = clamped * 2;
+                        const rFr = (1 - clamped) * 2;
+                        eqschem.style.gridTemplateColumns = `${lFr.toFixed(2)}fr ${rFr.toFixed(2)}fr`;
+                        
+                        // Update resizer drag bar position in real-time
+                        posRes();
+                    }
+                    function onUp() {
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup', onUp);
+                        resizer.classList.remove('dragging');
+                        saveStateAndRender();
+                    }
+                    window.addEventListener('mousemove', onMove);
+                    window.addEventListener('mouseup', onUp);
+                });
+            }
+        }
+    }
+
+    // Decorate Rendered Elements in the DOM for Editor Interactions
+    function decorateEditorDOM() {
+        // --- 1. Top Title ---
+        const titleEl = document.getElementById('header-title');
+        titleEl.setAttribute('data-raw-value', pageData.title);
+        makeEditable(titleEl, (newTitle) => {
+            pageData.title = newTitle;
+            document.title = newTitle;
+            saveStateAndRender();
+        });
+
+        // --- 2. Equation Elements Container ---
+        const eqContainer = document.getElementById('equation-container');
+        const eqCardDiv = eqContainer.firstElementChild; // renderer creates a div card
+        
+        if (eqCardDiv) {
+            // Find assumptions block index
+            const assumptionsIndex = pageData.equationElements.findIndex(el => el.type === 'assumptions');
+            
+            // IF assumptions do not exist, render transparent hover placeholder at top of equation container
+            if (assumptionsIndex === -1) {
+                const topPlaceholder = document.createElement('div');
+                topPlaceholder.className = 'assumptions-placeholder';
+                topPlaceholder.innerHTML = '<strong>+ Add Assumptions Section</strong>';
+                topPlaceholder.addEventListener('click', () => {
+                    pageData.equationElements.unshift({
+                        type: 'assumptions',
+                        content: ['Steady-state flow conditions']
+                    });
+                    saveStateAndRender();
+                });
+                eqCardDiv.insertBefore(topPlaceholder, eqCardDiv.firstChild);
+            }
+
+            // Decorate existing equation elements child by child
+            let elementsDom = Array.from(eqCardDiv.children).filter(el => !el.classList.contains('assumptions-placeholder'));
+            let elementIndexMap = []; // maps DOM child elements back to pageData indices
+
+            // Since renderer renders assumptions, equations, symbols in block groups, we correlate them
+            let dataIdx = 0;
+            // Handle assumptions placeholder offset
+            let domIdx = assumptionsIndex === -1 ? 1 : 0; 
+            
+            pageData.equationElements.forEach((item, configIdx) => {
+                const domNode = elementsDom[domIdx];
+                if (!domNode) return;
+                
+                domNode.classList.add('editor-item-wrapper');
+                
+                // Add Delete element actions button overlay
+                const actions = document.createElement('div');
+                actions.className = 'editor-item-actions';
+                
+                const delBtn = document.createElement('button');
+                delBtn.className = 'item-btn delete-btn';
+                delBtn.textContent = 'Remove';
+                delBtn.addEventListener('click', () => {
+                    pageData.equationElements.splice(configIdx, 1);
+                    saveStateAndRender();
+                });
+                actions.appendChild(delBtn);
+                domNode.appendChild(actions);
+
+                // Inline edits according to element type
+                if (item.type === 'assumptions') {
+                    // Assumptions header
+                    const h3 = domNode.querySelector('h3');
+                    if (h3) {
+                        makeEditable(h3, (val) => {
+                            // assumptions doesn't store header custom string in layout schema, keeps "Assumptions"
+                            saveStateAndRender();
+                        });
+                    }
+
+                    // List elements
+                    const lis = domNode.querySelectorAll('li');
+                    lis.forEach((li, listIdx) => {
+                        li.classList.add('editable-target', 'editor-item-wrapper');
+                        li.setAttribute('data-raw-value', item.content[listIdx]);
+                        makeEditable(li, (val) => {
+                            item.content[listIdx] = val;
+                            saveStateAndRender();
+                        });
+
+                        // Hover actions for delete assumption item
+                        const act = document.createElement('div');
+                        act.className = 'editor-item-actions';
+                        const del = document.createElement('button');
+                        del.className = 'item-btn delete-btn';
+                        del.textContent = '×';
+                        del.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            item.content.splice(listIdx, 1);
+                            if (item.content.length === 0) {
+                                pageData.equationElements.splice(configIdx, 1);
+                            }
+                            saveStateAndRender();
+                        });
+                        act.appendChild(del);
+                        li.appendChild(act);
+                    });
+
+                    // Single assumption case (p tag instead of ul)
+                    const p = domNode.querySelector('p');
+                    if (p) {
+                        p.classList.add('editable-target', 'editor-item-wrapper');
+                        p.setAttribute('data-raw-value', item.content[0]);
+                        makeEditable(p, (val) => {
+                            item.content[0] = val;
+                            saveStateAndRender();
+                        });
+
+                        // Hover actions for delete assumption
+                        const act = document.createElement('div');
+                        act.className = 'editor-item-actions';
+                        const del = document.createElement('button');
+                        del.className = 'item-btn delete-btn';
+                        del.textContent = '×';
+                        del.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            pageData.equationElements.splice(configIdx, 1);
+                            saveStateAndRender();
+                        });
+                        act.appendChild(del);
+                        p.appendChild(act);
+                    }
+
+                    // Add inline Hover plus divider between assumptions
+                    const ul = domNode.querySelector('ul') || domNode;
+                    const items = Array.from(ul.children).filter(c => c.tagName === 'LI');
+                    
+                    // Below each assumption
+                    items.forEach((itemEl, listIdx) => {
+                        const div = document.createElement('div');
+                        div.className = 'plus-divider';
+                        div.innerHTML = '<button class="plus-btn">+</button>';
+                        div.addEventListener('click', () => {
+                            item.content.splice(listIdx + 1, 0, 'New Assumption');
+                            saveStateAndRender();
+                        });
+                        itemEl.after(div);
+                    });
+
+                    // Top divider inside assumptions card to add assumption at index 0
+                    if (items.length > 0) {
+                        const topDiv = document.createElement('div');
+                        topDiv.className = 'plus-divider';
+                        topDiv.innerHTML = '<button class="plus-btn">+</button>';
+                        topDiv.addEventListener('click', () => {
+                            item.content.unshift('New Assumption');
+                            saveStateAndRender();
+                        });
+                        ul.insertBefore(topDiv, items[0]);
+                    }
+                } else if (item.type === 'equations') {
+                    // Equations card element contains header (h3), notes, and equations (.eqbig)
+                    // Let's find eqbig nodes
+                    const eqbigs = domNode.parentElement.querySelectorAll('.eqbig');
+                    // We must find children rendered under equations element
+                    // For safety, let's decorate the whole equationElements layout manually inside renderContent
+                    // but wait! Since we are using standard renderer, let's walk through siblings
+                    // If we just attach our clicks to .eqbig blocks:
+                    
+                } else if (item.type === 'symbols') {
+                    // Symbol lists
+                    const lis = domNode.querySelectorAll('li');
+                    lis.forEach((li, listIdx) => {
+                        li.classList.add('editor-item-wrapper');
+                        
+                        // Edit item
+                        const itemAct = document.createElement('div');
+                        itemAct.className = 'editor-item-actions';
+                        
+                        const symEditBtn = document.createElement('button');
+                        symEditBtn.className = 'item-btn';
+                        symEditBtn.textContent = 'Edit';
+                        symEditBtn.addEventListener('click', () => {
+                            openSymbolModal(item.content[listIdx], configIdx, listIdx);
+                        });
+                        
+                        const symDelBtn = document.createElement('button');
+                        symDelBtn.className = 'item-btn delete-btn';
+                        symDelBtn.textContent = '×';
+                        symDelBtn.addEventListener('click', () => {
+                            item.content.splice(listIdx, 1);
+                            saveStateAndRender();
+                        });
+                        
+                        itemAct.appendChild(symEditBtn);
+                        itemAct.appendChild(symDelBtn);
+                        li.appendChild(itemAct);
+                    });
+
+                    // Symbols list hover plus divider
+                    const ul = domNode.querySelector('ul');
+                    if (ul) {
+                        const symbolLis = Array.from(ul.children);
+                        symbolLis.forEach((liEl, listIdx) => {
+                            const div = document.createElement('div');
+                            div.className = 'plus-divider';
+                            div.innerHTML = '<button class="plus-btn">+</button>';
+                            div.addEventListener('click', () => {
+                                openSymbolModal({ symbol: '$sym$', definition: 'description' }, configIdx, listIdx + 1);
+                            });
+                            liEl.after(div);
+                        });
+                        
+                        // Top divider
+                        if (symbolLis.length > 0) {
+                            const topDiv = document.createElement('div');
+                            topDiv.className = 'plus-divider';
+                            topDiv.innerHTML = '<button class="plus-btn">+</button>';
+                            topDiv.addEventListener('click', () => {
+                                openSymbolModal({ symbol: '$sym$', definition: 'description' }, configIdx, 0);
+                            });
+                            ul.insertBefore(topDiv, symbolLis[0]);
+                        }
+                    }
+                }
+                
+                domIdx++;
+            });
+
+            // Decorate Equations (.eqbig text nodes and single quote text nodes)
+            // Let's find all rendered .eqbig divs inside equation-container
+            const eqDivs = eqCardDiv.querySelectorAll('.eqbig');
+            eqDivs.forEach(eqDiv => {
+                // Find matching text in pageData equations content
+                const rawTex = findEquationConfigText(eqDiv.textContent);
+                if (rawTex) {
+                    eqDiv.classList.add('editable-target');
+                    eqDiv.setAttribute('data-raw-value', rawTex.text);
+                    makeEditable(eqDiv, (newTex) => {
+                        const eqBlock = pageData.equationElements[rawTex.blockIdx];
+                        eqBlock.content[rawTex.itemIdx] = newTex;
+                        saveStateAndRender();
+                    });
+                }
+            });
+
+            // Notes / quotes explanatory strings between equations
+            const noteDivs = eqCardDiv.querySelectorAll('.note:not(:has(ul)):not(:has(h3))');
+            noteDivs.forEach(noteDiv => {
+                // Only target note paragraphs representing inline quotes e.g. 'where'
+                const textContent = noteDiv.textContent.trim();
+                const matchQuote = findExplanatoryConfigQuote(textContent);
+                if (matchQuote) {
+                    noteDiv.classList.add('editable-target');
+                    noteDiv.setAttribute('data-raw-value', matchQuote.rawVal);
+                    makeEditable(noteDiv, (newText) => {
+                        const eqBlock = pageData.equationElements[matchQuote.blockIdx];
+                        eqBlock.content[matchQuote.itemIdx] = `'${newText}'`;
+                        saveStateAndRender();
+                    });
+                }
+            });
+
+            // Plus Dividers between card block sections (Headers, Equations card blocks)
+            const cardRootChildren = Array.from(eqCardDiv.children);
+            cardRootChildren.forEach((childNode, nodeIdx) => {
+                if (childNode.classList.contains('plus-divider') || childNode.classList.contains('assumptions-placeholder')) return;
+
+                const div = document.createElement('div');
+                div.className = 'plus-divider';
+                div.innerHTML = '<button class="plus-btn">+</button>';
+                
+                div.addEventListener('click', () => {
+                    // Bring up modal or option to add equations / symbols
+                    // In equations block, hover below equations adds another equation
+                    const blockIdx = getEquationBlockIndexFromNode(childNode);
+                    if (blockIdx !== null) {
+                        const block = pageData.equationElements[blockIdx];
+                        if (block && block.type === 'equations') {
+                            // Show LaTeX editor to append new equation
+                            openLatexModal('', (latex) => {
+                                block.content.push(latex);
+                                saveStateAndRender();
+                            });
+                        } else if (block && block.type === 'symbols') {
+                            // Show Symbol modal to append
+                            openSymbolModal({ symbol: '$sym$', definition: 'definition' }, blockIdx, block.content.length);
+                        }
+                    }
+                });
+                
+                childNode.after(div);
+            });
+
+        }
+
+        // --- 3. Inputs & Controls Card ---
+        // Inputs list controls decoration
+        const controlsContainer = document.getElementById('controls');
+        if (controlsContainer) {
+            const inputsList = pageData.inputOutput.inputs || [];
+            
+            if (inputsList.length === 0) {
+                // Empty controls placeholder
+                const emptyCtrl = document.createElement('div');
+                emptyCtrl.className = 'assumptions-placeholder';
+                emptyCtrl.innerHTML = '<strong>+ Add Interactive Slider/Dropdown Control</strong>';
+                emptyCtrl.addEventListener('click', () => {
+                    openInputModal({ type: 'slider', id: 'new-variable', text: 'Variable, $x$', min: 0, max: 10, step: 1, initialValue: 5 }, 0);
+                });
+                controlsContainer.appendChild(emptyCtrl);
+            } else {
+                // Wrap each input wrapper inside a flex item container along with its top plus-divider
+                inputsList.forEach((input, inputIdx) => {
+                    const wrapper = document.getElementById(`wrapper_input_${input.id}`);
+                    if (wrapper) {
+                        const itemContainer = document.createElement('div');
+                        itemContainer.className = 'control-editor-item-container';
+                        itemContainer.style.cssText = "display: flex; flex-direction: column; width: 100%; position: relative;";
+                        
+                        // Create top plus divider for this input element
+                        const div = document.createElement('div');
+                        div.className = 'plus-divider';
+                        div.innerHTML = '<button class="plus-btn">+</button>';
+                        div.addEventListener('click', () => {
+                            openInputModal({ type: 'slider', id: 'new-variable', text: 'Variable, $x$', min: 0, max: 10, step: 1, initialValue: 5 }, inputIdx);
+                        });
+                        itemContainer.appendChild(div);
+                        
+                        // Move the wrapper inside the item container
+                        wrapper.parentNode.insertBefore(itemContainer, wrapper);
+                        itemContainer.appendChild(wrapper);
+                        
+                        // Add action controls
+                        wrapper.classList.add('editor-item-wrapper');
+                        
+                        const actions = document.createElement('div');
+                        actions.className = 'editor-item-actions';
+                        
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'item-btn';
+                        editBtn.textContent = 'Settings';
+                        editBtn.addEventListener('click', () => {
+                            openInputModal(input, inputIdx);
+                        });
+                        
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'item-btn delete-btn';
+                        delBtn.textContent = '×';
+                        delBtn.addEventListener('click', () => {
+                            pageData.inputOutput.inputs.splice(inputIdx, 1);
+                            saveStateAndRender();
+                        });
+                        
+                        actions.appendChild(editBtn);
+                        actions.appendChild(delBtn);
+                        wrapper.appendChild(actions);
+                    }
+                });
+
+                // Bottom-most input divider
+                const bottomDiv = document.createElement('div');
+                bottomDiv.className = 'plus-divider';
+                bottomDiv.innerHTML = '<button class="plus-btn">+</button>';
+                bottomDiv.addEventListener('click', () => {
+                    openInputModal({ type: 'slider', id: 'new-variable', text: 'Variable, $x$', min: 0, max: 10, step: 1, initialValue: 5 }, inputsList.length);
+                });
+                controlsContainer.appendChild(bottomDiv);
+            }
+        }
+
+        // Fixed Inputs decoration
+        const fixedContainer = document.getElementById('fixed-inputs');
+        if (fixedContainer) {
+            // Remove any existing external fixed plus-divider
+            const prevDivider = document.getElementById('fixed-inputs-plus-divider');
+            if (prevDivider) prevDivider.remove();
+            
+            const fixedInputs = pageData.inputOutput.fixedInputs || [];
+            fixedContainer.innerHTML = '';
+            
+            if (fixedInputs.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'assumptions-placeholder';
+                placeholder.innerHTML = '<strong>+ Add Constant / Fixed Input</strong>';
+                placeholder.addEventListener('click', () => {
+                    openFixedInputModal({ id: 'constant', text: 'Constant, $c$', value: 10, type: 'value' }, 0);
+                });
+                fixedContainer.appendChild(placeholder);
+                fixedContainer.classList.remove('hidden'); // make sure it's visible in editor
+            } else {
+                fixedContainer.classList.remove('hidden');
+                fixedInputs.forEach((fixed, fIdx) => {
+                    const container = document.createElement('div');
+                    container.className = 'value-container editor-item-wrapper';
+                    
+                    const lab = document.createElement('div');
+                    lab.className = 'lab';
+                    lab.innerHTML = parseText(fixed.text);
+                    container.appendChild(lab);
+                    
+                    const val = document.createElement('div');
+                    val.className = 'val';
+                    val.textContent = fixed.value;
+                    container.appendChild(val);
+                    
+                    // Badge controls
+                    const actions = document.createElement('div');
+                    actions.className = 'editor-item-actions';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'item-btn';
+                    editBtn.textContent = 'Settings';
+                    editBtn.addEventListener('click', () => {
+                        openFixedInputModal(fixed, fIdx);
+                    });
+                    
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'item-btn delete-btn';
+                    delBtn.textContent = '×';
+                    delBtn.addEventListener('click', () => {
+                        pageData.inputOutput.fixedInputs.splice(fIdx, 1);
+                        saveStateAndRender();
+                    });
+                    
+                    actions.appendChild(editBtn);
+                    actions.appendChild(delBtn);
+                    container.appendChild(actions);
+
+                    fixedContainer.appendChild(container);
+                });
+
+                // Create exactly ONE plus divider and insert it BEFORE the grid container in the DOM
+                const topD = document.createElement('div');
+                topD.id = 'fixed-inputs-plus-divider';
+                topD.className = 'plus-divider';
+                topD.innerHTML = '<button class="plus-btn">+</button>';
+                topD.addEventListener('click', () => {
+                    openFixedInputModal({ id: 'const-c', text: 'Constant $c$', value: 10, type: 'value' }, fixedInputs.length);
+                });
+                fixedContainer.parentNode.insertBefore(topD, fixedContainer);
+            }
+        }
+
+        // Inputs header plus button removed
+
+        // --- 4. Outputs Card ---
+        const outputsContainer = document.getElementById('outputs');
+        if (outputsContainer) {
+            const outputsList = pageData.inputOutput.outputs || [];
+            
+            // Target outputs list children
+            outputsList.forEach((output, outIdx) => {
+                // Outputs are rendered inside value-containers
+                const outputEl = document.getElementById(`value_${output.id}`)?.closest('.value-container');
+                if (outputEl) {
+                    outputEl.classList.add('editor-item-wrapper');
+                    
+                    const actions = document.createElement('div');
+                    actions.className = 'editor-item-actions';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'item-btn';
+                    editBtn.textContent = 'Settings';
+                    editBtn.addEventListener('click', () => {
+                        openOutputModal(output, outIdx);
+                    });
+                    
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'item-btn delete-btn';
+                    delBtn.textContent = '×';
+                    delBtn.addEventListener('click', () => {
+                        pageData.inputOutput.outputs.splice(outIdx, 1);
+                        saveStateAndRender();
+                    });
+                    
+                    actions.appendChild(editBtn);
+                    actions.appendChild(delBtn);
+                    outputEl.appendChild(actions);
+                }
+            });
+
+            // Plus Dividers for outputs
+            const outChildren = Array.from(outputsContainer.children);
+            outChildren.forEach((child, outIdx) => {
+                const div = document.createElement('div');
+                div.className = 'plus-divider';
+                div.innerHTML = '<button class="plus-btn">+</button>';
+                div.addEventListener('click', () => {
+                    openOutputModal({ id: 'out-result', text: 'Result, $Y$', type: 'calculation', value: 'x * 2' }, outIdx + 1);
+                });
+                child.after(div);
+            });
+
+            // Top most output divider
+            if (outChildren.length > 0) {
+                const topDiv = document.createElement('div');
+                topDiv.className = 'plus-divider';
+                topDiv.innerHTML = '<button class="plus-btn">+</button>';
+                topDiv.addEventListener('click', () => {
+                    openOutputModal({ id: 'out-result', text: 'Result, $Y$', type: 'calculation', value: 'x * 2' }, 0);
+                });
+                outputsContainer.insertBefore(topDiv, outChildren[0]);
+            } else {
+                const emptyOut = document.createElement('div');
+                emptyOut.className = 'assumptions-placeholder';
+                emptyOut.innerHTML = '<strong>+ Add Computed Output Expression</strong>';
+                emptyOut.addEventListener('click', () => {
+                    openOutputModal({ id: 'out-result', text: 'Result, $Y$', type: 'calculation', value: 'x * 2' }, 0);
+                });
+                outputsContainer.appendChild(emptyOut);
+            }
+        }
+
+        // --- 5. Plots Card ---
+        const plotNote = document.getElementById('plot-note');
+        const emptyMsg = document.getElementById('plot-empty-message');
+        const plotSvg = document.getElementById('plot');
+        const plotDeleteBtn = document.getElementById('btn-plot-delete');
+        
+        if (!pageData.plots || !pageData.plots.settings || pageData.plots.settings.length === 0) {
+            if (emptyMsg) emptyMsg.classList.remove('hidden');
+            if (plotSvg) plotSvg.classList.add('hidden');
+            if (plotNote) plotNote.classList.add('hidden');
+            if (plotDeleteBtn) plotDeleteBtn.style.display = 'none';
+        } else {
+            if (emptyMsg) emptyMsg.classList.add('hidden');
+            if (plotSvg) plotSvg.classList.remove('hidden');
+            if (plotNote) {
+                plotNote.classList.remove('hidden');
+                plotNote.setAttribute('data-raw-value', pageData.plots.text || '');
+                makeEditable(plotNote, (newNote) => {
+                    pageData.plots.text = newNote;
+                    saveStateAndRender();
+                }, true); // support multiline note
+            }
+            if (plotDeleteBtn) plotDeleteBtn.style.display = 'inline-flex';
+        }
+    }
+
+    // Helper searches to map DOM elements to configuration indexes
+    function findEquationConfigText(renderedText) {
+        // Strip MathJax wrappers and whitespace to look up in equationElements config content
+        const cleanRendered = renderedText.replace(/\\\(|\\\)|\\displaystyle|\s/g, '');
+        
+        for (let bIdx = 0; bIdx < pageData.equationElements.length; bIdx++) {
+            const block = pageData.equationElements[bIdx];
+            if (block.type === 'equations') {
+                for (let iIdx = 0; iIdx < block.content.length; iIdx++) {
+                    const cleanItem = block.content[iIdx].replace(/\\\\/g, '\\').replace(/\s/g, '');
+                    if (cleanItem && cleanItem === cleanRendered) {
+                        return { text: block.content[iIdx], blockIdx: bIdx, itemIdx: iIdx };
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    function findExplanatoryConfigQuote(text) {
+        for (let bIdx = 0; bIdx < pageData.equationElements.length; bIdx++) {
+            const block = pageData.equationElements[bIdx];
+            if (block.type === 'equations') {
+                for (let iIdx = 0; iIdx < block.content.length; iIdx++) {
+                    const item = block.content[iIdx];
+                    if (item.startsWith("'") && item.endsWith("'")) {
+                        const clean = item.slice(1, -1);
+                        if (clean.trim() === text) {
+                            return { rawVal: clean, blockIdx: bIdx, itemIdx: iIdx };
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    function getEquationBlockIndexFromNode(domNode) {
+        // Walk through the equation element divs rendered in Card to find match
+        const container = document.getElementById('equation-container').firstElementChild;
+        if (!container) return null;
+        
+        const children = Array.from(container.children).filter(c => !c.classList.contains('plus-divider') && !c.classList.contains('assumptions-placeholder'));
+        const idx = children.indexOf(domNode);
+        
+        if (idx !== -1) {
+            // Check if assumptions was rendered
+            const assumptionsIndex = pageData.equationElements.findIndex(el => el.type === 'assumptions');
+            if (assumptionsIndex === -1) {
+                // If assumptions does not exist, the DOM index matches pageData index
+                return idx;
+            } else {
+                return idx;
+            }
+        }
+        return null;
+    }
+
+    // Modal helpers
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    // Close modal function
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    // Close on clicking backdrop overlay
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closeModal(overlay.id);
+            }
+        });
+        overlay.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', () => closeModal(overlay.id));
+        });
+    });
+
+    // Modal specific setup actions
+    
+    // 1. LaTeX Editor Modal
+    function openLatexModal(currentVal, onSave) {
+        const input = document.getElementById('latex-editor-input');
+        const preview = document.getElementById('latex-editor-preview');
+        
+        input.value = currentVal;
+        preview.textContent = `\\( \\displaystyle ${currentVal} \\)`;
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise([preview]);
+        }
+        
+        // Setup change live preview rendering
+        input.oninput = () => {
+            preview.textContent = `\\( \\displaystyle ${input.value} \\)`;
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([preview]).catch(e => {});
+            }
+        };
+
+        document.getElementById('btn-latex-save').onclick = () => {
+            onSave(input.value.trim());
+            closeModal('latex-editor-modal');
+        };
+        document.getElementById('btn-latex-cancel').onclick = () => closeModal('latex-editor-modal');
+
+        openModal('latex-editor-modal');
+    }
+
+    // 2. Symbol Config Modal
+    function openSymbolModal(symbolObj, configBlockIdx, insertIdx) {
+        document.getElementById('symbol-input-latex').value = symbolObj.symbol || '';
+        document.getElementById('symbol-input-def').value = symbolObj.definition || '';
+
+        document.getElementById('btn-symbol-save').onclick = () => {
+            const sym = document.getElementById('symbol-input-latex').value.trim();
+            const def = document.getElementById('symbol-input-def').value.trim();
+            
+            const block = pageData.equationElements[configBlockIdx];
+            if (block.type === 'symbols') {
+                if (insertIdx === block.content.length) {
+                    block.content.push({ symbol: sym, definition: def });
+                } else {
+                    block.content.splice(insertIdx, 0, { symbol: sym, definition: def });
+                }
+            }
+            closeModal('symbol-editor-modal');
+            saveStateAndRender();
+        };
+        document.getElementById('btn-symbol-cancel').onclick = () => closeModal('symbol-editor-modal');
+        openModal('symbol-editor-modal');
+    }
+
+    // 3. Inputs Control Modal
+    function openInputModal(inputObj, insertIdx) {
+        const modal = document.getElementById('input-editor-modal');
+        const selectType = document.getElementById('input-type');
+        const inputId = document.getElementById('input-id');
+        const inputText = document.getElementById('input-text');
+        
+        // Sub-panels
+        const sliderPanel = document.getElementById('input-slider-settings');
+        const dropdownPanel = document.getElementById('input-dropdown-settings');
+
+        // Populate fields
+        selectType.value = inputObj.type || 'slider';
+        inputId.value = inputObj.id || '';
+        inputText.value = inputObj.text || '';
+        
+        document.getElementById('input-min').value = inputObj.min !== undefined ? inputObj.min : 0;
+        document.getElementById('input-max').value = inputObj.max !== undefined ? inputObj.max : 10;
+        document.getElementById('input-step').value = inputObj.step !== undefined ? inputObj.step : 0.1;
+        document.getElementById('input-initial').value = inputObj.initialValue !== undefined ? inputObj.initialValue : 1;
+        document.getElementById('input-notation').value = inputObj.notation || 'standard';
+        
+        document.getElementById('input-choice-initial-idx').value = inputObj.initialChoiceIndex || 0;
+        document.getElementById('input-notes').value = inputObj.notes || '';
+
+        // choices container builder
+        const choicesContainer = document.getElementById('dropdown-choices-container');
+        choicesContainer.innerHTML = '';
+        const choices = inputObj.choices || [{ text: 'Water', value: 'water' }, { text: 'Air', value: 'air' }];
+        
+        function renderChoiceRows(list) {
+            choicesContainer.innerHTML = '';
+            list.forEach((choice, cIdx) => {
+                const row = document.createElement('div');
+                row.className = 'choice-row';
+                row.innerHTML = `
+                    <input type="text" placeholder="Text Label" class="choice-text" value="${choice.text}">
+                    <input type="text" placeholder="Value" class="choice-val" value="${choice.value}">
+                    <button class="item-btn delete-btn" onclick="this.parentNode.remove()">×</button>
+                `;
+                choicesContainer.appendChild(row);
+            });
+        }
+        renderChoiceRows(choices);
+
+        document.getElementById('btn-add-dropdown-choice').onclick = () => {
+            const row = document.createElement('div');
+            row.className = 'choice-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Text Label" class="choice-text" value="New Choice">
+                <input type="text" placeholder="Value" class="choice-val" value="value">
+                <button class="item-btn delete-btn" onclick="this.parentNode.remove()">×</button>
+            `;
+            choicesContainer.appendChild(row);
+        };
+
+        // Select changes visibility
+        function togglePanels() {
+            if (selectType.value === 'slider' || selectType.value === 'number') {
+                sliderPanel.classList.remove('hidden');
+                dropdownPanel.classList.add('hidden');
+            } else if (selectType.value === 'dropdown') {
+                sliderPanel.classList.add('hidden');
+                dropdownPanel.classList.remove('hidden');
+            } else {
+                // slider-dropdown syncs both
+                sliderPanel.classList.remove('hidden');
+                dropdownPanel.classList.remove('hidden');
+            }
+        }
+        selectType.onchange = togglePanels;
+        togglePanels();
+
+        document.getElementById('btn-input-save').onclick = () => {
+            const idVal = inputId.value.trim();
+            const textVal = inputText.value.trim();
+            const typeVal = selectType.value;
+            
+            if (!idVal) {
+                alert("Variable ID is required.");
+                return;
+            }
+
+            const updatedInput = {
+                type: typeVal,
+                id: idVal,
+                text: textVal
+            };
+
+            if (typeVal === 'slider' || typeVal === 'number' || typeVal === 'slider-dropdown') {
+                const minVal = document.getElementById('input-min').value.trim();
+                const maxVal = document.getElementById('input-max').value.trim();
+                const stepVal = document.getElementById('input-step').value.trim();
+                
+                updatedInput.min = isNaN(minVal) ? minVal : parseFloat(minVal);
+                updatedInput.max = isNaN(maxVal) ? maxVal : parseFloat(maxVal);
+                updatedInput.step = isNaN(stepVal) ? stepVal : parseFloat(stepVal);
+                updatedInput.initialValue = parseFloat(document.getElementById('input-initial').value);
+                updatedInput.notation = document.getElementById('input-notation').value;
+            }
+
+            if (typeVal === 'dropdown' || typeVal === 'slider-dropdown') {
+                // Collect choices
+                const choiceRows = choicesContainer.querySelectorAll('.choice-row');
+                const collectedChoices = [];
+                choiceRows.forEach(row => {
+                    const text = row.querySelector('.choice-text').value.trim();
+                    const value = row.querySelector('.choice-val').value.trim();
+                    collectedChoices.push({ text, value: isNaN(value) ? value : parseFloat(value) });
+                });
+                
+                updatedInput.choices = collectedChoices;
+                updatedInput.initialChoiceIndex = parseInt(document.getElementById('input-choice-initial-idx').value) || 0;
+                
+                const noteVal = document.getElementById('input-notes').value.trim();
+                if (noteVal) updatedInput.notes = noteVal;
+            }
+
+            // Save or append
+            if (!pageData.inputOutput.inputs) pageData.inputOutput.inputs = [];
+            const index = pageData.inputOutput.inputs.findIndex(i => i.id === inputObj.id);
+            if (index !== -1 && inputObj.id) {
+                pageData.inputOutput.inputs[index] = updatedInput;
+            } else {
+                pageData.inputOutput.inputs.splice(insertIdx, 0, updatedInput);
+            }
+
+            closeModal('input-editor-modal');
+            saveStateAndRender();
+        };
+
+        document.getElementById('btn-input-cancel').onclick = () => closeModal('input-editor-modal');
+        openModal('input-editor-modal');
+    }
+
+    // 4. Constant / Fixed Inputs Modal
+    function openFixedInputModal(fixedObj, insertIdx) {
+        document.getElementById('fixed-input-id').value = fixedObj.id || '';
+        document.getElementById('fixed-input-text').value = fixedObj.text || '';
+        document.getElementById('fixed-input-val').value = fixedObj.value !== undefined ? fixedObj.value : '';
+        document.getElementById('fixed-input-type').value = fixedObj.type || 'value';
+
+        document.getElementById('btn-fixed-save').onclick = () => {
+            const idVal = document.getElementById('fixed-input-id').value.trim();
+            const textVal = document.getElementById('fixed-input-text').value.trim();
+            const rawVal = document.getElementById('fixed-input-val').value.trim();
+            const typeVal = document.getElementById('fixed-input-type').value;
+
+            if (!idVal || !rawVal) {
+                alert("ID and Value formulas are required.");
+                return;
+            }
+
+            const updatedFixed = {
+                id: idVal,
+                text: textVal,
+                value: isNaN(rawVal) ? rawVal : parseFloat(rawVal)
+            };
+            if (typeVal === 'calculation') {
+                updatedFixed.type = 'calculation';
+            }
+
+            if (!pageData.inputOutput.fixedInputs) pageData.inputOutput.fixedInputs = [];
+            const index = pageData.inputOutput.fixedInputs.findIndex(f => f.id === fixedObj.id);
+            if (index !== -1 && fixedObj.id) {
+                pageData.inputOutput.fixedInputs[index] = updatedFixed;
+            } else {
+                pageData.inputOutput.fixedInputs.splice(insertIdx, 0, updatedFixed);
+            }
+
+            closeModal('fixed-input-editor-modal');
+            saveStateAndRender();
+        };
+
+        document.getElementById('btn-fixed-cancel').onclick = () => closeModal('fixed-input-editor-modal');
+        openModal('fixed-input-editor-modal');
+    }
+
+    // Fixed Input vs Interactive Option helper chooser
+    document.getElementById('choice-btn-interactive').onclick = () => {
+        closeModal('fixed-input-choice-modal');
+        openInputModal({ type: 'slider', id: 'new-variable', text: 'Variable, $x$', min: 0, max: 10, step: 1, initialValue: 5 }, 0);
+    };
+    document.getElementById('choice-btn-fixed').onclick = () => {
+        closeModal('fixed-input-choice-modal');
+        openFixedInputModal({ id: 'constant', text: 'Gravity, $g$', value: 9.81 }, 0);
+    };
+
+    // 5. Outputs Modal Config
+    function openOutputModal(outputObj, insertIdx) {
+        document.getElementById('output-id').value = outputObj.id || '';
+        document.getElementById('output-text').value = outputObj.text || '';
+        
+        const typeSelect = document.getElementById('output-type');
+        typeSelect.value = outputObj.type || 'calculation';
+
+        document.getElementById('output-val-formula').value = outputObj.type === 'calculation' ? outputObj.value : '';
+        document.getElementById('output-map-key').value = outputObj.type === 'map' ? outputObj.key : '';
+        document.getElementById('output-map-vals').value = outputObj.type === 'map' && Array.isArray(outputObj.value) ? outputObj.value.join(', ') : '';
+        document.getElementById('output-decimals').value = outputObj.decimals || '';
+
+        const calcSettings = document.getElementById('output-calc-settings');
+        const mapSettings = document.getElementById('output-map-settings');
+
+        function toggleOutPanel() {
+            if (typeSelect.value === 'calculation') {
+                calcSettings.classList.remove('hidden');
+                mapSettings.classList.add('hidden');
+            } else {
+                calcSettings.classList.add('hidden');
+                mapSettings.classList.remove('hidden');
+            }
+        }
+        typeSelect.onchange = toggleOutPanel;
+        toggleOutPanel();
+
+        document.getElementById('btn-output-save').onclick = () => {
+            const idVal = document.getElementById('output-id').value.trim();
+            const textVal = document.getElementById('output-text').value.trim();
+            const outType = typeSelect.value;
+            const decVal = document.getElementById('output-decimals').value.trim();
+
+            if (!idVal) {
+                alert("Output ID is required.");
+                return;
+            }
+
+            const updatedOutput = {
+                id: idVal,
+                text: textVal,
+                type: outType
+            };
+
+            if (outType === 'calculation') {
+                updatedOutput.value = document.getElementById('output-val-formula').value.trim();
+            } else {
+                updatedOutput.key = document.getElementById('output-map-key').value.trim();
+                const splitVal = document.getElementById('output-map-vals').value.split(',');
+                updatedOutput.value = splitVal.map(v => isNaN(v.trim()) ? v.trim() : parseFloat(v.trim()));
+            }
+
+            if (decVal) {
+                updatedOutput.decimals = isNaN(decVal) ? decVal : parseInt(decVal);
+            }
+
+            if (!pageData.inputOutput.outputs) pageData.inputOutput.outputs = [];
+            const index = pageData.inputOutput.outputs.findIndex(o => o.id === outputObj.id);
+            if (index !== -1 && outputObj.id) {
+                pageData.inputOutput.outputs[index] = updatedOutput;
+            } else {
+                pageData.inputOutput.outputs.splice(insertIdx, 0, updatedOutput);
+            }
+
+            closeModal('output-editor-modal');
+            saveStateAndRender();
+        };
+
+        document.getElementById('btn-output-cancel').onclick = () => closeModal('output-editor-modal');
+        openModal('output-editor-modal');
+    }
+
+    // 6. Plots Modal Settings
+    function openPlotsModal() {
+        if (!pageData.plots) {
+            pageData.plots = { settings: [], aspectRatio: 1.5, text: 'Interactive plot description.' };
+        }
+        const plotSet = pageData.plots.settings && pageData.plots.settings[0] ? pageData.plots.settings[0] : {
+            x: '', y: '', xLabel: '', yLabel: '', xMin: 0, xMax: 10, yMin: 0, yMax: 100, yTickInterval: 10
+        };
+
+        // Populate variable dropdown choices
+        const selectX = document.getElementById('plot-x-var');
+        const selectY = document.getElementById('plot-y-var');
+        selectX.innerHTML = '';
+        selectY.innerHTML = '';
+
+        // Add inputs list to choice
+        const inputs = pageData.inputOutput.inputs || [];
+        const outputs = pageData.inputOutput.outputs || [];
+        const fixed = pageData.inputOutput.fixedInputs || [];
+
+        inputs.forEach(input => {
+            const opt = document.createElement('option');
+            opt.value = input.id; opt.textContent = `${input.id} (Input)`;
+            selectX.appendChild(opt);
+            selectY.appendChild(opt.cloneNode(true));
+        });
+
+        outputs.forEach(output => {
+            const opt = document.createElement('option');
+            opt.value = output.id; opt.textContent = `${output.id} (Output)`;
+            selectY.appendChild(opt);
+        });
+
+        fixed.forEach(fixedIn => {
+            const opt = document.createElement('option');
+            opt.value = fixedIn.id; opt.textContent = `${fixedIn.id} (Fixed)`;
+            selectY.appendChild(opt);
+        });
+
+        // Set current selections
+        selectX.value = plotSet.x;
+        selectY.value = plotSet.y;
+
+        document.getElementById('plot-x-label').value = plotSet.xLabel || '';
+        document.getElementById('plot-y-label').value = plotSet.yLabel || '';
+        document.getElementById('plot-x-min').value = plotSet.xMin !== undefined ? plotSet.xMin : 0;
+        document.getElementById('plot-x-max').value = plotSet.xMax !== undefined ? plotSet.xMax : 10;
+        document.getElementById('plot-y-min').value = plotSet.yMin !== undefined ? plotSet.yMin : 0;
+        
+        // Handle array representation values
+        document.getElementById('plot-y-max').value = Array.isArray(plotSet.yMax) ? plotSet.yMax.join(', ') : (plotSet.yMax !== undefined ? plotSet.yMax : 100);
+        document.getElementById('plot-y-tick').value = Array.isArray(plotSet.yTickInterval) ? plotSet.yTickInterval.join(', ') : (plotSet.yTickInterval !== undefined ? plotSet.yTickInterval : 10);
+        document.getElementById('plot-y-key').value = plotSet.key || '';
+        
+        document.getElementById('plot-x-log').checked = !!plotSet.xLog;
+        document.getElementById('plot-y-log').checked = !!plotSet.yLog;
+        document.getElementById('plot-aspect-ratio').value = pageData.plots.aspectRatio || 1.5;
+
+        document.getElementById('btn-plot-save').onclick = () => {
+            const xVar = selectX.value;
+            const yVar = selectY.value;
+            
+            if (!xVar || !yVar) {
+                alert("Plot X and Y variables are required.");
+                return;
+            }
+
+            // Create settings settings array block
+            const settingsObj = {
+                x: xVar,
+                y: yVar,
+                xLabel: document.getElementById('plot-x-label').value.trim(),
+                yLabel: document.getElementById('plot-y-label').value.trim()
+            };
+
+            const xMinVal = document.getElementById('plot-x-min').value.trim();
+            const xMaxVal = document.getElementById('plot-x-max').value.trim();
+            settingsObj.xMin = isNaN(xMinVal) ? xMinVal : parseFloat(xMinVal);
+            settingsObj.xMax = isNaN(xMaxVal) ? xMaxVal : parseFloat(xMaxVal);
+
+            settingsObj.yMin = parseFloat(document.getElementById('plot-y-min').value);
+            
+            const yMaxVal = document.getElementById('plot-y-max').value.trim();
+            if (yMaxVal.includes(',')) {
+                settingsObj.yMax = yMaxVal.split(',').map(v => parseFloat(v.trim()));
+            } else {
+                settingsObj.yMax = isNaN(yMaxVal) ? yMaxVal : parseFloat(yMaxVal);
+            }
+
+            const yTickVal = document.getElementById('plot-y-tick').value.trim();
+            if (yTickVal.includes(',')) {
+                settingsObj.yTickInterval = yTickVal.split(',').map(v => parseFloat(v.trim()));
+            } else {
+                settingsObj.yTickInterval = isNaN(yTickVal) ? yTickVal : parseFloat(yTickVal);
+            }
+
+            const keyVal = document.getElementById('plot-y-key').value.trim();
+            if (keyVal) settingsObj.key = keyVal;
+
+            if (document.getElementById('plot-x-log').checked) settingsObj.xLog = true;
+            if (document.getElementById('plot-y-log').checked) settingsObj.yLog = true;
+
+            // Preserve references
+            if (plotSet.reference) settingsObj.reference = plotSet.reference;
+
+            // Set main plots settings
+            pageData.plots.settings = [settingsObj];
+            pageData.plots.aspectRatio = parseFloat(document.getElementById('plot-aspect-ratio').value) || 1.5;
+
+            closeModal('plot-editor-modal');
+            saveStateAndRender();
+        };
+
+        document.getElementById('btn-plot-cancel').onclick = () => closeModal('plot-editor-modal');
+        openModal('plot-editor-modal');
+    }
+    document.getElementById('btn-plot-settings').onclick = openPlotsModal;
+    const pDelBtn = document.getElementById('btn-plot-delete');
+    if (pDelBtn) {
+        pDelBtn.onclick = () => {
+            if (confirm("Are you sure you want to remove the plot?")) {
+                delete pageData.plots;
+                saveStateAndRender();
+            }
+        };
+    }
+
+    // 7. Paths & Schematic settings modal
+    document.getElementById('btn-schematic-settings').onclick = () => {
+        document.getElementById('schematic-path-input').value = pageData.schematic ? pageData.schematic.src : '';
+        document.getElementById('schematic-alt-input').value = pageData.schematic ? pageData.schematic.alt : '';
+
+        document.getElementById('btn-schem-settings-save').onclick = () => {
+            const src = document.getElementById('schematic-path-input').value.trim();
+            const alt = document.getElementById('schematic-alt-input').value.trim();
+            
+            if (src) {
+                pageData.schematic = { src, alt };
+            } else {
+                delete pageData.schematic;
+            }
+            closeModal('schematic-settings-modal');
+            saveStateAndRender();
+        };
+
+        document.getElementById('btn-schem-settings-cancel').onclick = () => closeModal('schematic-settings-modal');
+        openModal('schematic-settings-modal');
+    };
+
+    // Generic Click-to-Edit Function
+    function makeEditable(element, onSave, multiline = false) {
+        element.classList.add('editable-target');
+        element.title = "Click to edit";
+        
+        element.onclick = (e) => {
+            if (e.target.closest('input, textarea, button')) return;
+            e.stopPropagation();
+
+            const rect = element.getBoundingClientRect();
+            const input = document.createElement(multiline ? 'textarea' : 'input');
+            input.value = element.getAttribute('data-raw-value') || element.textContent.trim();
+            input.className = 'edit-inline-input';
+            if (multiline) {
+                input.style.height = Math.max(70, rect.height) + 'px';
+            }
+
+            const parent = element.parentNode;
+            parent.replaceChild(input, element);
+            input.focus();
+
+            let finished = false;
+            function save() {
+                if (finished) return;
+                finished = true;
+                const newVal = input.value.trim();
+                parent.replaceChild(element, input);
+                onSave(newVal);
+            }
+
+            input.onblur = save;
+            input.onkeydown = (ke) => {
+                if (ke.key === 'Enter' && !multiline) {
+                    save();
+                } else if (ke.key === 'Escape') {
+                    finished = true;
+                    parent.replaceChild(element, input);
+                }
+            };
+        };
+    }
+
+    // Drag-and-Drop file schematic image handlers
+    const dropzone = document.getElementById('schem-file-dropzone');
+    const fileInput = document.getElementById('schem-file-input');
+
+    dropzone.onclick = () => fileInput.click();
+
+    dropzone.ondragover = (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+    };
+    dropzone.ondragleave = () => {
+        dropzone.classList.remove('dragover');
+    };
+    dropzone.ondrop = (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleSchematicFile(e.dataTransfer.files[0]);
+        }
+    };
+    fileInput.onchange = () => {
+        if (fileInput.files && fileInput.files[0]) {
+            handleSchematicFile(fileInput.files[0]);
+        }
+    };
+
+    function handleSchematicFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            // Set base64 src inside config for live preview rendering
+            pageData.schematic = {
+                src: dataUrl,
+                alt: file.name
+            };
+            saveStateAndRender();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Templates Restructuring layout switching
+    function applyTemplateLayout(templateName) {
+        activeTemplate = templateName;
+        const workspace = document.getElementById('editor-workspace');
+        
+        // Cards elements
+        const equationsCard = document.getElementById('editor-equations-card');
+        const schematicCard = document.getElementById('editor-schematic-card');
+        const ioCard = document.getElementById('editor-io-card');
+        const plotCard = document.getElementById('editor-plot-card');
+
+        // Reset elements class wrappers
+        equationsCard.className = 'card';
+        schematicCard.className = 'card float';
+        ioCard.className = 'card float';
+        plotCard.className = 'card';
+
+        // Toggle card headers based on active template structure (always show Inputs & Outputs sub-headers)
+
+        // Clear layout workspace
+        workspace.innerHTML = '';
+
+        if (templateName === 'eq_schem_plot-io') {
+            // Layout 1: equations & schematics + plot in left column card, inputs & outputs in right column
+            const leftColCard = document.createElement('div');
+            leftColCard.className = 'card';
+            
+            const eqSchemContainer = document.createElement('div');
+            eqSchemContainer.id = 'eqschem-container';
+            eqSchemContainer.className = pageData.schematic ? 'eq-schem' : '';
+            eqSchemContainer.appendChild(equationsCard);
+            eqSchemContainer.appendChild(schematicCard);
+            
+            leftColCard.appendChild(eqSchemContainer);
+            
+            // plots directly appended to leftColCard (so it merges under same outline border)
+            plotCard.className = ''; // remove card border
+            leftColCard.appendChild(plotCard);
+
+            const mainGrid = document.createElement('section');
+            mainGrid.className = 'grid';
+            mainGrid.appendChild(leftColCard);
+            mainGrid.appendChild(ioCard);
+
+            workspace.appendChild(mainGrid);
+
+        } else if (templateName === 'eq_deriv-schem-io-plot') {
+            // Layout 2: Row 1: equations (left), schematic (right). Row 2: io (left), plot (right)
+            const row1 = document.createElement('section');
+            row1.className = 'grid';
+            row1.appendChild(equationsCard);
+            row1.appendChild(schematicCard);
+
+            const row2 = document.createElement('section');
+            row2.className = 'grid';
+            row2.appendChild(ioCard);
+            row2.appendChild(plotCard);
+
+            workspace.appendChild(row1);
+            workspace.appendChild(row2);
+
+        } else if (templateName === 'eq_deriv-schem-io_wide-plot') {
+            // Layout 3: Row 1: equations (left), schematic (right). Row 2: inputs & outputs (wide). Row 3: plots (wide)
+            const row1 = document.createElement('section');
+            row1.className = 'grid';
+            row1.appendChild(equationsCard);
+            row1.appendChild(schematicCard);
+
+            const row2 = document.createElement('section');
+            ioCard.className = 'card';
+            row2.appendChild(ioCard);
+
+            const row3 = document.createElement('section');
+            row3.appendChild(plotCard);
+
+            workspace.appendChild(row1);
+            workspace.appendChild(row2);
+            workspace.appendChild(row3);
+        }
+
+        // Restructure inputs/outputs columns internal wrapper structure for wide layouts
+        const ioContainer = document.getElementById('io-container-inner');
+        if (templateName === 'eq_deriv-schem-io_wide-plot') {
+            ioContainer.className = 'grid';
+            ioContainer.style.gridTemplateColumns = '1.5fr 1fr';
+        } else {
+            ioContainer.className = '';
+            ioContainer.style.gridTemplateColumns = '';
+        }
+
+        // Re-execute configuration updates and save
+        saveStateAndRender();
+        
+        // Re-setup column resizers
+        setupResizers(templateName);
+    }
+
+    // Bind layout switches clicks
+    document.querySelectorAll('#layout-toggles .toggle-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('#layout-toggles .toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Adjust template config layout grid rows count
+            const tempType = btn.getAttribute('data-template');
+            if (tempType === 'eq_schem_plot-io') {
+                pageData.layout.grid = [{ desktop: "1.2fr 0.8fr", mobile: "100%" }];
+            } else if (tempType === 'eq_deriv-schem-io-plot') {
+                pageData.layout.grid = [
+                    { desktop: "1.2fr 0.8fr", mobile: "100%" },
+                    { desktop: "0.8fr 1.2fr", mobile: "100%" }
+                ];
+            } else {
+                pageData.layout.grid = [
+                    { desktop: "1.2fr 0.8fr", mobile: "100%" }
+                ];
+            }
+
+            applyTemplateLayout(tempType);
+        };
+    });
+
+    // Code serialization and exporting downloads
+    function generateJSConfigString() {
+        // Deep copy pageData to avoid altering working base64 schematic image paths during export
+        const exportObj = deepCopy(pageData);
+        
+        // If image source is a base64 DataURL, clean it up to prevent a massive file export size
+        if (exportObj.schematic && exportObj.schematic.src && exportObj.schematic.src.startsWith('data:')) {
+            exportObj.schematic.src = `../assets/course/topic-schem.png`;
+        }
+
+        const serialized = JSON.stringify(exportObj, null, 4);
+        
+        // Format layout structure with JSDoc headers
+        return `/** @type {PageData} */\nconst pageData = ${serialized};\n`;
+    }
+
+    document.getElementById('btn-export-js').onclick = () => {
+        const jsCode = generateJSConfigString();
+        const codeView = document.getElementById('export-code-view');
+        codeView.value = jsCode;
+        
+        // Set up filename label
+        const titleSlug = pageData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const filename = `${titleSlug || 'topic'}-eq.js`;
+        document.getElementById('export-file-info').textContent = `File ready: ${filename}`;
+
+        // Download trigger
+        document.getElementById('btn-export-download').onclick = () => {
+            const blob = new Blob([jsCode], { type: 'application/javascript;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // Copy button trigger
+        document.getElementById('btn-export-copy').onclick = () => {
+            codeView.select();
+            document.execCommand('copy');
+            alert("Configuration copied to clipboard!");
+        };
+
+        openModal('export-modal');
+    };
+
+    // Load boilerplate setup
+    document.getElementById('btn-load-boilerplate').onclick = () => {
+        if (confirm("Are you sure you want to load default boilerplate? This will overwrite your current workspace.")) {
+            // Load standard boilerplate values
+            const defaultPageData = {
+                "title": "Variable Slope Straight Line Simulator",
+                "layout": {
+                    "grid": [
+                        { "desktop": "1.2fr 0.8fr", "mobile": "100%" },
+                        { "desktop": "0.8fr 1.2fr", "mobile": "100%" }
+                    ]
+                },
+                "equationElements": [
+                    {
+                        "type": "equations",
+                        "content": [
+                            "y = m x + c",
+                            "'where variables are defined as:'"
+                        ]
+                    },
+                    {
+                        "type": "symbols",
+                        "content": [
+                            { "symbol": "$y$", "definition": "dependent variable value" },
+                            { "symbol": "$x$", "definition": "independent axis position" }
+                        ]
+                    }
+                ],
+                "schematic": {
+                    "src": "../assets/me200/sample-schem.png",
+                    "alt": "A visual diagram of the sample concept."
+                },
+                "inputOutput": {
+                    "fixedInputs": [
+                        { "id": "c", "text": "Offset value, $c$", "value": 5 }
+                    ],
+                    "inputs": [
+                        { "type": "slider", "id": "m", "text": "Slope rate, $m$", "min": -5, "max": 5, "initialValue": 1.5, "step": 0.1 },
+                        { "type": "slider", "id": "x", "text": "Position, $x$", "min": 0, "max": 10, "initialValue": 4.0, "step": 0.2 }
+                    ],
+                    "outputs": [
+                        { "id": "y", "text": "Calculated Result, $y$", "type": "calculation", "value": "m * x + c" }
+                    ]
+                },
+                "plots": {
+                    "aspectRatio": 1.5,
+                    "settings": [
+                        {
+                            "x": "x",
+                            "y": "y",
+                            "xLabel": "Axis, $x$",
+                            "yLabel": "Output, $y$",
+                            "xMin": 0,
+                            "xMax": 10,
+                            "yMin": -10,
+                            "yMax": 60,
+                            "yTickInterval": 10
+                        }
+                    ],
+                    "text": "Drag the slider node or coordinates to trace how the output y responds dynamically to slope changes."
+                }
+            };
+            
+            // Apply deepCopy values to global pageData
+            for (let key in defaultPageData) {
+                pageData[key] = defaultPageData[key];
+            }
+            
+            applyTemplateLayout(activeTemplate);
+        }
+    };
+
+    // JS config file upload handler
+    const uploadInput = document.getElementById('upload-js-file-input');
+    if (uploadInput) {
+        document.getElementById('btn-upload-js-file').onclick = () => uploadInput.click();
+        
+        uploadInput.onchange = () => {
+            if (uploadInput.files && uploadInput.files[0]) {
+                const file = uploadInput.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const text = e.target.result;
+                    
+                    // Match object block: pageData = { ... }
+                    const match = text.match(/(?:const|let|var|window\.)?\s*pageData\s*=\s*({[\s\S]*});?\s*$/) ||
+                                  text.match(/pageData\s*=\s*({[\s\S]*})/);
+                    if (match) {
+                        try {
+                            const data = new Function(`return ${match[1]}`)();
+                            
+                            // Overwrite pageData properties
+                            for (let key in pageData) {
+                                delete pageData[key];
+                            }
+                            for (let key in data) {
+                                pageData[key] = data[key];
+                            }
+
+                            // Auto-detect template type
+                            let detectedTemplate = 'eq_schem_plot-io';
+                            if (pageData.layout && pageData.layout.grid) {
+                                if (pageData.layout.grid.length === 2) {
+                                    detectedTemplate = 'eq_deriv-schem-io-plot';
+                                } else if (pageData.layout.grid.length === 1 && pageData.plots && pageData.plots.aspectRatio >= 2.5) {
+                                    detectedTemplate = 'eq_deriv-schem-io_wide-plot';
+                                }
+                            }
+
+                            // Update active switcher buttons states
+                            document.querySelectorAll('#layout-toggles .toggle-btn').forEach(btn => {
+                                btn.classList.remove('active');
+                                if (btn.getAttribute('data-template') === detectedTemplate) {
+                                    btn.classList.add('active');
+                                }
+                            });
+
+                            applyTemplateLayout(detectedTemplate);
+                            alert("Configuration file uploaded and loaded successfully!");
+                        } catch (err) {
+                            alert("Failed to parse pageData configuration: " + err.message);
+                        }
+                    } else {
+                        alert("Could not find 'pageData' variable declaration in this file.");
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+    }
+
+    // Initialize application on window load
+    window.addEventListener('load', () => {
+        applyTemplateLayout('eq_schem_plot-io');
+    });
+
+  </script>
+</body>
+</html>
