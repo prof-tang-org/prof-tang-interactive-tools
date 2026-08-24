@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Changes in Specific Entropy of Ideal Gases with Constant Specific Heats</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>window.MathJax={chtml:{scale:0.9},options:{renderActions:{addMenu:[]}}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* ─── variables ─── */
+    :root{
+      --ink:#1f2937;--ink2:#374151;
+      --bg:#f6f7fb;--card:#fff;--line:#e5e7eb;
+      --accent:#0ea5e9;
+      --ok:#10b981;--warn:#f59e0b;--danger:#ef4444;
+      --r-sm:10px;--r-md:12px;--r-lg:14px;
+      --shadow-sm:0 6px 16px rgba(0,0,0,.04);
+      --shadow-md:0 10px 22px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45;background:var(--bg);color:var(--ink)}
+    html{scroll-behavior:smooth}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    /* header / footer */
+    .site-header{background:linear-gradient(135deg,var(--ink),var(--ink2));color:#fff;padding:28px 0}
+    .site-header .container{padding-top:20px;padding-bottom:20px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .header-row h1{font-size:clamp(1.4rem,2.1vw,2rem);line-height:1.12;margin:0}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid #ffffff55;background:rgba(255,255,255,.12);color:#fff;text-decoration:none;cursor:pointer;font-size:14px}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.primary:hover{filter:brightness(1.06)}
+    .site-footer{border-top:1px solid var(--line);background:#fff;padding:16px 0;margin-top:28px}
+    .back-row{display:flex;align-items:center;margin:12px 0 14px}
+    .back-home{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#0ea5e9;text-decoration:none;font-size:14px}
+    .back-home:hover{background:#f0f9ff}
+    .back-home .chev{font-size:16px;line-height:1}
+
+    /* cards */
+    .ctl{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
+    .eqwrap{padding:12px;border:1px dashed var(--line);border-radius:var(--r-md);background:#fcfcff;margin-bottom:10px;overflow-x:auto}
+    .eqbig{font-size:1.05em;margin-bottom:8px}
+    .title-xl{font-size:18px;line-height:1.22;color:#111;margin-bottom:10px}
+    .note{font-size:13px;color:#4b5563;margin-bottom:6px}
+
+    /* top grid */
+    .top-grid{display:grid;gap:12px}
+    @media(min-width:1024px){.top-grid{grid-template-columns:1.2fr 0.9fr}}
+
+    /* controls / inputs */
+    .inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    input[type="number"]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;
+                         background:#fff;color:inherit;width:88px;text-align:right}
+    input[type="range"]{flex:1;padding:0;border:none;background:transparent;box-shadow:none;min-width:80px}
+    input:disabled{background:#f3f4f6!important;color:#6b7280!important;cursor:not-allowed;opacity:1}
+    label{font-size:13px;font-weight:600;color:#334155}
+    select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
+
+    /* two-column inputs / output layout */
+    .inputs-two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media(max-width:760px){.inputs-two{grid-template-columns:1fr}}
+
+    /* KPI strip */
+    .kpi{display:grid;gap:10px;margin-top:10px;grid-template-columns:repeat(3,minmax(100px,1fr));
+         background:#fcfcff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    @media(max-width:480px){.kpi{grid-template-columns:1fr}}
+    .kpi .lab{font-size:12px;color:#6b7280}
+    .kpi .val{font-size:16px;font-weight:700;color:#111}
+
+    /* plots */
+    .plots-grid{display:grid;gap:14px;grid-template-columns:1fr}
+    @media(min-width:880px){.plots-grid{grid-template-columns:1fr 1fr}}
+    .viz{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px;margin-top:12px}
+    .viz-inner{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px}
+    svg{width:100%;height:auto;display:block}
+    .axis text{font-size:10px;fill:#111}
+    .axis-title{font-size:11px;fill:#111}
+    .curve{fill:none;stroke-width:2}
+    .zeroline{stroke:#d1d5db;stroke-width:1;stroke-dasharray:4 3}
+    .dragpt{stroke:#111;stroke-width:1.2;cursor:ew-resize}
+    .hit{fill:transparent;cursor:ew-resize}
+
+    .hidden{display:none!important}
+    .eqlabel{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#9ca3af;border-radius:6px;padding:1px 7px;margin-right:8px;vertical-align:middle}
+    .eqlabel.active{background:var(--accent)}
+    .eqrow{padding:8px 10px;border-radius:8px}
+    .eqrow.active{background:none}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="header-row">
+      <h1>Changes in Specific Entropy of Ideal Gases with Constant Specific Heats</h1>
+      <a class="btn primary" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="back-row">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </nav>
+
+  <!-- ── TOP GRID: equations + symbols ── -->
+  <section class="top-grid">
+
+    <div class="ctl">
+      <div style="background:#fafcff;border:1px solid var(--line);border-radius:10px;padding:16px 18px">
+        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:12px">Changes in specific entropy of ideal gases with constant specific heats</div>
+
+        <div class="eqrow" id="eqrow-Tv">
+          \(\displaystyle s_2-s_1 = s(T_2,v_2)-s(T_1,v_1) = c_v\ln\frac{T_2}{T_1} + R\ln\frac{v_2}{v_1}\)
+        </div>
+        <div class="eqrow" id="eqrow-Tp" style="margin-top:6px">
+          \(\displaystyle s_2-s_1 = s(T_2,p_2)-s(T_1,p_1) = c_p\ln\frac{T_2}{T_1} - R\ln\frac{p_2}{p_1}\)
+        </div>
+
+        <div style="margin-top:10px; padding-left:10px">\(\displaystyle R = \frac{\bar R}{M}\)</div>
+
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:16px;margin-bottom:4px">Symbols</div>
+        <ul style="margin:8px 0 0 0;padding-left:38px">
+          <li>\(s\) — specific entropy</li>
+          <li>\(T\) — thermodynamic temperature</li>
+          <li>\(v\) — specific volume</li>
+          <li>\(p\) — absolute pressure</li>
+          <li>\(R\) — gas constant</li>
+          <li>\(\bar R\) — universal gas constant, 8314 [J/(kmol·K)]</li>
+          <li>\(M\) — molar mass</li>
+          <li>\(c_v\) — constant-volume specific heat</li>
+          <li>\(c_p\) — constant-pressure specific heat</li>
+          <li>subscript 1 — state 1</li>
+          <li>subscript 2 — state 2</li>
+        </ul>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── INPUTS & OUTPUTS ── -->
+  <section class="ctl" style="margin-top:12px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Inputs &amp; Outputs</h2>
+
+    <div class="inputs-two">
+      <!-- Left: inputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="ctl">
+          <label>Gas</label>
+          <div class="inline" style="margin-top:6px">
+            <select id="gas-select" onchange="onGasChange(this)" style="width:100%">
+              <option value="air" selected>Air</option>
+              <option value="o2">O₂</option>
+              <option value="n2">N₂</option>
+              <option value="co2">CO₂</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ctl">
+          <label>Select input properties</label>
+          <div class="inline" style="margin-top:6px">
+            <select id="mode-select" onchange="onModeChange(this)" style="width:100%">
+              <option value="Tv" selected>T and v</option>
+              <option value="Tp">T and p</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- T1 (always shown) -->
+        <div class="ctl">
+          <label>Initial temperature \(T_1\)&nbsp; <span style="font-weight:400;font-size:12px">[300, 1000] K</span></label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="T1-out" min="300" max="1000" step="1" value="300"
+                   onchange="syncInput('T1',this)" />
+            <input type="range" id="T1-in" min="300" max="1000" step="1" value="300"
+                   oninput="syncInput('T1',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <!-- v1 (T&v mode) -->
+        <div class="ctl" id="v1-row">
+          <label>Initial specific volume \(v_1\)&nbsp; <span style="font-weight:400;font-size:12px">[0.1, 3] m³/kg</span></label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="v1-out" min="0.1" max="3" step="0.01" value="0.8"
+                   onchange="syncInput('v1',this)" />
+            <input type="range" id="v1-in" min="0.1" max="3" step="0.01" value="0.8"
+                   oninput="syncInput('v1',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <!-- p1 (T&p mode) -->
+        <div class="ctl hidden" id="p1-row">
+          <label>Initial pressure \(p_1\)&nbsp; <span style="font-weight:400;font-size:12px">[100, 1000] kPa</span></label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="p1-out" min="100" max="1000" step="1" value="100"
+                   onchange="syncInput('p1',this)" />
+            <input type="range" id="p1-in" min="100" max="1000" step="1" value="100"
+                   oninput="syncInput('p1',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <!-- T2 (always shown) -->
+        <div class="ctl">
+          <label>Final temperature \(T_2\)&nbsp; <span style="font-weight:400;font-size:12px">[300, 1000] K</span></label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="T2-out" min="300" max="1000" step="1" value="500"
+                   onchange="syncInput('T2',this)" />
+            <input type="range" id="T2-in" min="300" max="1000" step="1" value="500"
+                   oninput="syncInput('T2',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <!-- v2 (T&v mode) -->
+        <div class="ctl" id="v2-row">
+          <label>Final specific volume \(v_2\)&nbsp; <span style="font-weight:400;font-size:12px">[0.1, 3] m³/kg</span></label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="v2-out" min="0.1" max="3" step="0.01" value="0.5"
+                   onchange="syncInput('v2',this)" />
+            <input type="range" id="v2-in" min="0.1" max="3" step="0.01" value="0.5"
+                   oninput="syncInput('v2',this)" style="flex:1" />
+          </div>
+        </div>
+
+        <!-- p2 (T&p mode) -->
+        <div class="ctl hidden" id="p2-row">
+          <label>Final pressure \(p_2\)&nbsp; <span style="font-weight:400;font-size:12px">[100, 1000] kPa</span></label>
+          <div class="inline" style="margin-top:6px">
+            <input type="number" id="p2-out" min="100" max="1000" step="1" value="200"
+                   onchange="syncInput('p2',this)" />
+            <input type="range" id="p2-in" min="100" max="1000" step="1" value="200"
+                   oninput="syncInput('p2',this)" style="flex:1" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: outputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div id="out-p1" class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">p₁ [kPa]</div>
+          <div class="val"><span id="p1-kpi">—</span></div>
+        </div>
+        <div id="out-p2" class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">p₂ [kPa]</div>
+          <div class="val"><span id="p2-kpi">—</span></div>
+        </div>
+        <div id="out-v1" class="kpi hidden" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">v₁ [m³/kg]</div>
+          <div class="val"><span id="v1-kpi">—</span></div>
+        </div>
+        <div id="out-v2" class="kpi hidden" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">v₂ [m³/kg]</div>
+          <div class="val"><span id="v2-kpi">—</span></div>
+        </div>
+        <div class="kpi" style="grid-template-columns:1fr;margin-top:0">
+          <div class="lab">s₂ − s₁ [kJ/(kg·K)]</div>
+          <div class="val"><span id="ds-kpi">—</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PLOTS ── -->
+  <section class="ctl" style="margin-top:14px">
+    <h2 style="margin:4px 0 10px;font-size:1.25rem">Plots</h2>
+    <div class="plots-grid">
+      <div class="viz-inner">
+        <div style="text-align:center;font-weight:700;font-size:13px;color:#111;margin-bottom:4px">\(s_2-s_1\) vs \(T_1\)</div>
+        <svg id="plotT1" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="viz-inner">
+        <div style="text-align:center;font-weight:700;font-size:13px;color:#111;margin-bottom:4px" id="plot2-title">\(s_2-s_1\) vs \(v_1\)</div>
+        <svg id="plotX1" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="viz-inner">
+        <div style="text-align:center;font-weight:700;font-size:13px;color:#111;margin-bottom:4px">\(s_2-s_1\) vs \(T_2\)</div>
+        <svg id="plotT2" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="viz-inner">
+        <div style="text-align:center;font-weight:700;font-size:13px;color:#111;margin-bottom:4px" id="plot4-title">\(s_2-s_1\) vs \(v_2\)</div>
+        <svg id="plotX2" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:#6b7280">
+      Each curve varies a single input while holding the other three inputs fixed at their current values. The <span style="color:#ef4444;font-weight:600">red dot</span> marks the current state. Use the inputs above to move the <span style="color:#ef4444;font-weight:600">red dot</span>, or drag it directly on any plot.
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+  </div>
+</footer>
+
+<script>
+/* ─── state ─── */
+const S = { gas:'air', mode:'Tv', T1:300, v1:0.8, T2:500, v2:0.5, p1:100, p2:200 };
+
+const RBAR = 8314; // J/(kmol-K)
+const GAS_PROPS = {
+  air: { M:28.97, cv:0.718, cp:1.005 },
+  o2:  { M:32.00, cv:0.658, cp:0.918 },
+  n2:  { M:28.01, cv:0.743, cp:1.039 },
+  co2: { M:44.01, cv:0.657, cp:0.846 }
+};
+
+function getProps(){
+  const g = GAS_PROPS[S.gas];
+  const R_J = RBAR / g.M;      // J/(kg-K)
+  const R_kJ = R_J / 1000;     // kJ/(kg-K)
+  return { M:g.M, cv:g.cv, cp:g.cp, R_J, R_kJ };
+}
+
+function vFromTp(T, p, R_J){ return R_J * T / (p * 1000); }   // v [m3/kg], p in kPa
+function pFromTv(T, v, R_J){ return R_J * T / (v * 1000); }   // p [kPa]
+
+function dsEq621(T1,v1,T2,v2,cv,R_kJ){ return cv*Math.log(T2/T1) + R_kJ*Math.log(v2/v1); } // Eq 6.21
+function dsEq622(T1,p1,T2,p2,cp,R_kJ){ return cp*Math.log(T2/T1) - R_kJ*Math.log(p2/p1); } // Eq 6.22
+
+/* ds using the current state with one variable overridden */
+function dsWithOverride(varName, val){
+  const s = Object.assign({}, S);
+  s[varName] = val;
+  const { cv, cp, R_kJ } = getProps();
+  if(S.mode === 'Tv') return dsEq621(s.T1, s.v1, s.T2, s.v2, cv, R_kJ);
+  return dsEq622(s.T1, s.p1, s.T2, s.p2, cp, R_kJ);
+}
+
+/* ─── gas / mode select ─── */
+function onGasChange(el){
+  S.gas = el.value;
+  compute();
+}
+
+function onModeChange(el){
+  S.mode = el.value;
+  const isTv = S.mode === 'Tv';
+  document.getElementById('v1-row').classList.toggle('hidden', !isTv);
+  document.getElementById('v2-row').classList.toggle('hidden', !isTv);
+  document.getElementById('p1-row').classList.toggle('hidden', isTv);
+  document.getElementById('p2-row').classList.toggle('hidden', isTv);
+
+  document.getElementById('out-p1').classList.toggle('hidden', !isTv);
+  document.getElementById('out-p2').classList.toggle('hidden', !isTv);
+  document.getElementById('out-v1').classList.toggle('hidden', isTv);
+  document.getElementById('out-v2').classList.toggle('hidden', isTv);
+
+  document.getElementById('eqrow-Tv').classList.toggle('active', isTv);
+  document.getElementById('eqrow-Tp').classList.toggle('active', !isTv);
+
+  document.getElementById('plot2-title').textContent = '';
+  document.getElementById('plot4-title').textContent = '';
+  if(window.MathJax && MathJax.typesetPromise){
+    document.getElementById('plot2-title').innerHTML = isTv ? '\\(s_2-s_1\\) vs \\(v_1\\)' : '\\(s_2-s_1\\) vs \\(p_1\\)';
+    document.getElementById('plot4-title').innerHTML = isTv ? '\\(s_2-s_1\\) vs \\(v_2\\)' : '\\(s_2-s_1\\) vs \\(p_2\\)';
+    MathJax.typesetPromise([document.getElementById('plot2-title'), document.getElementById('plot4-title')]);
+  }
+
+  compute();
+}
+
+/* ─── sync number ↔ range ─── */
+const RANGES = {
+  T1:[300,1000], T2:[300,1000],
+  v1:[0.1,3],    v2:[0.1,3],
+  p1:[100,1000], p2:[100,1000]
+};
+
+function syncInput(k, el){
+  let v = parseFloat(el.value);
+  if(isNaN(v)) return;
+  const [lo,hi] = RANGES[k];
+  v = Math.max(lo, Math.min(hi, v));
+  S[k] = v;
+  setVal(k, v);
+  compute();
+}
+
+function setVal(k, v){
+  document.getElementById(k+'-out').value = v;
+  document.getElementById(k+'-in').value  = v;
+}
+
+/* ─── compute outputs ─── */
+function compute(){
+  const { cv, cp, R_J, R_kJ } = getProps();
+  let ds;
+  if(S.mode === 'Tv'){
+    const p1 = pFromTv(S.T1, S.v1, R_J);
+    const p2 = pFromTv(S.T2, S.v2, R_J);
+    ds = dsEq621(S.T1, S.v1, S.T2, S.v2, cv, R_kJ);
+    document.getElementById('p1-kpi').textContent = p1.toFixed(2);
+    document.getElementById('p2-kpi').textContent = p2.toFixed(2);
+  } else {
+    const v1 = vFromTp(S.T1, S.p1, R_J);
+    const v2 = vFromTp(S.T2, S.p2, R_J);
+    ds = dsEq622(S.T1, S.p1, S.T2, S.p2, cp, R_kJ);
+    document.getElementById('v1-kpi').textContent = v1.toFixed(4);
+    document.getElementById('v2-kpi').textContent = v2.toFixed(4);
+  }
+  document.getElementById('ds-kpi').textContent = ds.toFixed(4);
+  drawAllPlots(ds);
+}
+
+/* ─── shared axis/label helper (fixed y-domain [-2,2]) ─── */
+function setupAxes(svg, mg, pW, pH, H, xDomain, xTicks, xLabelText, yLabelText){
+  const xSc = d3.scaleLinear().domain(xDomain).range([mg.left, mg.left + pW]);
+  const ySc = d3.scaleLinear().domain([-2, 2]).range([mg.top + pH, mg.top]);
+
+  const xAxis = d3.axisBottom(xSc).tickValues(xTicks).tickFormat(d3.format('~g'));
+  const yAxis = d3.axisLeft(ySc).ticks(5).tickFormat(d3.format('~g'));
+
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(0,${mg.top+pH})`)
+     .call(xAxis);
+  svg.append('g').attr('class','axis')
+     .attr('transform',`translate(${mg.left},0)`)
+     .call(yAxis);
+
+  svg.append('line').attr('class','zeroline')
+     .attr('x1', mg.left).attr('x2', mg.left+pW)
+     .attr('y1', ySc(0)).attr('y2', ySc(0));
+
+  svg.append('text').attr('class','axis-title')
+     .attr('transform','rotate(-90)')
+     .attr('x', -(mg.top + pH/2)).attr('y', 14)
+     .attr('text-anchor','middle')
+     .text(yLabelText);
+  svg.append('text').attr('class','axis-title')
+     .attr('x', mg.left + pW/2).attr('y', H - 8)
+     .attr('text-anchor','middle')
+     .text(xLabelText);
+
+  return { xSc, ySc };
+}
+
+/* ─── generic draggable ds-vs-variable plot ─── */
+function drawDsPlot(svgId, varName, dataDomain, xTicks, xLabelText){
+  const svg = d3.select('#'+svgId);
+  svg.selectAll('*').remove();
+
+  const W = 520, H = 300;
+  const mg = { top: 22, right: 20, bottom: 40, left: 40 };
+  const pW = W - mg.left - mg.right;
+  const pH = H - mg.top - mg.bottom;
+
+  const [lo, hi] = dataDomain;
+  const axisDomain = [0, hi]; // axis always starts at 0
+
+  const { xSc, ySc } = setupAxes(svg, mg, pW, pH, H, axisDomain, xTicks, xLabelText, 's\u2082\u2212s\u2081 [kJ/(kg\u00b7K)]');
+
+  const step = (hi - lo) / 120;
+  const pts = d3.range(lo + step, hi, step); // curve only spans the valid input range
+
+  const clampY = v => Math.max(-2, Math.min(2, v));
+  const lineFn = d3.line()
+    .x(d => xSc(d))
+    .y(d => ySc(clampY(dsWithOverride(varName, d))));
+
+  svg.append('path')
+     .datum(pts)
+     .attr('class','curve')
+     .style('stroke', '#3b82f6')
+     .attr('d', lineFn(pts));
+
+  const curX = S[varName];
+  const curY = clampY(dsWithOverride(varName, curX));
+  svg.append('circle')
+     .attr('class','dragpt')
+     .attr('cx', xSc(curX))
+     .attr('cy', ySc(curY))
+     .attr('r', 5)
+     .style('fill', '#ef4444');
+
+  const hitRect = svg.append('rect')
+    .attr('class','hit')
+    .attr('x', mg.left).attr('y', mg.top)
+    .attr('width', pW).attr('height', pH);
+
+  hitRect.call(d3.drag().on('start drag end', function(event){
+    const xm  = Math.max(mg.left, Math.min(mg.left + pW, event.x));
+    let   val = xSc.invert(xm);
+    const [rlo, rhi] = RANGES[varName];
+    val = (varName === 'T1' || varName === 'T2' || varName === 'p1' || varName === 'p2')
+          ? Math.round(val) : Math.round(val*100)/100;
+    val = Math.max(rlo, Math.min(rhi, val));
+    S[varName] = val;
+    setVal(varName, val);
+    compute();
+  }));
+}
+
+function drawAllPlots(){
+  const TDomain = [300,1000], TTicks = [0,100,200,300,400,500,600,700,800,900,1000];
+  drawDsPlot('plotT1', 'T1', TDomain, TTicks, 'T\u2081 [K]');
+  drawDsPlot('plotT2', 'T2', TDomain, TTicks, 'T\u2082 [K]');
+
+  if(S.mode === 'Tv'){
+    const vDomain = [0.1,3], vTicks = [0,0.5,1,1.5,2,2.5,3];
+    drawDsPlot('plotX1', 'v1', vDomain, vTicks, 'v\u2081 [m\u00b3/kg]');
+    drawDsPlot('plotX2', 'v2', vDomain, vTicks, 'v\u2082 [m\u00b3/kg]');
+  } else {
+    const pDomain = [100,1000], pTicks = [0,100,200,300,400,500,600,700,800,900,1000];
+    drawDsPlot('plotX1', 'p1', pDomain, pTicks, 'p\u2081 [kPa]');
+    drawDsPlot('plotX2', 'p2', pDomain, pTicks, 'p\u2082 [kPa]');
+  }
+}
+
+/* ─── init ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('eqrow-Tv').classList.add('active');
+  compute();
+  window.addEventListener('resize', compute);
+});
+</script>
+
+</body>
+</html>
