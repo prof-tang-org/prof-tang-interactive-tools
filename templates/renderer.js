@@ -146,14 +146,15 @@ function renderContent(data, containerId) {
             } else if (item.type === 'assumptions') {
                 const div = document.createElement('div');
                 div.className = 'note';
-                if (item.content && item.content.length === 1) {
-                    const pHeader = parseTextToElement("### Assumptions")
-                    div.appendChild(pHeader);
+                // if (item.content && item.content.length === 1) {
+                //     const pHeader = parseTextToElement("### Assumptions")
+                //     div.appendChild(pHeader);
 
-                    const pText = document.createElement('p');
-                    pText.insertAdjacentHTML('beforeend', parseText(item.content[0]));
-                    div.appendChild(pText);
-                } else if (item.content) {
+                //     const pText = document.createElement('p');
+                //     pText.insertAdjacentHTML('beforeend', parseText(item.content[0]));
+                //     div.appendChild(pText);
+                // } else if (item.content) {
+                if (item.content) {
                     const pHeader = parseTextToElement("### Assumptions")
                     div.appendChild(pHeader);
 
@@ -168,8 +169,7 @@ function renderContent(data, containerId) {
                 card.appendChild(div);
             } else if (item.type === 'equations') {
                 if (item.content && item.content.length > 0) {
-                    const equationsCount = item.content.filter(eqText => !(eqText.startsWith("'") && eqText.endsWith("'"))).length;
-                    const headerText = equationsCount === 1 ? '### Equation' : '### Equations';
+                    const headerText = '### Equations';
                     const divHeader = parseTextToElement(headerText);
                     card.appendChild(divHeader);
 
@@ -855,9 +855,25 @@ function setupCalculationEngine(pageData) {
 
             const el = document.getElementById(`value_${output.id}`);
             if (el) {
-                if (typeof val === 'number') {
-                    const decVal = typeof output.decimals === 'string' ? evaluateFormula(output.decimals, state) : output.decimals;
-                    el.textContent = formatNumber(val, decVal);
+                const decVal = typeof output.decimals === 'string' ? evaluateFormula(output.decimals, state) : output.decimals;
+                const numStr = (typeof val === 'number') ? formatNumber(val, decVal) : String(val ?? '');
+
+                if (output.display) {
+                    let template = (typeof output.display === 'string' && output.display.includes('?'))
+                        ? evaluateFormula(output.display, state)
+                        : output.display;
+
+                    const formattedText = String(template)
+                        .replace(/\{value\}/g, numStr)
+                        .replace(/\{([a-zA-Z0-9_-]+)\}/g, (match, id) => {
+                            if (state[id] !== undefined) {
+                                return typeof state[id] === 'number' ? formatNumber(state[id]) : state[id];
+                            }
+                            return match;
+                        });
+                    el.textContent = formattedText;
+                } else if (typeof val === 'number') {
+                    el.textContent = numStr;
                 } else {
                     const parsed = parseText(String(val ?? ''));
                     if (el.getAttribute('data-eval-val') !== parsed) {
@@ -986,27 +1002,40 @@ function injectPlots(state, pageData) {
     if (svg.empty()) return;
     svg.selectAll('*').remove(); // Clear previous plot
 
-    let W = 760, H = 320, m = { l: 80, r: 40, t: 14, b: 60 };
-    if (pageData.plots.aspectRatio !== undefined) {
-        H = W / pageData.plots.aspectRatio;
-        const svgEl = document.getElementById('plot');
-        if (svgEl) {
-            svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
-            // console.log(svgEl.viewBox);
-        }
-    }
-    const gap = 80;
+    const maxRotation = Math.max(0, ...pageData.plots.settings.map(p => Math.abs(p.xTickRotation || 0)));
+    const extraBottom = maxRotation > 0 ? Math.ceil(35 * Math.sin(maxRotation * Math.PI / 180) + 15) : 0;
+
+    let W = 760, m = { l: 80, r: 40, t: 14, b: 60 + extraBottom };
+    const gapX = 80;
+    const gapY = 70 + extraBottom;
     const numPlots = pageData.plots.settings.length;
-    const totalGap = gap * (numPlots - 1);
-    const iw = (W - m.l - m.r - totalGap) / numPlots;
-    const ih = H - m.t - m.b;
+    const plotCols = pageData.plots.plotColumns;
+    const cols = (plotCols && plotCols > 0) ? Math.min(plotCols, numPlots) : numPlots;
+    const numRows = Math.ceil(numPlots / cols);
+    const totalGapX = gapX * (cols - 1);
+    const iw = (W - m.l - m.r - totalGapX) / cols;
+
+    const plotAspectRatio = (pageData.plots.aspectRatio !== undefined) ? pageData.plots.aspectRatio : 1.5;
+    const ih = iw / plotAspectRatio;
+    const totalGapY = gapY * (numRows - 1);
+    let H = m.t + m.b + (numRows * ih) + totalGapY;
+
+    const svgEl = document.getElementById('plot');
+    if (svgEl) {
+        svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    }
 
     // Anti-scaling for text
     const renderedWidth = svg.node() ? svg.node().getBoundingClientRect().width : W;
     const scale = (renderedWidth > 0) ? W / renderedWidth : 1;
 
+    let maxObservedBottom = 0;
+
     pageData.plots.settings.forEach((plotConfig, i) => {
-        const plot_x_offset = m.l + i * (iw + gap);
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const plot_x_offset = m.l + col * (iw + gapX);
+        const plot_y_offset = m.t + row * (ih + gapY);
 
         let currentYVal = state[plotConfig.y];
         if (currentYVal === undefined || isNaN(currentYVal)) return;
@@ -1067,8 +1096,8 @@ function injectPlots(state, pageData) {
             ? d3.scaleLog().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw])
             : d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
         const y = plotConfig.yLog
-            ? d3.scaleLog().domain([yMinVal, yMax]).range([m.t + ih, m.t])
-            : d3.scaleLinear().domain([yMinVal, yMax]).range([m.t + ih, m.t]);
+            ? d3.scaleLog().domain([yMinVal, yMax]).range([plot_y_offset + ih, plot_y_offset])
+            : d3.scaleLinear().domain([yMinVal, yMax]).range([plot_y_offset + ih, plot_y_offset]);
 
         // Axes
         const xAxis = d3.axisBottom(x).ticks(5);
@@ -1103,7 +1132,7 @@ function injectPlots(state, pageData) {
             }
         }
         const xAxisG = svg.append('g').attr('class', 'axis')
-            .attr('transform', `translate(0,${m.t + ih})`)
+            .attr('transform', `translate(0,${plot_y_offset + ih})`)
         xAxisG.call(xAxis);
 
         const xTextRotation = plotConfig.xTickRotation || 0;
@@ -1159,7 +1188,7 @@ function injectPlots(state, pageData) {
 
         // In local coordinates of xAxisG, the axis line is at y = 0.
         // The bottom of the x-axis (line + ticks + tick labels) in global SVG coordinates is:
-        const axisBottomY = (m.t + ih) + xAxisBBox.y + xAxisBBox.height;
+        const axisBottomY = (plot_y_offset + ih) + xAxisBBox.y + xAxisBBox.height;
 
         // Define margin and height in SVG coordinates, scaled to keep physical size constant
         const margin = 2 * scale;
@@ -1179,6 +1208,11 @@ function injectPlots(state, pageData) {
                 .attr('data-raw-text', xText);
         }
 
+        const plotBottomY = axisBottomY + margin + labelHeight + 10 * scale;
+        if (plotBottomY > maxObservedBottom) {
+            maxObservedBottom = plotBottomY;
+        }
+
         const yAxisBBox = yAxisG.node().getBBox(); // BBox of the axis ticks/numbers
 
         // Use foreignObject for y-axis to allow HTML (MathJax) rendering
@@ -1186,7 +1220,7 @@ function injectPlots(state, pageData) {
             .attr('width', ih) // The width of the object is the height of the plot area
             .attr('height', 50) // The height of the object is the space for the label
             // 1. Translate to final position, then 2. Rotate around the top-left corner of the object
-            .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${m.t + ih}) rotate(-90)`);
+            .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${plot_y_offset + ih}) rotate(-90)`);
 
         // The inner div uses flexbox to perfectly center the content.
         const yLabelDiv = yLabelFO.append('xhtml:div')
@@ -1266,7 +1300,7 @@ function injectPlots(state, pageData) {
         // Add clip path for the plot
         const clipId = `clip-${i}`;
         svg.append('clipPath').attr('id', clipId)
-            .append('rect').attr('x', plot_x_offset).attr('y', m.t)
+            .append('rect').attr('x', plot_x_offset).attr('y', plot_y_offset)
             .attr('width', iw).attr('height', ih);
 
         // Draw solid and dotted parts of the curve
@@ -1289,6 +1323,7 @@ function injectPlots(state, pageData) {
             ih,
             scale,
             plot_x_offset,
+            plot_y_offset,
             clipId,
             accessibleVals,
             xVals,
@@ -1313,7 +1348,7 @@ function injectPlots(state, pageData) {
 
         // Interaction Background
         const hit = svg.append('rect').attr('class', 'hit')
-            .attr('x', plot_x_offset).attr('y', m.t)
+            .attr('x', plot_x_offset).attr('y', plot_y_offset)
             .attr('width', iw).attr('height', ih);
 
         const drag = d3.drag()
@@ -1418,6 +1453,13 @@ function injectPlots(state, pageData) {
         hit.call(drag);
     });
 
+    if (maxObservedBottom > H) {
+        H = Math.ceil(maxObservedBottom);
+        if (svgEl) {
+            svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        }
+    }
+
     const plotNote = document.getElementById("plot-note");
     const noteText = pageData.plots.text;
     if (mathjaxCache.has(noteText)) {
@@ -1521,7 +1563,7 @@ function drawReferenceLines(plotCtx) {
 }
 
 function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
-    const { svg, m, ih, iw, scale, plot_x_offset } = plotCtx;
+    const { svg, m, ih, iw, scale, plot_x_offset, plot_y_offset } = plotCtx;
 
     if (refSetting.labelPosition === 'above' || refSetting.labelPosition === 'below') {
         // Find the last point in refData that is within the plot's Y viewport
@@ -1530,7 +1572,7 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
         for (let i = 0; i < refData.length; i++) {
             const pt = refData[i];
             if (pt && !isNaN(pt[0]) && !isNaN(pt[1])) {
-                if (pt[1] >= m.t && pt[1] <= (m.t + ih)) {
+                if (pt[1] >= plot_y_offset && pt[1] <= (plot_y_offset + ih)) {
                     lastValidPoint = pt;
                     lastValidIndex = i;
                 }
@@ -1548,12 +1590,12 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
             if (exitedEarly) {
                 // Exited top or bottom of the plot area
                 const nextPoint = refData[lastValidIndex + 1];
-                const exitedTop = nextPoint && nextPoint[1] < m.t;
+                const exitedTop = nextPoint && nextPoint[1] < plot_y_offset;
 
                 if (exitedTop) {
-                    foY = m.t + 4 * scale; // Position just below the top edge
+                    foY = plot_y_offset + 4 * scale; // Position just below the top edge
                 } else {
-                    foY = m.t + ih - foHeight - 4 * scale; // Position just above the bottom edge
+                    foY = plot_y_offset + ih - foHeight - 4 * scale; // Position just above the bottom edge
                 }
 
                 // Place label to the right of the exit point
@@ -1593,8 +1635,8 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
             }
 
             // Clamp Y within plot boundaries plus a small margin
-            const minYBound = m.t + 2 * scale;
-            const maxYBound = m.t + ih - foHeight - 2 * scale;
+            const minYBound = plot_y_offset + 2 * scale;
+            const maxYBound = plot_y_offset + ih; // - foHeight;
             foY = Math.max(minYBound, Math.min(maxYBound, foY));
 
             const fo = svg.append('foreignObject')
@@ -1640,7 +1682,7 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
 }
 
 function resolveLabelOverlaps(labelsToDraw, plotCtx) {
-    const { svg, m, ih, scale } = plotCtx;
+    const { svg, m, ih, scale, plot_y_offset } = plotCtx;
 
     // Sort by y position ascending
     labelsToDraw.sort((a, b) => a.y - b.y);
@@ -1660,7 +1702,7 @@ function resolveLabelOverlaps(labelsToDraw, plotCtx) {
             }
         }
         labelsToDraw.forEach(l => {
-            l.y = Math.max(m.t + 10, Math.min(m.t + ih + 10, l.y));
+            l.y = Math.max(plot_y_offset + 10, Math.min(plot_y_offset + ih + 10, l.y));
         });
         if (!changed) break;
     }
@@ -1829,7 +1871,118 @@ window.addEventListener('load', async () => {
         renderInputOutput(pageData.inputOutput);
 
         setupCalculationEngine(pageData);
+        initStickyFloatCards();
     } else {
         console.error("pageData is not defined. Ensure the data script is loaded before renderer.js.");
     }
 });
+
+// ensures float cards are always visible and hits top and bottom
+function initStickyFloatCards() {
+    const floatCards = document.querySelectorAll('.card.float');
+    if (!floatCards.length) return;
+
+    let ticking = false;
+    let cachedRem = 16;
+    let cachedMaxScroll = 0;
+    let cachedViewportHeight = 0;
+    let hasActiveDynamicCards = false;
+    const cardConfigs = new Map();
+
+    function updateMetrics() {
+        if (window.innerWidth < 1024) {
+            hasActiveDynamicCards = false;
+            floatCards.forEach(card => {
+                card.style.top = '';
+            });
+            return;
+        }
+
+        cachedViewportHeight = window.innerHeight;
+        cachedMaxScroll = document.documentElement.scrollHeight - cachedViewportHeight;
+        cachedRem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        hasActiveDynamicCards = false;
+
+        floatCards.forEach(card => {
+            if (card.classList.contains('hidden')) {
+                cardConfigs.set(card, { needsDynamic: false });
+                return;
+            }
+
+            const cardHeight = card.offsetHeight;
+            // Schematic cards nested beside equation boxes use default CSS sticky.
+            // Floating sidebar cards (like the Inputs/Outputs card beside plots) dynamically
+            // glide down so they reach the bottom of the viewport when scrolled to the bottom.
+            const isSchematic = card.id === 'schematic-card-container' || card.closest('#eqschem-container');
+            const isScrollable = cachedMaxScroll > 0;
+            const needsDynamic = !isSchematic && isScrollable;
+
+            cardConfigs.set(card, {
+                needsDynamic,
+                cardHeight,
+                topMargin: cachedRem,
+                bottomTarget: cachedViewportHeight - cardHeight - cachedRem
+            });
+
+            if (needsDynamic) {
+                hasActiveDynamicCards = true;
+            } else {
+                card.style.top = ''; // Fall back to default CSS position: sticky
+            }
+        });
+    }
+
+    function render() {
+        if (!hasActiveDynamicCards) {
+            ticking = false;
+            return;
+        }
+
+        const scrollY = window.scrollY;
+        const progress = cachedMaxScroll > 0 ? Math.min(Math.max(scrollY / cachedMaxScroll, 0), 1) : 0;
+
+        floatCards.forEach(card => {
+            const config = cardConfigs.get(card);
+            if (!config || !config.needsDynamic) return;
+
+            const currentTop = config.topMargin + progress * (config.bottomTarget - config.topMargin);
+            card.style.top = `${currentTop}px`;
+        });
+
+        ticking = false;
+    }
+
+    function onScroll() {
+        if (!hasActiveDynamicCards) return;
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(render);
+        }
+    }
+
+    function onResize() {
+        updateMetrics();
+        onScroll();
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
+
+    if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => {
+            updateMetrics();
+            onScroll();
+        });
+        ro.observe(document.body);
+    }
+
+    updateMetrics();
+    onScroll();
+
+    if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+        window.MathJax.startup.promise.then(() => {
+            updateMetrics();
+            onScroll();
+        }).catch(() => { });
+    }
+}

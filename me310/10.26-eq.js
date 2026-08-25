@@ -97,7 +97,7 @@ const pageData = {
         }
     },
     "plots": {
-        "aspectRatio": 2.8,
+        "aspectRatio": 0.75,
         "settings": [
             {
                 "y": "depth-ratio",

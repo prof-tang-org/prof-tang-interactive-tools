@@ -175,7 +175,7 @@ const pageData = {
         "outputColumns": 3
     },
     "plots": {
-        "aspectRatio": 2.5,
+        "aspectRatio": 1.25,
         "settings": [
             {
                 "x": "y-1",

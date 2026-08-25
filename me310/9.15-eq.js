@@ -107,7 +107,8 @@ const pageData = {
                 "text": "Reynolds Number, $Re_x$",
                 "id": "reynolds",
                 "type": "calculation",
-                "value": "U * x / nu"
+                "value": "U * x / nu",
+                "display": "{value} < 2e+5, laminar flow"
             },
             {
                 "text": "Boundary Layer Thickness, $\\delta$ [mm]",
@@ -125,7 +126,7 @@ const pageData = {
         "outputColumns": 3
     },
     "plots": {
-        "aspectRatio": 1.5,
+        "aspectRatio": 0.75,
         "settings": [
             {
                 "x": "x",

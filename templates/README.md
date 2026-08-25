@@ -379,7 +379,8 @@ Guidelines for the AI:
   - Highlight/gray-out ranges: Add `dottedRange` (object or array of objects: `{ "variable": "input_id", "min": 0, "max": 0.5 }`) to specify ranges where inputs/outputs are greyed out.
 
 ### 4. Interactive Plotting (`plots` config)
-- **Aspect Ratio**: Set using `aspectRatio` (width-to-height ratio of the SVG wrapper).
+- **Aspect Ratio**: Set using `aspectRatio` (width-to-height ratio $W / H$ of each individual plot, defaults to `1.5`). The total SVG canvas height is automatically calculated based on row count, plot heights, margins, and gaps.
+- **Plot Columns**: Set using `plotColumns` (number of columns per row for multi-plot layouts, e.g. `"plotColumns": 2`). Defaults to the total number of plots (single row).
 - **Curve Bounds (`xMin`, `xMax`, `yMin`, `yMax`, `yTickInterval`, `xTickInterval`)**:
   - Must specify `x` (must be input ID) and `y` (input or output ID), `xLabel`, and `yLabel`.
   - `xMin`, `xMax`, `xTickInterval` can be numbers or conditional JS expressions.
@@ -396,7 +397,6 @@ Guidelines for the AI:
   - `reference`: Array of static auxiliary reference curves. Each item maps input IDs to target values (e.g. `"U": 1.0`), alongside a `text` label and optional `labelPosition` (`"above" | "below"`).
 
 ### 5. Wide Layout Guidelines (`io_wide` template)
-- If the layout uses wide templates (e.g. `eq_deriv-schem-io_wide-plot.html`), prevent vertical stretching of plots by setting a wide plot `aspectRatio` starting at `2.75` (e.g. `"aspectRatio": 2.75`).
 - Balance desktop column widths for inputs and outputs in `layout.grid` (e.g. `"desktop": "2fr 1fr"`).
 
 ### 6. Artifact Formatting Constraints

@@ -154,7 +154,7 @@ const pageData = {
         ]
     },
     "plots": {
-        "aspectRatio": 1.2,
+        "aspectRatio": 0.6,
         "settings": [
             {
                 "x": "xoverL",

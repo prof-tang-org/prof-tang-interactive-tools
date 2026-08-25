@@ -34,6 +34,7 @@ Place equations inside `type: "equations"`. The renderer automatically injects t
     ]
 }
 ```
+Velocity should always be capital V. 
 
 ## 3. Symbols Section
 Define symbols using `type: "symbols"`.

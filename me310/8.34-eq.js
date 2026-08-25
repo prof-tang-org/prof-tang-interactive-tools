@@ -92,7 +92,8 @@ const pageData = {
         ]
     },
     "plots": {
-        "aspectRatio": 2.75,
+        "aspectRatio": 1.4,
+        "plotColumns": 2,
         "settings": [
             {
                 "x": "f",

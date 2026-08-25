@@ -116,7 +116,7 @@ const pageData = {
         "outputColumns": 2
     },
     "plots": {
-        "aspectRatio": 2.375,
+        "aspectRatio": 1.1875,
         "settings": [
             {
                 "y": "pressure-2",

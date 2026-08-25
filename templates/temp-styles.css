@@ -132,7 +132,8 @@ html {
 .card.float {
   height: fit-content;
   position: sticky;
-  top: 30%;
+  top: 1rem;
+  align-self: start;
 }
 
 .card h1,
@@ -274,9 +275,9 @@ html {
 
 #plot {
   background: #fff;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  padding: 0.5rem;
+  /* border: 1px solid var(--line); */
+  /* border-radius: var(--r-md); */
+  /* padding: 0.5rem; */
 }
 
 svg {
@@ -351,7 +352,7 @@ svg .axis-title {
   }
 }
 
-section {
+section:not(:last-child) {
   margin-bottom: var(--gap);
 }
 

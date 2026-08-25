@@ -1,6 +1,12 @@
 const pageData = {
-    "title": "Manning Equation for Turbulent Uniform Open-Channel Flow",
+    "title": "Manning Equation",
     "equationElements": [
+        {
+            "type": "assumptions",
+            "content": [
+                "Turbulent, uniform, open-channel flow"
+            ]
+        },
         {
             "type": "equations",
             "content": [
@@ -121,7 +127,7 @@ const pageData = {
         ]
     },
     "plots": {
-        "aspectRatio": 3,
+        "aspectRatio": 0.6,
         "settings": [
             {
                 "x": "hydraulic-radius",

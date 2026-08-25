@@ -10,18 +10,18 @@ const pageData = {
         {
             "type": "equations",
             "content": [
-                "Ma = \\frac{v}{c} =  \\frac{v}{\\sqrt{kRT}}, \\text{where } R = \\frac{ \\bar{R}}{M}"
+                "Ma = \\frac{V}{c} =  \\frac{V}{\\sqrt{kRT}}, \\text{where } R = \\frac{ \\bar{R}}{M}"
             ]
         },
         {
             "type": "symbols",
             "content": [
                 { "symbol": "$Ma$", "definition": "Mach number" },
-                { "symbol": "$v$", "definition": "Velocity of the gas" },
-                { "symbol": "$c$", "definition": "Speed of sound in the gas" },
-                { "symbol": "$k$", "definition": "Specific heat ratio" },
-                { "symbol": "$R$", "definition": "Gas constant" },
-                { "symbol": "$T$", "definition": "Absolute temperature" }
+                { "symbol": "$V$", "definition": "velocity of the gas" },
+                { "symbol": "$c$", "definition": "speed of sound in the gas" },
+                { "symbol": "$k$", "definition": "specific heat ratio" },
+                { "symbol": "$R$", "definition": "gas constant" },
+                { "symbol": "$T$", "definition": "absolute temperature" }
             ]
         }
     ],
@@ -64,8 +64,8 @@ const pageData = {
             },
             {
                 "type": "slider",
-                "id": "velocity",
-                "text": "Velocity (m/s)",
+                "id": "V",
+                "text": "Velocity, $V$ [m/s]",
                 "min": 0,
                 "max": 1000,
                 "initialValue": 500,
@@ -74,7 +74,7 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "temperature",
-                "text": "Temperature (K)",
+                "text": "Temperature, $T$ [K]",
                 "min": 200,
                 "max": 1000,
                 "initialValue": 300,
@@ -112,7 +112,7 @@ const pageData = {
                 "text": "$Ma$",
                 "id": "mach-number",
                 "type": "calculation",
-                "value": "velocity / sound-speed"
+                "value": "V / sound-speed"
             }
         ],
         "outputColumns": 3
@@ -121,9 +121,9 @@ const pageData = {
         "settings": [
             {
                 "y": "mach-number",
-                "x": "velocity",
+                "x": "V",
                 "yLabel": "$Ma$",
-                "xLabel": "$v \\text{ [m/s]}$",
+                "xLabel": "$V \\text{ [m/s]}$",
                 "xMin": 0,
                 "xMax": 1000,
                 "yMin": 0,

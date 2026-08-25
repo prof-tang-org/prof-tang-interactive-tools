@@ -73,6 +73,7 @@
  * @property {string} id - Unique output identifier
  * @property {'calculation' | 'map'} type - Mode of evaluation
  * @property {string | Array<number | string>} value - Mathematical formula string (for 'calculation') or index-based map values array (for 'map')
+ * @property {string} [display] - Optional display template string interpolating {value} and variable IDs (e.g. "{value} < 2e+5, laminar flow")
  * @property {string} [key] - Reference ID of the input dropdown parameter used for indexing map arrays (required for 'map' type)
  * @property {number | string} [decimals] - Optional number of decimal places or conditional JS expression
  */
@@ -126,7 +127,8 @@
 
 /**
  * @typedef {Object} PlotsConfig
- * @property {number} [aspectRatio] - Width-to-height ratio of the SVG plot wrapper
+ * @property {number} [aspectRatio] - Width-to-height ratio of each individual plot (defaults to 1.5)
+ * @property {number} [plotColumns] - Number of plot columns per row (e.g. 2)
  * @property {PlotSetting[]} settings - List of active interactive charts to plot side-by-side
  * @property {string} text - Instructive annotation text shown below the chart container
  */

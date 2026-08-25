@@ -66,7 +66,7 @@ This is dynamically consumed by [templates/renderer.js](file:///d:/Documents/the
       "type": "symbols",
       "content": [
           { "symbol": "$x$", "definition": "position" },
-          { "symbol": "$v$", "definition": "velocity" }
+          { "symbol": "$V$", "definition": "velocity" }
       ]
   }
   ```

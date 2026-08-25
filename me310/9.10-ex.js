@@ -8,9 +8,15 @@ const pageData = {
     },
     "equationElements": [
         {
+            "type": "assumptions",
+            "content": [
+                "A small spherical particle settling down in a stationary fluid",
+                "Fluid has $Re_D < 1$"
+            ]
+        },
+        {
             "type": "equations",
             "content": [
-                "'For a small spherical particle settling down in a stationary fluid with $Re_D < 1$, the terminal velocity can be estimated by:'",
                 "U = \\frac{D^2 g (\\rho_{\\text{particle}} - \\rho_{\\text{fluid}})}{18 \\mu_{\\text{fluid}}}",
                 "Re_D = \\frac{\\rho_{\\text{fluid}} U D}{\\mu_{\\text{fluid}}}"
             ]

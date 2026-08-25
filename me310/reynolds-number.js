@@ -92,7 +92,7 @@ const pageData = {
         ]
     },
     "plots": {
-        "aspectRatio": 2,
+        "aspectRatio": 1,
         "settings": [
             {
                 "x": "U",

@@ -11,7 +11,7 @@ const pageData = {
         {
             "type": "equations",
             "content": [
-                "Fr = \\frac{v}{\\sqrt{gy}}"
+                "Fr = \\frac{V}{c} = \\frac{V}{\\sqrt{gy}}"
             ]
         },
         {
@@ -21,7 +21,7 @@ const pageData = {
                 { "symbol": "$c$", "definition": "wave speed" },
                 { "symbol": "$g$", "definition": "gravitational acceleration" },
                 { "symbol": "$y$", "definition": "flow depth" },
-                { "symbol": "$v$", "definition": "flow velocity" }
+                { "symbol": "$V$", "definition": "flow velocity" }
             ]
         }
     ],
@@ -45,8 +45,8 @@ const pageData = {
             },
             {
                 "type": "slider",
-                "id": "v",
-                "text": "Flow Velocity, $v$ [m/s]",
+                "id": "V",
+                "text": "Flow Velocity, $V$ [m/s]",
                 "min": 0.1,
                 "max": 8,
                 "initialValue": 1,
@@ -64,12 +64,12 @@ const pageData = {
                 "id": "froude-number",
                 "text": "Froude Number, $Fr$",
                 "type": "calculation",
-                "value": "v / sqrt(g * y)"
+                "value": "V / sqrt(g * y)"
             },
         ]
     },
     "plots": {
-        "aspectRatio": 3,
+        "aspectRatio": 1.5,
         "settings": [
             {
                 "y": "wave-speed",
@@ -83,9 +83,9 @@ const pageData = {
             },
             {
                 "y": "froude-number",
-                "x": "v",
+                "x": "V",
                 "yLabel": "$Fr$",
-                "xLabel": "$v \\text{ [m/s]}$",
+                "xLabel": "$V \\text{ [m/s]}$",
                 "xMin": 0,
                 "xMax": 8,
                 "yMin": 0,

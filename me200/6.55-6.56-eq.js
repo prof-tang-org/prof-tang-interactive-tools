@@ -133,7 +133,7 @@ const pageData = {
         "outputColumns": 3
     },
     "plots": {
-        "aspectRatio": 3,
+        "aspectRatio": 1,
         "settings": [
             {
                 "y": "temp-2",
@@ -202,6 +202,6 @@ const pageData = {
                 ]
             }
         ],
-        "text": "Drag the red dots to analyze the influence of outlet pressure on the outlet state and specific work done under different polytropic modes."
+        "text": "Drag the dots to analyze the influence of outlet pressure on the outlet state and specific work done under different polytropic modes."
     }
 };
