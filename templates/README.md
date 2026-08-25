@@ -40,11 +40,12 @@ Rather than creating separate HTML pages for every physics/engineering topic, th
 
 ## 2. Quick Start Boilerplate
 
-Create a `.js` file inside the course directory (e.g., `me200/my-topic.js`). Copy and paste the template below, or duplicate [template.js](./template.js), to get started:
+Create a `.js` file inside the course directory (e.g., `me310/my-topic.js`). Copy and paste the template below, or duplicate [template.js](./template.js), to get started:
 
 ```javascript
+/** @type {PageData} */
 const pageData = {
-    "title": "Sample Topic Name",
+    "title": "Pipe Flow & Reynolds Number",
     "layout": {
         "grid": [
             {
@@ -56,74 +57,167 @@ const pageData = {
     },
     "equationElements": [
         {
-            "type": "header",
-            "text": "Core Concept Header"
-        },
-        {
-            "type": "note",
-            "text": "This is a note explaining that **bold**, *italics*, and __underlines__ are supported."
-        },
-        {
-            "type": "equation",
-            "text": "E = m c^2"
-        },
-        {
-            "type": "list",
-            "header": "Variable Definitions",
+            "type": "assumptions",
             "content": [
-                { "text": "$E$ — energy (J)" },
-                { "text": "$m$ — mass (kg)" },
-                { "text": "$c$ — speed of light ($3 \\times 10^8$ m/s)" }
+                "Steady, incompressible fluid flow in a circular pipe",
+                "Fully developed flow regime"
+            ]
+        },
+        {
+            "type": "equations",
+            "content": [
+                "Re = \\frac{\\rho V D}{\\mu}",
+                "'where the friction factor for laminar flow is:'",
+                "f = \\frac{64}{Re}"
+            ]
+        },
+        {
+            "type": "symbols",
+            "content": [
+                { "symbol": "$Re$", "definition": "Reynolds number" },
+                { "symbol": "$\\rho$", "definition": "density" },
+                { "symbol": "$V$", "definition": "velocity" },
+                { "symbol": "$D$", "definition": "pipe diameter" },
+                { "symbol": "$\\mu$", "definition": "dynamic viscosity" },
+                { "symbol": "$f$", "definition": "Darcy friction factor" }
             ]
         }
     ],
     "schematic": {
-        "src": "../assets/me200/sample-schem.png",
+        "src": "../assets/me310/sample-schem.png",
         "alt": "A visual diagram of the sample concept."
     },
     "inputOutput": {
         "fixedInputs": [
             {
-                "id": "constant-c",
-                "text": "Speed of Light c (m/s)",
-                "value": 299792458
+                "id": "fluid-type",
+                "text": "Selected Fluid",
+                "value": "Water"
+            },
+            {
+                "id": "roughness-eps",
+                "text": "Roughness, $\\varepsilon$ [mm]",
+                "type": "calculation",
+                "value": "fluid == 'water' ? 0.045 : 0.015",
+                "decimals": 3
             }
         ],
         "inputs": [
             {
+                "type": "dropdown",
+                "id": "fluid",
+                "text": "Fluid Type",
+                "choices": [
+                    { "text": "Water (20°C)", "value": "water" },
+                    { "text": "Air (20°C)", "value": "air" }
+                ],
+                "initialChoiceIndex": 0,
+                "notes": "Select fluid to load standard density and viscosity."
+            },
+            {
                 "type": "slider",
-                "id": "mass-m",
-                "text": "Mass (m) in kg",
-                "min": 0,
-                "max": 10,
-                "initialValue": 1,
-                "step": 0.1
+                "id": "velocity",
+                "text": "Flow Velocity, $V$ [m/s]",
+                "min": 0.1,
+                "max": 5.0,
+                "step": 0.1,
+                "initialValue": 1.5,
+                "notation": "standard"
+            },
+            {
+                "type": "slider-dropdown",
+                "id": "diameter",
+                "text": "Pipe Diameter, $D$ [m]",
+                "min": 0.01,
+                "max": 0.5,
+                "step": 0.01,
+                "initialValue": 0.05,
+                "initialChoiceIndex": 1,
+                "choices": [
+                    { "text": "Custom...", "value": "custom" },
+                    { "text": "DN50 (0.05 m)", "value": "0.05" },
+                    { "text": "DN100 (0.10 m)", "value": "0.10" },
+                    { "text": "DN200 (0.20 m)", "value": "0.20" }
+                ]
             }
         ],
         "outputs": [
             {
-                "text": "Energy E (Joules)",
-                "id": "energy-E",
-                "type": "calculation",
-                "value": "mass-m * constant-c * constant-c"
-            }
-        ]
-    },
-    "plots": {
-        "settings": [
+                "text": "Density, $\\rho$ [kg/m³]",
+                "id": "rho",
+                "type": "map",
+                "key": "fluid",
+                "value": [998.2, 1.204]
+            },
             {
-                "x": "mass-m",
-                "y": "energy-E",
-                "xLabel": "Mass m (kg)",
-                "yLabel": "Energy E (J)",
-                "xMin": 0,
-                "xMax": 10,
-                "yMin": 0,
-                "yMax": 9e17,
-                "yTickInterval": 1.5e17
+                "text": "Dynamic Viscosity, $\\mu$ [Pa·s]",
+                "id": "mu",
+                "type": "map",
+                "key": "fluid",
+                "value": [1.002e-3, 1.825e-5]
+            },
+            {
+                "text": "Reynolds Number, $Re$",
+                "id": "reynolds",
+                "type": "calculation",
+                "value": "rho * velocity * diameter / mu",
+                "decimals": 0
+            },
+            {
+                "text": "Flow Regime",
+                "id": "flow-regime",
+                "type": "calculation",
+                "value": "reynolds < 2300 ? 'Laminar ($Re < 2300$)' : (reynolds < 4000 ? 'Transitional' : 'Turbulent ($Re > 4000$)')"
             }
         ],
-        "text": "Drag the slider or the point on the plot to dynamically update the energy calculation."
+        "outputColumns": 4,
+        "dottedRange": {
+            "variable": "velocity",
+            "min": 0.0,
+            "max": 0.05
+        }
+    },
+    "plots": {
+        "aspectRatio": 1.2,
+        "plotColumns": 2,
+        "settings": [
+            {
+                "x": "velocity",
+                "y": "reynolds",
+                "xLabel": "$V \\text{ [m/s]}$",
+                "yLabel": "$Re$",
+                "xMin": 0,
+                "xMax": 5.0,
+                "xTickInterval": 1.0,
+                "yMin": 0,
+                "yMax": [300000, 25000],
+                "yTickInterval": [50000, 5000],
+                "key": "fluid",
+                "activeLabel": "$D = {diameter}\\text{ m}$",
+                "reference": [
+                    {
+                        "diameter": 0.10,
+                        "text": "DN100 reference",
+                        "labelPosition": "above"
+                    }
+                ]
+            },
+            {
+                "x": "diameter",
+                "y": "reynolds",
+                "xLabel": "$D \\text{ [m]}$",
+                "yLabel": "$Re$",
+                "xMin": 0,
+                "xMax": 0.5,
+                "xTickInterval": 0.1,
+                "yMin": 0,
+                "yMax": [300000, 25000],
+                "yTickInterval": [50000, 5000],
+                "key": "fluid",
+                "activeLabel": "$V = {velocity}\\text{ m/s}$"
+            }
+        ],
+        "text": "Adjust fluid, velocity, and pipe diameter to examine their effect on the Reynolds number and flow regime."
     }
 };
 ```
@@ -149,13 +243,13 @@ An ordered series of blocks rendered inside the equations card.
 
 | Element Type | Required Fields | Description |
 | :--- | :--- | :--- |
-| **`header`** | `text` (String) | Renders a level 3 heading (`<h3>`). Supports rich formatting. |
-| **`equation`** | `text` (String) | Renders a MathJax display block (`\( equation \)`). Do **not** wrap in `$$` or `$` delimiters. |
-| **`note`** | `text` (String or Array) | Renders notes styled with the `.note` class. If an array of strings is passed, each string generates a separate paragraph (`<p>`). |
-| **`list`** | `header` (String), `content` (Array) | Renders a bulleted list. The header is bolded, and the `content` is an array of objects of the form `{ "text": "item text" }` or `{ "symbol": "$x$", "definition": "desc" }`. |
 | **`assumptions`** | `content` (Array) | Renders the assumptions section. Displays header and text on separate lines without a bullet if content contains only 1 item, or as a bulleted list if there are multiple. |
-| **`equations`** | `content` (Array) | Renders equation blocks, automatically adding `**Equation**` or `**Equations**` above them. |
-| **`symbols`** | `content` (Array) | Renders the symbols list with the header `"Symbols"`. Symbol items must be structured: `{ "symbol": "$x$", "definition": "desc" }`. |
+| **`equations`** | `content` (Array) | Renders equation blocks, automatically adding `**Equation**` or `**Equations**` above them. Strings wrapped in single quotes (e.g., `"'where...'"` render as intermediate notes. Velocity must always use capital $V$. |
+| **`symbols`** | `content` (Array) | Renders the symbols list with the header `"Symbols"`. Symbol items must be structured: `{ "symbol": "$x$", "definition": "desc" }`. Definitions must **never** contain units. |
+| **`header`** | `text` (String) | Renders a level 3 heading (`<h3>`). Supports rich formatting. |
+| **`equation`** | `text` (String) | Renders a standalone MathJax display block (`\( equation \)`). Do **not** wrap in `$$` or `$` delimiters. |
+| **`note`** | `text` (String or Array) | Renders notes styled with the `.note` class. If an array of strings is passed, each string generates a separate paragraph (`<p>`). |
+| **`list`** | `header` (String), `content` (Array) | Renders a custom bulleted list. The header is bolded, and `content` is an array of objects `{ "text": "item text" }` or `{ "symbol": "$x$", "definition": "desc" }`. |
 | **`schematic`** | `src` (String), `alt` (String) | Sets a local schematic image URL and alt text. (Equivalent to setting a top-level `schematic` object). |
 
 > [!NOTE]
@@ -173,7 +267,7 @@ An ordered series of blocks rendered inside the equations card.
 > **Standard Guidelines for `equationElements`**
 > For consistency across all courses and topics, adhere to these standard conventions:
 > * **Assumptions:** Always use `type: "assumptions"` rather than custom note/list headers.
-> * **Equations:** Always use `type: "equations"` rather than custom note/list headers.
+> * **Equations:** Always use `type: "equations"` rather than custom note/list headers. Ensure velocity uses capital $V$.
 > * **Symbols:** Always use `type: "symbols"` rather than custom `list` headers.
 >   * *No Units:* Symbol definitions must **never** contain units (e.g. use "mass", not "mass (kg)" or "mass in kg").
 >   * *Structure:* Items must use `{ "symbol": "$x$", "definition": "description" }` to automatically join them with standard spacing and em-dashes (` — `).
@@ -193,36 +287,52 @@ The core of the simulation state. Contains variables, constants, interactive inp
 #### 1. `fixedInputs` (Array of Objects)
 Constants used in math formulas but not editable by the user.
 * `id` (String): Unique identifier.
-* `text` (String): Label description.
-* `value` (Number): Value.
+* `text` (String): Label description (supports LaTeX and conditional ternary JS expression strings).
+* `value` (Number | String): Constant number or conditional formula string.
+* `type` (String, optional): Set to `"calculation"` when `value` evaluates dynamically from other state variables.
+* `decimals` (Number | String, optional): Number of decimals or conditional JS expression (e.g. `"fluid == 'water' ? 3 : 2"`).
 
 #### 2. `inputs` (Array of Objects)
 Interactive controls rendered inside the `#controls` container.
 * `id` (String): Unique identifier. Used directly in calculation formulas.
-* `text` (String): Label text (supports inline math/formatting).
+* `text` (String): Label text (supports inline math/formatting and conditional JS expressions).
 * `type` (String): The type of UI control:
   * **`slider`**: A slider synced with a numeric text box. Shows bounds labels under the track.
   * **`number`**: A small standalone numeric input box.
   * **`dropdown`**: A selection menu. Requires a `choices` array of `{ "text": "Label", "value": "val" }` objects. Can include optional `notes` text. Supports custom numeric input when a `"custom"` option is present.
   * **`slider-dropdown`**: A slider combined with a select box next to it. Fully syncs numeric slider input and dropdown choice selections.
-* `min` (Number): Minimum allowed value.
-* `max` (Number): Maximum allowed value.
-* `step` (Number): Tick interval for the slider.
+* `min` (Number | String): Minimum allowed value (can be a conditional JS expression string).
+* `max` (Number | String): Maximum allowed value (can be a conditional JS expression string).
+* `step` (Number | String): Tick interval for the slider (can be a conditional JS expression string).
 * `initialValue` (Number): Default starting numeric value for `slider`, `number`, `dropdown`, or `slider-dropdown`.
 * `choices` (Array of Objects): Preset choices for `dropdown` and `slider-dropdown`.
 * `initialChoiceIndex` (Number, optional): Default selected index for `choices` (defaults to 0).
+* `notes` (String, optional): Explanatory note displayed directly beneath the dropdown control.
 * `notation` (String, optional): `"standard"` | `"scientific"`. Determines how numeric values are formatted and rendered. Defaults to `"standard"`.
-
 
 #### 3. `outputs` (Array of Objects)
 Dynamically updated outputs rendered under `#outputs`.
 * `id` (String): Unique identifier. Can be referenced by *subsequent* outputs or plot configs.
-* `text` (String): Label description.
+* `text` (String): Label description (supports inline math and conditional JS expressions).
 * `type` (String):
   * **`calculation`**: Evaluates a mathematical formula based on the current state.
   * **`map`**: Evaluates values based on a dropdown index selection. Requires:
     * `key` (String): The `id` of the dropdown input.
     * `value` (Array): An array of values ordered to match the index of the selected dropdown option.
+* `decimals` (Number | String, optional): Decimal precision (integer or conditional JS expression string).
+* `display` (String, optional): String template with `{value}` and `{variable_id}` placeholders to format output display.
+
+#### 4. Additional `inputOutput` Options
+* **`outputColumns`** (Number, optional): Number of columns to display outputs in a responsive grid (e.g. `3` or `4`).
+* **`dottedRange`** (Object | Array of Objects, optional): Configuration to visually gray-out inputs/outputs when an input is within an invalid or non-applicable range:
+  ```json
+  "dottedRange": {
+      "variable": "velocity",
+      "min": 0.0,
+      "max": 0.05
+  }
+  ```
+* **`note`** (Object, optional): Adds a conceptual note below the outputs card: `{ "text": "Note content..." }`.
 
 ---
 
@@ -231,7 +341,7 @@ Dynamically updated outputs rendered under `#outputs`.
 ### Formula Parsing Rules:
 * All variables are stored in a reactive state map. 
 * Calculations are written as standard JavaScript expression strings (e.g., `"volume-1 * temp-2"`).
-* **Automatic Math Prefixing**: The engine automatically translates standard math operations to their native JavaScript `Math` object equivalents. You should write `sqrt(...)`, `log(...)`, `pow(...)`, `sin(...)`, etc. The renderer converts them to `Math.sqrt(...)`, `Math.log(...)`, etc.
+* **Automatic Math Prefixing**: The engine automatically translates standard math operations to their native JavaScript `Math` object equivalents. You should write `sqrt(...)`, `log(...)`, `pow(...)`, `sin(...)`, `cos(...)`, `tan(...)`, `abs(...)`, `exp(...)`, etc. The renderer converts them to `Math.sqrt(...)`, `Math.log(...)`, etc.
 * **Hyphenated Variables**: Variable IDs containing hyphens (e.g., `mass-m` or `pressure-2`) are parsed safely. The renderer sorts keys descending by length to prevent partial-word overlaps and replaces them with `state["var-name"]` queries.
 * **Ternary Logic**: Conditional assignments are fully supported. For example:
   ```javascript
@@ -248,21 +358,33 @@ The renderer handles output printing through `formatNumber`:
 
 ## 5. D3 Plot Configuration (`plots`)
 
-The `plots` object governs one or more side-by-side curves rendered in D3.js.
+The `plots` object governs one or more interactive curves rendered in D3.js.
 
 ```javascript
 "plots": {
+    "aspectRatio": 1.2,              // Width-to-height ratio (W / H) per individual plot
+    "plotColumns": 2,                // Number of plot columns per row (multi-plot layout)
     "settings": [
         {
-            "x": "mass-m",            // Input ID mapped to X-Axis
-            "y": "energy-E",          // State ID mapped to Y-Axis
-            "xLabel": "Mass (kg)",
-            "yLabel": "Energy (J)",
+            "x": "velocity",                 // Input ID mapped to X-Axis
+            "y": "reynolds",                 // State ID (input/output) mapped to Y-Axis
+            "xLabel": "$V \\text{ [m/s]}$",  // X-Axis label (supports LaTeX math)
+            "yLabel": "$Re$",                // Y-Axis label (supports LaTeX math)
             "xMin": 0,
-            "xMax": 10,
+            "xMax": 5.0,
+            "xTickInterval": 1.0,            // Tick step interval along X-Axis
             "yMin": 0,
-            "yMax": 9e17,
-            "yTickInterval": 1e17
+            "yMax": [300000, 25000],         // Static number, mapped array, or formula string
+            "yTickInterval": [50000, 5000],  // Tick step interval along Y-Axis
+            "key": "fluid",                  // Connects array bounds to dropdown choice index
+            "activeLabel": "$D = {diameter}\\text{ m}$", // Dynamic label at end of active curve
+            "reference": [                   // Auxiliary static reference curves
+                {
+                    "diameter": 0.10,
+                    "text": "DN100 reference",
+                    "labelPosition": "above" // "above" | "below"
+                }
+            ]
         }
     ],
     "text": "Plot explanation footer note..."
@@ -276,9 +398,15 @@ The `plots` object governs one or more side-by-side curves rendered in D3.js.
 * **Input-Bounded Styling**: 
   * Points of the curve that lie *between* the input's configured `min` and `max` limits are rendered as a **solid line** (accessible range).
   * Points outside those bounds (but within the plot boundaries) are rendered as a **dashed line** (inaccessible/theoretical range).
+* **Dotted Range**: Set `dottedMin` and/or `dottedMax` on the plot setting to display theoretical/impossible regions along the X-axis as dotted lines.
+* **Tick Customization**:
+  * Rotate tick labels using `xTickRotation` or `yTickRotation` (integer angle in degrees, e.g. `45`).
+  * Force exponential scientific notation on axes using `xExponential: true` or `yExponential: true`.
 * **Dynamic Y-Scaling**:
-  * You can pass an array of numbers to `yMax` and `yTickInterval` (e.g., `yMax: [50, 100]`).
-  * The engine will evaluate the current Y-axis point and snap the scale boundaries to the matching limit index in the array to accommodate large changes in value.
+  * You can pass an array of numbers to `yMax` and `yTickInterval` (e.g., `yMax: [50, 100]`), optionally tied to a dropdown using `"key": "dropdown_id"`.
+  * If no `key` is supplied, the engine evaluates the current Y-axis point and snaps the scale boundaries to the matching limit index in the array to accommodate large changes in value.
+  * You can also supply a JS formula string (e.g., `"(5 / nu) < 5e5 ? 5e5 : 5e6"`).
+* **Crash Prevention**: Always ensure `yTickInterval` is sufficiently large so that `(yMax - yMin) / yTickInterval` does not exceed ~200, preventing browser stalls or crashes.
 
 ---
 
