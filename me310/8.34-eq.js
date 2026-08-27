@@ -2,7 +2,7 @@ const maxH = "max(0.06*l*pow(V,2)/(D*2*g), f*10*pow(V,2)/(D*2*g), f*l*pow(V,2)/(
 const yMaxExpr = `${maxH} < 0.5 ? 0.5 : (${maxH} < 5 ? 5 : (${maxH} < 50 ? 50 : 80))`;
 const yTickExpr = `${maxH} < 0.5 ? 0.1 : (${maxH} < 5 ? 1 : (${maxH} < 50 ? 10 : 20))`;
 
-/** @type {PageData} */
+/** @type {PageData} **/
 const pageData = {
     "title": "Major Head Loss",
     "layout": {

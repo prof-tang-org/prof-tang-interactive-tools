@@ -1,9 +1,26 @@
+const maxqboubleprime = "max(k*30/L/1000, k*deltaT/0.1/1000, 60*deltaT/L/1000)";
+const yMaxExprqboubleprime = `${maxqboubleprime} < 2 ? 2 : 20`;
+const yTickExprqboubleprime = `${maxqboubleprime} < 2 ? 0.2 : 2`;
+
+const maxQ_dot = "max(k*30*A/L/1000, k*deltaT*A/0.1/1000, 60*deltaT*0.5/L/1000, 60*deltaT*A/L/1000)";
+const yMaxExprQ_dot = `${maxQ_dot} < 1 ? 1 : 10`;
+const yTickExprQ_dot = `${maxQ_dot} < 1 ? 0.1 : 1`;
+
+const maxR_tcond = "max(0.5/(k*A)*1000, L/(k*0.1)*1000, L/(10*A)*1000)";
+const yMaxExprR_tcond = `${maxR_tcond} < 100 ? 100 : 500`;
+const yTickExprR_tcond = `${maxR_tcond} < 100 ? 10 : 50`;
+
+// const maxH = "max(0.06*l*pow(V,2)/(D*2*g), f*10*pow(V,2)/(D*2*g), f*l*pow(V,2)/(0.01*2*g), f*l*25/(D*2*g))";
+// const yMaxExpr = `${maxH} < 0.5 ? 0.5 : (${maxH} < 5 ? 5 : (${maxH} < 50 ? 50 : 80))`;
+// const yTickExpr = `${maxH} < 0.5 ? 0.1 : (${maxH} < 5 ? 1 : (${maxH} < 50 ? 10 : 20))`;
+
+/** @type {PageData} **/
 const pageData = {
-    "title": "Plane Wall Without Internal Heat Genration",
+    "title": "Plane Wall Without Internal Heat Generation",
     "layout": {
         "grid": [
             {
-                "desktop": "1.2fr 0.8fr",
+                "desktop": "1.2fr 0.7fr",
                 "mobile": "100%"
             },
             {
@@ -131,55 +148,177 @@ const pageData = {
                 "text": "Temperature, $T(x)$ [°C]",
                 "id": "T_x",
                 "type": "calculation",
-                "value": "T_s1 - deltaT * xoverL"
+                "value": "T_s1- deltaT*xoverL"
             },
             {
-                "text": "Temperature, $T(x)$ [°C]",
+                "text": "Heat Flux, $q''$ [kW/m²]",
                 "id": "qdoubleprime",
                 "type": "calculation",
-                "value": "T_s1 - deltaT * xoverL"
+                "value": "k*deltaT/L/1000"
             },
             {
-                "text": "Temperature, $T(x)$ [°C]",
+                "text": "Heat Rate, $\\dot{Q}$ [kW]",
                 "id": "Q_dot",
                 "type": "calculation",
-                "value": "T_s1 - deltaT * xoverL"
+                "value": "k*deltaT*A/L/1000"
             },
             {
-                "text": "Temperature, $T(x)$ [°C]",
+                "text": "Conduction Thermal Resistance, $R_{t,cond}$ [K/kW]",
                 "id": "R_tcond",
                 "type": "calculation",
-                "value": "T_s1 - deltaT * xoverL"
+                "value": "L/(k*A)*1000"
             }
         ]
     },
     "plots": {
-        "aspectRatio": 0.6,
+        "aspectRatio": 1,
+        "plotColumns": 2,
         "settings": [
             {
                 "x": "xoverL",
                 "y": "T_x",
-                "xLabel": "$x/L [-]$",
-                "yLabel": "T(x) [°C]",
+                "xLabel": "$x/L \\text{ [-]}$",
+                "yLabel": "$T(x) \\text{ [°C]}$",
                 "xMin": 0,
                 "xMax": 1,
                 "yMin": 10,
                 "yMax": 60,
-                "yTickInterval": 5
+                "yTickInterval": 10
             },
             {
-                "x": "xoverL",
-                "y": "T_x",
-                "xLabel": "$x/L [-]$",
-                "yLabel": "T(x) [°C]",
+                "x": "deltaT",
+                "y": "qdoubleprime",
+                "xLabel": "$\\Delta T \\text{ [°C]}$",
+                "yLabel": "$q'' \\text{ [kW/m}^2 \\text{]}$",
                 "xMin": 0,
-                "xMax": 1,
-                "yMin": 10,
-                "yMax": 60,
-                "yTickInterval": 5
-            }
+                "xMax": 30,
+                "yMin": 0,
+                "yMax": yMaxExprqboubleprime,
+                "yTickInterval": yTickExprqboubleprime
+            },
+            {
+                "x": "L",
+                "y": "qdoubleprime",            
+                "xLabel": "$L \\text{ [m]}$",
+                "yLabel": "$q'' \\text{ [kW/m}^2 \\text{]}$",
+                "xMin": 0,
+                "xMax": 0.5,
+                "yMin": 0,
+                "yMax": yMaxExprqboubleprime,
+                "yTickInterval": yTickExprqboubleprime
+            },
+            {
+                "x": "A",
+                "y": "qdoubleprime",                
+                "xLabel": "$A \\text{ [m}^2 \\text{]}$",
+                "yLabel": "$q'' \\text{ [kW/m}^2 \\text{]}$",                
+                "xMin": 0,
+                "xMax": 0.5,
+                "yMin": 0,
+                "yMax": yMaxExprqboubleprime,
+                "yTickInterval": yTickExprqboubleprime
+            },
+            {
+                "x": "k",
+                "y": "qdoubleprime",                
+                "xLabel": "$k \\text{ [W/(m·K)]}$",
+                "yLabel": "$q'' \\text{ [kW/m}^2 \\text{]}$",                
+                "xMin": 0,
+                "xMax": 60,
+                "yMin": 0,
+                "yMax": yMaxExprqboubleprime,
+                "yTickInterval": yTickExprqboubleprime
+            }, 
+            {
+                "x": "deltaT",
+                "y": "Q_dot",
+                "xLabel": "$\\Delta T \\text{ [°C]}$",
+                "yLabel": "$\\dot{Q} \\text{ [kW]}$",
+                "xMin": 0,
+                "xMax": 30,
+                "yMin": 0,
+                "yMax": yMaxExprQ_dot,
+                "yTickInterval": yTickExprQ_dot
+            },
+            {
+                "x": "L",
+                "y": "Q_dot",            
+                "xLabel": "$L \\text{ [m]}$",
+                "yLabel": "$\\dot{Q} \\text{ [kW]}$",
+                "xMin": 0,
+                "xMax": 0.5,
+                "yMin": 0,
+                "yMax": yMaxExprQ_dot,
+                "yTickInterval": yTickExprQ_dot
+            },
+            {
+                "x": "A",
+                "y": "Q_dot",                
+                "xLabel": "$A \\text{ [m}^2 \\text{]}$",
+                "yLabel": "$\\dot{Q} \\text{ [kW]}$",                
+                "xMin": 0,
+                "xMax": 0.5,
+                "yMin": 0,
+                "yMax": yMaxExprQ_dot,
+                "yTickInterval": yTickExprQ_dot
+            },
+            {
+                "x": "k",
+                "y": "Q_dot",                
+                "xLabel": "$k \\text{ [W/(m·K)]}$",
+                "yLabel": "$\\dot{Q} \\text{ [kW]}$",                
+                "xMin": 0,
+                "xMax": 60,
+                "yMin": 0,
+                "yMax": yMaxExprQ_dot,
+                "yTickInterval": yTickExprQ_dot
+            },             
+            {
+                "x": "deltaT",
+                "y": "R_tcond",
+                "xLabel": "$\\Delta T \\text{ [°C]}$",
+                "yLabel": "$R_{\\text{t,cond}} \\text{ [K/kW]}$",
+                "xMin": 0,
+                "xMax": 30,
+                "yMin": 0,
+                "yMax": yMaxExprR_tcond,
+                "yTickInterval": yTickExprR_tcond
+            },
+            {
+                "x": "L",
+                "y": "R_tcond",            
+                "xLabel": "$L \\text{ [m]}$",
+                "yLabel": "$R_{\\text{t,cond}} \\text{ [K/kW]}$",
+                "xMin": 0,
+                "xMax": 0.5,
+                "yMin": 0,
+                "yMax": yMaxExprR_tcond,
+                "yTickInterval": yTickExprR_tcond
+            },
+            {
+                "x": "A",
+                "y": "R_tcond",                
+                "xLabel": "$A \\text{ [m}^2 \\text{]}$",
+                "yLabel": "$R_{\\text{t,cond}} \\text{ [K/kW]}$",                
+                "xMin": 0,
+                "xMax": 0.5,
+                "yMin": 0,
+                "yMax": yMaxExprR_tcond,
+                "yTickInterval": yTickExprR_tcond
+            },
+            {
+                "x": "k",
+                "y": "R_tcond",                
+                "xLabel": "$k \\text{ [W/(m·K)]}$",
+                "yLabel": "$R_{\\text{t,cond}} \\text{ [K/kW]}$",                
+                "xMin": 0,
+                "xMax": 60,
+                "yMin": 0,
+                "yMax": yMaxExprR_tcond,
+                "yTickInterval": yTickExprR_tcond
+            },                             
         ],
         
-        "text": "Drag the slider or the point on the plot to dynamically update the energy calculation."
+        "text": "Drag the slider or the point on the plot to dynamically update the calculation."
     }
 };
