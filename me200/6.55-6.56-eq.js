@@ -43,8 +43,7 @@ const pageData = {
         {
             "type": "note",
             "text": [
-                "**Note**",
-                "For an ideal gas, a polytropic process with $n = 1$ simplifies to an **isothermal** process ($T_1 = T_2 = T$)"
+                "Note: For an ideal gas, a polytropic process with $n = 1$ simplifies to an **isothermal** process ($T_1 = T_2 = T$)"
             ]
         }
     ],

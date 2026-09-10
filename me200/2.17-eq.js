@@ -8,7 +8,7 @@ const pageData = {
                 "mobile": "100%"
             },
             {
-                "desktop": "1fr 1fr",
+                "desktop": "0.3fr 1fr",
                 "mobile": "100%"
             }
         ]

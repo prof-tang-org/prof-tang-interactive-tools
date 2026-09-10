@@ -174,7 +174,7 @@ const pageData = {
         "aspectRatio": 1,
         "plotColumns": 2,
         "settings": [
-            {
+            [{
                 "x": "xoverL",
                 "y": "T_x",
                 "xLabel": "$x/L \\text{ [-]}$",
@@ -183,9 +183,10 @@ const pageData = {
                 "xMax": 1,
                 "yMin": 10,
                 "yMax": 60,
-                "yTickInterval": 10
-            },
-            {
+                "yTickInterval": 10,
+                "aspectRatio": 1
+            }, {}],
+            [{
                 "x": "deltaT",
                 "y": "qdoubleprime",
                 "xLabel": "$\\Delta T \\text{ [°C]}$",
@@ -206,8 +207,8 @@ const pageData = {
                 "yMin": 0,
                 "yMax": yMaxExprqboubleprime,
                 "yTickInterval": yTickExprqboubleprime
-            },
-            {
+            }],
+            [{
                 "x": "A",
                 "y": "qdoubleprime",                
                 "xLabel": "$A \\text{ [m}^2 \\text{]}$",
@@ -228,8 +229,8 @@ const pageData = {
                 "yMin": 0,
                 "yMax": yMaxExprqboubleprime,
                 "yTickInterval": yTickExprqboubleprime
-            }, 
-            {
+            }], 
+            [{
                 "x": "deltaT",
                 "y": "Q_dot",
                 "xLabel": "$\\Delta T \\text{ [°C]}$",
@@ -250,8 +251,8 @@ const pageData = {
                 "yMin": 0,
                 "yMax": yMaxExprQ_dot,
                 "yTickInterval": yTickExprQ_dot
-            },
-            {
+            }],
+            [{
                 "x": "A",
                 "y": "Q_dot",                
                 "xLabel": "$A \\text{ [m}^2 \\text{]}$",
@@ -272,8 +273,8 @@ const pageData = {
                 "yMin": 0,
                 "yMax": yMaxExprQ_dot,
                 "yTickInterval": yTickExprQ_dot
-            },             
-            {
+            }],             
+            [{
                 "x": "deltaT",
                 "y": "R_tcond",
                 "xLabel": "$\\Delta T \\text{ [°C]}$",
@@ -294,8 +295,8 @@ const pageData = {
                 "yMin": 0,
                 "yMax": yMaxExprR_tcond,
                 "yTickInterval": yTickExprR_tcond
-            },
-            {
+            }],
+            [{
                 "x": "A",
                 "y": "R_tcond",                
                 "xLabel": "$A \\text{ [m}^2 \\text{]}$",
@@ -316,7 +317,7 @@ const pageData = {
                 "yMin": 0,
                 "yMax": yMaxExprR_tcond,
                 "yTickInterval": yTickExprR_tcond
-            },                             
+            }],                             
         ],
         
         "text": "Drag the slider or the point on the plot to dynamically update the calculation."
