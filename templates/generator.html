@@ -2137,7 +2137,9 @@
         if (!pageData.plots) {
             pageData.plots = { settings: [], aspectRatio: 1.5, text: 'Interactive plot description.' };
         }
-        const plotSet = pageData.plots.settings && pageData.plots.settings[0] ? pageData.plots.settings[0] : {
+        const rawSettings = pageData.plots.settings;
+        const firstRow = (rawSettings && rawSettings[0]) ? rawSettings[0] : null;
+        const plotSet = firstRow ? (Array.isArray(firstRow) ? firstRow[0] : firstRow) : {
             x: '', y: '', xLabel: '', yLabel: '', xMin: 0, xMax: 10, yMin: 0, yMax: 100, yTickInterval: 10
         };
 
@@ -2237,8 +2239,8 @@
             // Preserve references
             if (plotSet.reference) settingsObj.reference = plotSet.reference;
 
-            // Set main plots settings
-            pageData.plots.settings = [settingsObj];
+            // Set main plots settings as 2D array
+            pageData.plots.settings = [[settingsObj]];
             pageData.plots.aspectRatio = parseFloat(document.getElementById('plot-aspect-ratio').value) || 1.5;
 
             closeModal('plot-editor-modal');

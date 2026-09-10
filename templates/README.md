@@ -358,34 +358,52 @@ The renderer handles output printing through `formatNumber`:
 
 ## 5. D3 Plot Configuration (`plots`)
 
-The `plots` object governs one or more interactive curves rendered in D3.js.
+The `plots` object governs one or more interactive curves rendered in D3.js. Plot settings are defined as a **2D array** where each inner array represents a row of plots in the grid layout.
 
 ```javascript
 "plots": {
-    "aspectRatio": 1.2,              // Width-to-height ratio (W / H) per individual plot
-    "plotColumns": 2,                // Number of plot columns per row (multi-plot layout)
+    "aspectRatio": 1.2,              // Width-to-height ratio (W / H) per individual plot (or array of numbers per row: [1.2, 2.0])
     "settings": [
-        {
-            "x": "velocity",                 // Input ID mapped to X-Axis
-            "y": "reynolds",                 // State ID (input/output) mapped to Y-Axis
-            "xLabel": "$V \\text{ [m/s]}$",  // X-Axis label (supports LaTeX math)
-            "yLabel": "$Re$",                // Y-Axis label (supports LaTeX math)
-            "xMin": 0,
-            "xMax": 5.0,
-            "xTickInterval": 1.0,            // Tick step interval along X-Axis
-            "yMin": 0,
-            "yMax": [300000, 25000],         // Static number, mapped array, or formula string
-            "yTickInterval": [50000, 5000],  // Tick step interval along Y-Axis
-            "key": "fluid",                  // Connects array bounds to dropdown choice index
-            "activeLabel": "$D = {diameter}\\text{ m}$", // Dynamic label at end of active curve
-            "reference": [                   // Auxiliary static reference curves
-                {
-                    "diameter": 0.10,
-                    "text": "DN100 reference",
-                    "labelPosition": "above" // "above" | "below"
-                }
-            ]
-        }
+        [                            // Row 1: Two side-by-side plots (50% width each)
+            {
+                "x": "velocity",                 // Input ID mapped to X-Axis
+                "y": "reynolds",                 // State ID (input/output) mapped to Y-Axis
+                "width": "50%",                  // Percentage width within the row (defaults to equal share)
+                "aspectRatio": 1.2,              // Optional per-plot aspect ratio override
+                "xLabel": "$V \\text{ [m/s]}$",  // X-Axis label (supports LaTeX math)
+                "yLabel": "$Re$",                // Y-Axis label (supports LaTeX math)
+                "xMin": 0,
+                "xMax": 5.0,
+                "xTickInterval": 1.0,            // Tick step interval along X-Axis
+                "yMin": 0,
+                "yMax": [300000, 25000],         // Static number, mapped array, or formula string
+                "yTickInterval": [50000, 5000],  // Tick step interval along Y-Axis
+                "key": "fluid",                  // Connects array bounds to dropdown choice index
+                "activeLabel": "$D = {diameter}\\text{ m}$", // Dynamic label at end of active curve
+                "reference": [                   // Auxiliary static reference curves
+                    {
+                        "diameter": 0.10,
+                        "text": "DN100 reference",
+                        "labelPosition": "above" // "above" | "below"
+                    }
+                ]
+            },
+            {
+                "x": "diameter",
+                "y": "reynolds",
+                "width": "50%",
+                "xLabel": "$D \\text{ [m]}$",
+                "yLabel": "$Re$"
+                // ...
+            }
+        ],
+        [                            // Row 2: Single full-width plot (or use {} for an empty placeholder slot)
+            {
+                "x": "temperature",
+                "y": "viscosity",
+                "aspectRatio": 2.2           // Wider aspect ratio for full-width row plot
+            }
+        ]
     ],
     "text": "Plot explanation footer note..."
 }

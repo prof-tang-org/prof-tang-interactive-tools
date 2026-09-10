@@ -996,29 +996,104 @@ function _plot(refData, clipId = 0, name = '', dashed = false, opacity = 1, stro
 }
 
 function injectPlots(state, pageData) {
-    if (!pageData.plots || pageData.plots.settings.length === 0 || typeof d3 === 'undefined') return;
+    if (!pageData.plots || !pageData.plots.settings || pageData.plots.settings.length === 0 || typeof d3 === 'undefined') return;
 
     const svg = d3.select('#plot');
     if (svg.empty()) return;
     svg.selectAll('*').remove(); // Clear previous plot
 
-    const maxRotation = Math.max(0, ...pageData.plots.settings.map(p => Math.abs(p.xTickRotation || 0)));
+    const rawSettings = pageData.plots.settings;
+    let rows = [];
+    if (Array.isArray(rawSettings) && rawSettings.length > 0) {
+        if (Array.isArray(rawSettings[0])) {
+            rows = rawSettings;
+        } else {
+            const cols = (pageData.plots.plotColumns && pageData.plots.plotColumns > 0)
+                ? Math.min(pageData.plots.plotColumns, rawSettings.length)
+                : rawSettings.length;
+            for (let i = 0; i < rawSettings.length; i += cols) {
+                rows.push(rawSettings.slice(i, i + cols));
+            }
+        }
+    }
+    if (rows.length === 0) return;
+
+    const flatSettings = rows.flat().filter(p => p && typeof p === 'object');
+    const maxRotation = Math.max(0, ...flatSettings.map(p => Math.abs((p && p.xTickRotation) || 0)));
     const extraBottom = maxRotation > 0 ? Math.ceil(35 * Math.sin(maxRotation * Math.PI / 180) + 15) : 0;
 
     let W = 760, m = { l: 80, r: 40, t: 14, b: 60 + extraBottom };
     const gapX = 80;
     const gapY = 70 + extraBottom;
-    const numPlots = pageData.plots.settings.length;
-    const plotCols = pageData.plots.plotColumns;
-    const cols = (plotCols && plotCols > 0) ? Math.min(plotCols, numPlots) : numPlots;
-    const numRows = Math.ceil(numPlots / cols);
-    const totalGapX = gapX * (cols - 1);
-    const iw = (W - m.l - m.r - totalGapX) / cols;
+    const W_avail = W - m.l - m.r;
 
-    const plotAspectRatio = (pageData.plots.aspectRatio !== undefined) ? pageData.plots.aspectRatio : 1.5;
-    const ih = iw / plotAspectRatio;
-    const totalGapY = gapY * (numRows - 1);
-    let H = m.t + m.b + (numRows * ih) + totalGapY;
+    const parseWidthPct = (val) => {
+        if (typeof val === 'number') {
+            return val > 1 ? val : val * 100;
+        }
+        if (typeof val === 'string') {
+            const cleaned = val.trim().replace('%', '');
+            const parsed = parseFloat(cleaned);
+            if (!isNaN(parsed)) return parsed;
+        }
+        return null;
+    };
+
+    const rowLayouts = rows.map((rowPlots, rowIndex) => {
+        const N_r = rowPlots.length;
+        const totalGapX = gapX * Math.max(0, N_r - 1);
+        const W_net = W_avail - totalGapX;
+
+        let specifiedSum = 0;
+        let unspecifiedCount = 0;
+        const pcts = rowPlots.map(p => {
+            const pct = parseWidthPct(p ? p.width : null);
+            if (pct !== null) {
+                specifiedSum += pct;
+                return pct;
+            } else {
+                unspecifiedCount++;
+                return null;
+            }
+        });
+
+        const defaultPct = unspecifiedCount > 0 ? Math.max(0, 100 - specifiedSum) / unspecifiedCount : 0;
+        const finalPcts = pcts.map(pct => pct !== null ? pct : defaultPct);
+        const plotWidths = finalPcts.map(pct => W_net * (pct / 100));
+
+        const plotHeights = rowPlots.map((plotConfig, colIndex) => {
+            const iw = plotWidths[colIndex];
+            let ar = plotConfig ? plotConfig.aspectRatio : undefined;
+            if (ar === undefined) {
+                if (Array.isArray(pageData.plots.aspectRatio)) {
+                    ar = pageData.plots.aspectRatio[rowIndex] !== undefined ? pageData.plots.aspectRatio[rowIndex] : 1.5;
+                } else if (pageData.plots.aspectRatio !== undefined) {
+                    ar = pageData.plots.aspectRatio;
+                } else {
+                    ar = 1.5;
+                }
+            }
+            return iw / ar;
+        });
+
+        const rowHeight = Math.max(...plotHeights, 100);
+
+        return {
+            rowPlots,
+            plotWidths,
+            plotHeights,
+            rowHeight
+        };
+    });
+
+    let currentY = m.t;
+    const rowYOffsets = rowLayouts.map((layout) => {
+        const y = currentY;
+        currentY += layout.rowHeight + gapY;
+        return y;
+    });
+
+    let H = currentY - gapY + m.b;
 
     const svgEl = document.getElementById('plot');
     if (svgEl) {
@@ -1030,427 +1105,424 @@ function injectPlots(state, pageData) {
     const scale = (renderedWidth > 0) ? W / renderedWidth : 1;
 
     let maxObservedBottom = 0;
+    let globalPlotIndex = 0;
 
-    pageData.plots.settings.forEach((plotConfig, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        const plot_x_offset = m.l + col * (iw + gapX);
-        const plot_y_offset = m.t + row * (ih + gapY);
+    rowLayouts.forEach((layout, rowIndex) => {
+        let currentX = m.l;
+        const plot_y_offset = rowYOffsets[rowIndex];
 
-        let currentYVal = state[plotConfig.y];
-        if (currentYVal === undefined || isNaN(currentYVal)) return;
+        layout.rowPlots.forEach((plotConfig, colIndex) => {
+            const iw = layout.plotWidths[colIndex];
+            const ih = layout.plotHeights[colIndex];
+            const plot_x_offset = currentX;
+            currentX += iw + gapX;
 
-        const dropdownIndex = getDropdownSelectedIndex(plotConfig.key, state);
-        let yIndex = dropdownIndex !== -1 ? dropdownIndex : 0;
+            const isEmptySlot = !plotConfig || Object.keys(plotConfig).length === 0 || (!plotConfig.x && !plotConfig.y);
+            if (isEmptySlot) return;
 
-        let yMaxRaw = plotConfig.yMax;
-        let yMax;
-        if (Array.isArray(yMaxRaw)) {
-            if (dropdownIndex !== -1) {
-                yMax = yMaxRaw[yIndex] !== undefined ? yMaxRaw[yIndex] : yMaxRaw[yMaxRaw.length - 1];
+            const plotIndex = globalPlotIndex++;
+
+            let currentYVal = state[plotConfig.y];
+            if (currentYVal === undefined || isNaN(currentYVal)) return;
+
+            const dropdownIndex = getDropdownSelectedIndex(plotConfig.key, state);
+            let yIndex = dropdownIndex !== -1 ? dropdownIndex : 0;
+
+            let yMaxRaw = plotConfig.yMax;
+            let yMax;
+            if (Array.isArray(yMaxRaw)) {
+                if (dropdownIndex !== -1) {
+                    yMax = yMaxRaw[yIndex] !== undefined ? yMaxRaw[yIndex] : yMaxRaw[yMaxRaw.length - 1];
+                } else {
+                    // Evaluate dynamic max bounds based on current Y value
+                    const matchedVal = yMaxRaw.find(maxVal => {
+                        const evaluatedMax = typeof maxVal === 'string' ? evaluateFormula(maxVal, state) : maxVal;
+                        return currentYVal <= evaluatedMax;
+                    });
+                    if (matchedVal !== undefined) {
+                        yIndex = yMaxRaw.indexOf(matchedVal);
+                        yMax = matchedVal;
+                    } else {
+                        yIndex = yMaxRaw.length - 1;
+                        yMax = yMaxRaw[yIndex];
+                    }
+                }
             } else {
-                // Evaluate dynamic max bounds based on current Y value
-                const matchedVal = yMaxRaw.find(maxVal => {
-                    const evaluatedMax = typeof maxVal === 'string' ? evaluateFormula(maxVal, state) : maxVal;
-                    return currentYVal <= evaluatedMax;
-                });
-                if (matchedVal !== undefined) {
-                    yIndex = yMaxRaw.indexOf(matchedVal);
-                    yMax = matchedVal;
-                } else {
-                    yIndex = yMaxRaw.length - 1;
-                    yMax = yMaxRaw[yIndex];
-                }
+                yMax = yMaxRaw;
             }
-        } else {
-            yMax = yMaxRaw;
-        }
 
-        if (typeof yMax === 'string') {
-            yMax = evaluateFormula(yMax, state);
-        }
-
-        const resolveProperty = (val) => {
-            if (Array.isArray(val)) {
-                return val[yIndex] !== undefined ? val[yIndex] : val[val.length - 1];
+            if (typeof yMax === 'string') {
+                yMax = evaluateFormula(yMax, state);
             }
-            return val;
-        };
 
-        const xMinRaw = resolveProperty(plotConfig.xMin);
-        const xMinVal = typeof xMinRaw === 'string' ? evaluateFormula(xMinRaw, state) : xMinRaw;
-
-        const xMaxRaw = resolveProperty(plotConfig.xMax);
-        const xMaxVal = typeof xMaxRaw === 'string' ? evaluateFormula(xMaxRaw, state) : xMaxRaw;
-
-        const xTickIntervalRaw = resolveProperty(plotConfig.xTickInterval);
-        let xTickIntervalVal = typeof xTickIntervalRaw === 'string' ? evaluateFormula(xTickIntervalRaw, state) : xTickIntervalRaw;
-
-        const yMinRaw = resolveProperty(plotConfig.yMin);
-        const yMinVal = typeof yMinRaw === 'string' ? evaluateFormula(yMinRaw, state) : yMinRaw;
-
-        const yTickIntervalRaw = resolveProperty(plotConfig.yTickInterval);
-        let yTickIntervalVal = typeof yTickIntervalRaw === 'string' ? evaluateFormula(yTickIntervalRaw, state) : yTickIntervalRaw;
-
-        const x = plotConfig.xLog
-            ? d3.scaleLog().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw])
-            : d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
-        const y = plotConfig.yLog
-            ? d3.scaleLog().domain([yMinVal, yMax]).range([plot_y_offset + ih, plot_y_offset])
-            : d3.scaleLinear().domain([yMinVal, yMax]).range([plot_y_offset + ih, plot_y_offset]);
-
-        // Axes
-        const xAxis = d3.axisBottom(x).ticks(5);
-        if (plotConfig.xLog) {
-            xAxis.tickFormat(d => {
-                const log = Math.log10(d);
-                if (Math.abs(log - Math.round(log)) < 1e-9) {
-                    if (d >= 1e6 || d <= 1e-3) {
-                        return d.toExponential().replace(/\.0+e/, 'e').replace(/e\+/, 'e');
-                    }
-                    return d.toString();
+            const resolveProperty = (val) => {
+                if (Array.isArray(val)) {
+                    return val[yIndex] !== undefined ? val[yIndex] : val[val.length - 1];
                 }
-                return "";
-            });
-        } else {
-            if (xTickIntervalVal !== undefined) {
-                const tickCount = (xMaxVal - xMinVal) / xTickIntervalVal;
-                if (tickCount > 200) {
-                    console.warn(`xTickIntervalVal ${xTickIntervalVal} is too small for range [${xMinVal}, ${xMaxVal}]. Skipping tickValues to prevent crash.`);
-                } else {
-                    const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
-                    xAxis.tickValues(ticks);
-                }
-            }
-            if (plotConfig.xExponential) {
+                return val;
+            };
+
+            const xMinRaw = resolveProperty(plotConfig.xMin);
+            const xMinVal = typeof xMinRaw === 'string' ? evaluateFormula(xMinRaw, state) : xMinRaw;
+
+            const xMaxRaw = resolveProperty(plotConfig.xMax);
+            const xMaxVal = typeof xMaxRaw === 'string' ? evaluateFormula(xMaxRaw, state) : xMaxRaw;
+
+            const xTickIntervalRaw = resolveProperty(plotConfig.xTickInterval);
+            let xTickIntervalVal = typeof xTickIntervalRaw === 'string' ? evaluateFormula(xTickIntervalRaw, state) : xTickIntervalRaw;
+
+            const yMinRaw = resolveProperty(plotConfig.yMin);
+            const yMinVal = typeof yMinRaw === 'string' ? evaluateFormula(yMinRaw, state) : yMinRaw;
+
+            const yTickIntervalRaw = resolveProperty(plotConfig.yTickInterval);
+            let yTickIntervalVal = typeof yTickIntervalRaw === 'string' ? evaluateFormula(yTickIntervalRaw, state) : yTickIntervalRaw;
+
+            const x = plotConfig.xLog
+                ? d3.scaleLog().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw])
+                : d3.scaleLinear().domain([xMinVal, xMaxVal]).range([plot_x_offset, plot_x_offset + iw]);
+            const y = plotConfig.yLog
+                ? d3.scaleLog().domain([yMinVal, yMax]).range([plot_y_offset + ih, plot_y_offset])
+                : d3.scaleLinear().domain([yMinVal, yMax]).range([plot_y_offset + ih, plot_y_offset]);
+
+            // Axes
+            const xAxis = d3.axisBottom(x).ticks(5);
+            if (plotConfig.xLog) {
                 xAxis.tickFormat(d => {
-                    if (d === 0) return '0';
-                    return d.toExponential().replace(/e\+/, 'e');
-                });
-            } else if (xTickIntervalVal !== undefined) {
-                xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
-            }
-        }
-        const xAxisG = svg.append('g').attr('class', 'axis')
-            .attr('transform', `translate(0,${plot_y_offset + ih})`)
-        xAxisG.call(xAxis);
-
-        const xTextRotation = plotConfig.xTickRotation || 0;
-        xAxisG.selectAll('text')
-            .style('font-size', `${1 * scale}rem`)
-            .attr('transform', `rotate(${-xTextRotation})`)
-            .style('text-anchor', xTextRotation > 0 ? 'end' : 'middle');
-
-        const yAxis = d3.axisLeft(y).ticks(5);
-        if (plotConfig.yLog) {
-            yAxis.tickFormat(d => {
-                const log = Math.log10(d);
-                if (Math.abs(log - Math.round(log)) < 1e-9) {
-                    if (d >= 1e6 || d <= 1e-3) {
-                        return d.toExponential().replace(/\.0+e/, 'e').replace(/e\+/, 'e');
+                    const log = Math.log10(d);
+                    if (Math.abs(log - Math.round(log)) < 1e-9) {
+                        if (d >= 1e6 || d <= 1e-3) {
+                            return d.toExponential().replace(/\.0+e/, 'e').replace(/e\+/, 'e');
+                        }
+                        return d.toString();
                     }
-                    return d.toString();
+                    return "";
+                });
+            } else {
+                if (xTickIntervalVal !== undefined) {
+                    const tickCount = (xMaxVal - xMinVal) / xTickIntervalVal;
+                    if (tickCount > 200) {
+                        console.warn(`xTickIntervalVal ${xTickIntervalVal} is too small for range [${xMinVal}, ${xMaxVal}]. Skipping tickValues to prevent crash.`);
+                    } else {
+                        const ticks = d3.range(xMinVal, xMaxVal + xTickIntervalVal / 2, xTickIntervalVal);
+                        xAxis.tickValues(ticks);
+                    }
                 }
-                return "";
-            });
-        } else {
-            if (yTickIntervalVal !== undefined) {
-                const tickCount = (yMax - yMinVal) / yTickIntervalVal;
-                if (tickCount > 200) {
-                    console.warn(`yTickIntervalVal ${yTickIntervalVal} is too small for range [${yMinVal}, ${yMax}]. Skipping tickValues to prevent crash.`);
-                } else {
-                    const ticks = d3.range(yMinVal, yMax + yTickIntervalVal / 2, yTickIntervalVal);
-                    yAxis.tickValues(ticks);
+                if (plotConfig.xExponential) {
+                    xAxis.tickFormat(d => {
+                        if (d === 0) return '0';
+                        return d.toExponential().replace(/e\+/, 'e');
+                    });
+                } else if (xTickIntervalVal !== undefined) {
+                    xAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
                 }
             }
-            if (plotConfig.yExponential) {
+            const xAxisG = svg.append('g').attr('class', 'axis')
+                .attr('transform', `translate(0,${plot_y_offset + ih})`)
+            xAxisG.call(xAxis);
+
+            const xTextRotation = plotConfig.xTickRotation || 0;
+            xAxisG.selectAll('text')
+                .style('font-size', `${1 * scale}rem`)
+                .attr('transform', `rotate(${-xTextRotation})`)
+                .style('text-anchor', xTextRotation > 0 ? 'end' : 'middle');
+
+            const yAxis = d3.axisLeft(y).ticks(5);
+            if (plotConfig.yLog) {
                 yAxis.tickFormat(d => {
-                    if (d === 0) return '0';
-                    return d.toExponential().replace(/e\+/, 'e');
+                    const log = Math.log10(d);
+                    if (Math.abs(log - Math.round(log)) < 1e-9) {
+                        if (d >= 1e6 || d <= 1e-3) {
+                            return d.toExponential().replace(/\.0+e/, 'e').replace(/e\+/, 'e');
+                        }
+                        return d.toString();
+                    }
+                    return "";
                 });
-            } else if (yTickIntervalVal !== undefined) {
-                yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
-            }
-        }
-        const yAxisG = svg.append('g').attr('class', 'axis')
-            .attr('transform', `translate(${plot_x_offset},0)`);
-        yAxisG.call(yAxis);
-
-        const yTextRotation = plotConfig.yTickRotation || 0;
-
-        yAxisG.selectAll('text')
-            .style('font-size', `${1 * scale}rem`)
-            .attr('transform', `rotate(${-yTextRotation})`)
-
-        // Labels
-        // Use foreignObject for x-axis to allow HTML (MathJax) rendering
-        const xAxisBBox = xAxisG.node().getBBox(); // BBox of the axis ticks/numbers
-
-        // In local coordinates of xAxisG, the axis line is at y = 0.
-        // The bottom of the x-axis (line + ticks + tick labels) in global SVG coordinates is:
-        const axisBottomY = (plot_y_offset + ih) + xAxisBBox.y + xAxisBBox.height;
-
-        // Define margin and height in SVG coordinates, scaled to keep physical size constant
-        const margin = 2 * scale;
-        const labelHeight = 30 * scale;
-
-        const xLabelFO = svg.append('foreignObject')
-            .attr('x', plot_x_offset).attr('y', axisBottomY + margin)
-            .attr('width', iw).attr('height', labelHeight);
-        const xLabelDiv = xLabelFO.append('xhtml:div')
-            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
-        const xText = typeof plotConfig.xLabel === 'string' && plotConfig.xLabel.includes('?') ? evaluateFormula(plotConfig.xLabel, state) : plotConfig.xLabel;
-        if (mathjaxCache.has(xText)) {
-            xLabelDiv.html(mathjaxCache.get(xText));
-        } else {
-            xLabelDiv.html(parseText(xText))
-                .classed('needs-typeset', true)
-                .attr('data-raw-text', xText);
-        }
-
-        const plotBottomY = axisBottomY + margin + labelHeight + 10 * scale;
-        if (plotBottomY > maxObservedBottom) {
-            maxObservedBottom = plotBottomY;
-        }
-
-        const yAxisBBox = yAxisG.node().getBBox(); // BBox of the axis ticks/numbers
-
-        // Use foreignObject for y-axis to allow HTML (MathJax) rendering
-        const yLabelFO = svg.append('foreignObject')
-            .attr('width', ih) // The width of the object is the height of the plot area
-            .attr('height', 50) // The height of the object is the space for the label
-            // 1. Translate to final position, then 2. Rotate around the top-left corner of the object
-            .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${plot_y_offset + ih}) rotate(-90)`);
-
-        // The inner div uses flexbox to perfectly center the content.
-        const yLabelDiv = yLabelFO.append('xhtml:div')
-            .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
-            .style('width', '100%').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
-        const yText = typeof plotConfig.yLabel === 'string' && plotConfig.yLabel.includes('?') ? evaluateFormula(plotConfig.yLabel, state) : plotConfig.yLabel;
-        if (mathjaxCache.has(yText)) {
-            yLabelDiv.html(mathjaxCache.get(yText));
-        } else {
-            yLabelDiv.html(parseText(yText))
-                .classed('needs-typeset', true)
-                .attr('data-raw-text', yText);
-        }
-
-        // Generate Curve
-        const steps = 100;
-        let xVals;
-        if (plotConfig.xLog) {
-            const logMin = Math.log10(xMinVal);
-            const logMax = Math.log10(xMaxVal);
-            xVals = d3.range(0, steps + 1).map(d => Math.pow(10, logMin + (d * (logMax - logMin)) / steps));
-        } else {
-            xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal) / steps, (xMaxVal - xMinVal) / steps);
-        }
-
-        const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
-
-        const inpMinVal = (inputDef && typeof inputDef.min === 'string') ? evaluateFormula(inputDef.min, state) : (inputDef ? inputDef.min : undefined);
-        const inpMaxVal = (inputDef && typeof inputDef.max === 'string') ? evaluateFormula(inputDef.max, state) : (inputDef ? inputDef.max : undefined);
-
-        const accMin = (inpMinVal !== undefined) ? inpMinVal : xMinVal;
-        const accMax = (inpMaxVal !== undefined) ? inpMaxVal : xMaxVal;
-
-        // Ensure input min and max are exact points in our xVals array if within bounds
-        if (inputDef) {
-            if (inpMinVal !== undefined && inpMinVal > xMinVal && inpMinVal < xMaxVal) {
-                xVals.push(inpMinVal);
-            }
-            if (inpMaxVal !== undefined && inpMaxVal > xMinVal && inpMaxVal < xMaxVal) {
-                xVals.push(inpMaxVal);
-            }
-        }
-
-        xVals.sort((a, b) => a - b);
-        // Remove duplicates
-        xVals = xVals.filter((v, idx) => xVals.indexOf(v) === idx);
-
-        const getPoint = (xVal, baseState) => {
-            const fullState = _calculateState(baseState, xVal, plotConfig, pageData);
-            return [x(xVal), y(fullState[plotConfig.y])];
-        };
-
-        const dottedMin = plotConfig.dottedMin;
-        const dottedMax = plotConfig.dottedMax;
-
-        const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
-
-        let solidData = [];
-        let dottedData = [];
-
-        if (dottedMin !== undefined && dottedMax !== undefined) {
-            const solidVals = [];
-            const dottedVals = [];
-            accessibleVals.forEach(v => {
-                if (v >= dottedMin && v <= dottedMax) {
-                    dottedVals.push(v);
-                } else {
-                    solidVals.push(v);
+            } else {
+                if (yTickIntervalVal !== undefined) {
+                    const tickCount = (yMax - yMinVal) / yTickIntervalVal;
+                    if (tickCount > 200) {
+                        console.warn(`yTickIntervalVal ${yTickIntervalVal} is too small for range [${yMinVal}, ${yMax}]. Skipping tickValues to prevent crash.`);
+                    } else {
+                        const ticks = d3.range(yMinVal, yMax + yTickIntervalVal / 2, yTickIntervalVal);
+                        yAxis.tickValues(ticks);
+                    }
                 }
-            });
-            solidData = solidVals.map(v => getPoint(v, state));
-            dottedData = dottedVals.map(v => getPoint(v, state));
-        } else {
-            solidData = accessibleVals.map(v => getPoint(v, state));
-        }
+                if (plotConfig.yExponential) {
+                    yAxis.tickFormat(d => {
+                        if (d === 0) return '0';
+                        return d.toExponential().replace(/e\+/, 'e');
+                    });
+                } else if (yTickIntervalVal !== undefined) {
+                    yAxis.tickFormat(d => parseFloat(d.toFixed(4)).toString());
+                }
+            }
+            const yAxisG = svg.append('g').attr('class', 'axis')
+                .attr('transform', `translate(${plot_x_offset},0)`);
+            yAxisG.call(yAxis);
 
-        // Add clip path for the plot
-        const clipId = `clip-${i}`;
-        svg.append('clipPath').attr('id', clipId)
-            .append('rect').attr('x', plot_x_offset).attr('y', plot_y_offset)
-            .attr('width', iw).attr('height', ih);
+            const yTextRotation = plotConfig.yTickRotation || 0;
 
-        // Draw solid and dotted parts of the curve
-        if (solidData.length > 0) {
-            _plot(solidData, i, 'solid', false, 1, '#0075ff', 2 * scale);
-        }
-        if (dottedData.length > 0) {
-            _plot(dottedData, i, 'dotted', true, 0.7, 'gray', 2 * scale);
-        }
+            yAxisG.selectAll('text')
+                .style('font-size', `${1 * scale}rem`)
+                .attr('transform', `rotate(${-yTextRotation})`)
 
-        const plotCtx = {
-            svg,
-            plotConfig,
-            state,
-            pageData,
-            x,
-            y,
-            m,
-            iw,
-            ih,
-            scale,
-            plot_x_offset,
-            plot_y_offset,
-            clipId,
-            accessibleVals,
-            xVals,
-            getPoint
-        };
+            // Labels
+            const xAxisBBox = xAxisG.node().getBBox();
+            const axisBottomY = (plot_y_offset + ih) + xAxisBBox.y + xAxisBBox.height;
 
-        // Draw reference lines and labels
-        drawReferenceLines(plotCtx);
+            const margin = 2 * scale;
+            const labelHeight = 30 * scale;
 
-        // Active curve label (rendered independently at exact curve tip)
-        drawActiveLabel(solidData, dottedData, plotCtx);
+            const xLabelFO = svg.append('foreignObject')
+                .attr('x', plot_x_offset).attr('y', axisBottomY + margin)
+                .attr('width', iw).attr('height', labelHeight);
+            const xLabelDiv = xLabelFO.append('xhtml:div')
+                .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
+            const xText = typeof plotConfig.xLabel === 'string' && plotConfig.xLabel.includes('?') ? evaluateFormula(plotConfig.xLabel, state) : plotConfig.xLabel;
+            if (mathjaxCache.has(xText)) {
+                xLabelDiv.html(mathjaxCache.get(xText));
+            } else {
+                xLabelDiv.html(parseText(xText))
+                    .classed('needs-typeset', true)
+                    .attr('data-raw-text', xText);
+            }
 
-        // Draw Draggable Point at current vals
-        const currentXVal = state[plotConfig.x];
-        const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
-        const dragpt = svg.append('circle').attr('class', 'dragpt')
-            .attr('r', 6 * scale)
-            .attr('cx', x(currentXVal))
-            .attr('cy', y(currentYVal))
-            .style('fill', ptGrayed ? 'gray' : '#0075ff')
-            .style('stroke', 'none');
+            const plotBottomY = axisBottomY + margin + labelHeight + 10 * scale;
+            if (plotBottomY > maxObservedBottom) {
+                maxObservedBottom = plotBottomY;
+            }
 
-        // Interaction Background
-        const hit = svg.append('rect').attr('class', 'hit')
-            .attr('x', plot_x_offset).attr('y', plot_y_offset)
-            .attr('width', iw).attr('height', ih);
+            const yAxisBBox = yAxisG.node().getBBox();
 
-        const drag = d3.drag()
-            .on('start drag', (event) => {
-                const elPrimary = document.getElementById(`input_${plotConfig.x}`);
-                const elNum = document.getElementById(`input_${plotConfig.x}_num`);
-                const customEl = document.getElementById(`input_${plotConfig.x}_custom`);
-                const elDropdown = document.getElementById(`input_${plotConfig.x}_dropdown`);
+            const yLabelFO = svg.append('foreignObject')
+                .attr('width', ih)
+                .attr('height', 50)
+                .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${plot_y_offset + ih}) rotate(-90)`);
 
-                let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
-                let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
-                let newX = Math.max(xMinValDrag, Math.min(xMaxValDrag, x.invert(event.x)));
+            const yLabelDiv = yLabelFO.append('xhtml:div')
+                .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
+                .style('width', '100%').style('height', '100%').style('font-size', `${1.125 * scale}rem`);
+            const yText = typeof plotConfig.yLabel === 'string' && plotConfig.yLabel.includes('?') ? evaluateFormula(plotConfig.yLabel, state) : plotConfig.yLabel;
+            if (mathjaxCache.has(yText)) {
+                yLabelDiv.html(mathjaxCache.get(yText));
+            } else {
+                yLabelDiv.html(parseText(yText))
+                    .classed('needs-typeset', true)
+                    .attr('data-raw-text', yText);
+            }
 
-                const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
-                let dropdownChoiceVal = null;
+            // Generate Curve
+            const steps = 100;
+            let xVals;
+            if (plotConfig.xLog) {
+                const logMin = Math.log10(xMinVal);
+                const logMax = Math.log10(xMaxVal);
+                xVals = d3.range(0, steps + 1).map(d => Math.pow(10, logMin + (d * (logMax - logMin)) / steps));
+            } else {
+                xVals = d3.range(xMinVal, xMaxVal + (xMaxVal - xMinVal) / steps, (xMaxVal - xMinVal) / steps);
+            }
 
-                if (inputDef && (inputDef.type === 'dropdown' || inputDef.type === 'slider-dropdown')) {
-                    const hasCustom = inputDef.choices && inputDef.choices.some(c => c.value === 'custom');
-                    const matchingChoice = inputDef.choices ? inputDef.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - newX) < 1e-5) : null;
+            const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
 
-                    if (matchingChoice) {
-                        newX = parseFloat(matchingChoice.value);
-                        dropdownChoiceVal = matchingChoice.value;
-                    } else if (hasCustom) {
-                        dropdownChoiceVal = 'custom';
-                        let clampedX = newX;
-                        if (inputDef.min !== undefined) clampedX = Math.max(inputDef.min, clampedX);
-                        if (inputDef.max !== undefined) clampedX = Math.min(inputDef.max, clampedX);
-                        newX = clampedX;
-                    } else if (inputDef.choices) {
-                        let closestChoice = inputDef.choices[0];
-                        let minDiff = Infinity;
-                        inputDef.choices.forEach(choice => {
-                            const val = parseFloat(choice.value);
-                            if (!isNaN(val)) {
-                                const diff = Math.abs(val - newX);
-                                if (diff < minDiff) {
-                                    minDiff = diff;
-                                    closestChoice = choice;
+            const inpMinVal = (inputDef && typeof inputDef.min === 'string') ? evaluateFormula(inputDef.min, state) : (inputDef ? inputDef.min : undefined);
+            const inpMaxVal = (inputDef && typeof inputDef.max === 'string') ? evaluateFormula(inputDef.max, state) : (inputDef ? inputDef.max : undefined);
+
+            const accMin = (inpMinVal !== undefined) ? inpMinVal : xMinVal;
+            const accMax = (inpMaxVal !== undefined) ? inpMaxVal : xMaxVal;
+
+            if (inputDef) {
+                if (inpMinVal !== undefined && inpMinVal > xMinVal && inpMinVal < xMaxVal) {
+                    xVals.push(inpMinVal);
+                }
+                if (inpMaxVal !== undefined && inpMaxVal > xMinVal && inpMaxVal < xMaxVal) {
+                    xVals.push(inpMaxVal);
+                }
+            }
+
+            xVals.sort((a, b) => a - b);
+            xVals = xVals.filter((v, idx) => xVals.indexOf(v) === idx);
+
+            const getPoint = (xVal, baseState) => {
+                const fullState = _calculateState(baseState, xVal, plotConfig, pageData);
+                return [x(xVal), y(fullState[plotConfig.y])];
+            };
+
+            const dottedMin = plotConfig.dottedMin;
+            const dottedMax = plotConfig.dottedMax;
+
+            const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
+
+            let solidData = [];
+            let dottedData = [];
+
+            if (dottedMin !== undefined && dottedMax !== undefined) {
+                const solidVals = [];
+                const dottedVals = [];
+                accessibleVals.forEach(v => {
+                    if (v >= dottedMin && v <= dottedMax) {
+                        dottedVals.push(v);
+                    } else {
+                        solidVals.push(v);
+                    }
+                });
+                solidData = solidVals.map(v => getPoint(v, state));
+                dottedData = dottedVals.map(v => getPoint(v, state));
+            } else {
+                solidData = accessibleVals.map(v => getPoint(v, state));
+            }
+
+            // Add clip path for the plot
+            const clipId = `clip-${plotIndex}`;
+            svg.append('clipPath').attr('id', clipId)
+                .append('rect').attr('x', plot_x_offset).attr('y', plot_y_offset)
+                .attr('width', iw).attr('height', ih);
+
+            // Draw solid and dotted parts of the curve
+            if (solidData.length > 0) {
+                _plot(solidData, plotIndex, 'solid', false, 1, '#0075ff', 2 * scale);
+            }
+            if (dottedData.length > 0) {
+                _plot(dottedData, plotIndex, 'dotted', true, 0.7, 'gray', 2 * scale);
+            }
+
+            const plotCtx = {
+                svg,
+                plotConfig,
+                state,
+                pageData,
+                x,
+                y,
+                m,
+                iw,
+                ih,
+                scale,
+                plot_x_offset,
+                plot_y_offset,
+                clipId,
+                accessibleVals,
+                xVals,
+                getPoint
+            };
+
+            // Draw reference lines and labels
+            drawReferenceLines(plotCtx);
+
+            // Active curve label
+            drawActiveLabel(solidData, dottedData, plotCtx);
+
+            // Draw Draggable Point at current vals
+            const currentXVal = state[plotConfig.x];
+            const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
+            const dragpt = svg.append('circle').attr('class', 'dragpt')
+                .attr('r', 6 * scale)
+                .attr('cx', x(currentXVal))
+                .attr('cy', y(currentYVal))
+                .style('fill', ptGrayed ? 'gray' : '#0075ff')
+                .style('stroke', 'none');
+
+            // Interaction Background
+            const hit = svg.append('rect').attr('class', 'hit')
+                .attr('x', plot_x_offset).attr('y', plot_y_offset)
+                .attr('width', iw).attr('height', ih);
+
+            const drag = d3.drag()
+                .on('start drag', (event) => {
+                    const elPrimary = document.getElementById(`input_${plotConfig.x}`);
+                    const elNum = document.getElementById(`input_${plotConfig.x}_num`);
+                    const customEl = document.getElementById(`input_${plotConfig.x}_custom`);
+                    const elDropdown = document.getElementById(`input_${plotConfig.x}_dropdown`);
+
+                    let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
+                    let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
+                    let newX = Math.max(xMinValDrag, Math.min(xMaxValDrag, x.invert(event.x)));
+
+                    const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
+                    let dropdownChoiceVal = null;
+
+                    if (inputDef && (inputDef.type === 'dropdown' || inputDef.type === 'slider-dropdown')) {
+                        const hasCustom = inputDef.choices && inputDef.choices.some(c => c.value === 'custom');
+                        const matchingChoice = inputDef.choices ? inputDef.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - newX) < 1e-5) : null;
+
+                        if (matchingChoice) {
+                            newX = parseFloat(matchingChoice.value);
+                            dropdownChoiceVal = matchingChoice.value;
+                        } else if (hasCustom) {
+                            dropdownChoiceVal = 'custom';
+                            let clampedX = newX;
+                            if (inputDef.min !== undefined) clampedX = Math.max(inputDef.min, clampedX);
+                            if (inputDef.max !== undefined) clampedX = Math.min(inputDef.max, clampedX);
+                            newX = clampedX;
+                        } else if (inputDef.choices) {
+                            let closestChoice = inputDef.choices[0];
+                            let minDiff = Infinity;
+                            inputDef.choices.forEach(choice => {
+                                const val = parseFloat(choice.value);
+                                if (!isNaN(val)) {
+                                    const diff = Math.abs(val - newX);
+                                    if (diff < minDiff) {
+                                        minDiff = diff;
+                                        closestChoice = choice;
+                                    }
                                 }
+                            });
+                            newX = parseFloat(closestChoice.value);
+                            dropdownChoiceVal = closestChoice.value;
+                        }
+                    } else {
+                        const inpStepVal = (inputDef && typeof inputDef.step === 'string') ? evaluateFormula(inputDef.step, state) : (inputDef ? inputDef.step : undefined);
+                        if (inputDef && inpStepVal) {
+                            newX = Math.round(newX / inpStepVal) * inpStepVal;
+
+                            const stepStr = inpStepVal.toString();
+                            const decimalPlaces = stepStr.includes('.') ? stepStr.split('.')[1].length : 0;
+                            newX = parseFloat(newX.toFixed(decimalPlaces));
+                        }
+                    }
+
+                    let absoluteMin = xMinValDrag;
+                    let absoluteMax = xMaxValDrag;
+
+                    if (inputDef) {
+                        const inpMinVal = typeof inputDef.min === 'string' ? evaluateFormula(inputDef.min, state) : inputDef.min;
+                        const inpMaxVal = typeof inputDef.max === 'string' ? evaluateFormula(inputDef.max, state) : inputDef.max;
+                        if (inpMinVal !== undefined) absoluteMin = Math.max(absoluteMin, inpMinVal);
+                        if (inpMaxVal !== undefined) absoluteMax = Math.min(absoluteMax, inpMaxVal);
+                    }
+
+                    newX = Math.max(absoluteMin, Math.min(absoluteMax, newX));
+
+                    if (elNum) elNum.value = newX;
+                    if (customEl && dropdownChoiceVal === 'custom') {
+                        customEl.classList.remove('hidden');
+                        customEl.value = newX;
+                    } else if (customEl) {
+                        customEl.classList.add('hidden');
+                    }
+
+                    if (elDropdown && dropdownChoiceVal !== null) {
+                        elDropdown.value = dropdownChoiceVal;
+                    }
+
+                    if (elPrimary) {
+                        if (inputDef && inputDef.type === 'dropdown') {
+                            if (dropdownChoiceVal !== null) {
+                                elPrimary.value = dropdownChoiceVal;
+                            } else {
+                                elPrimary.value = newX;
                             }
-                        });
-                        newX = parseFloat(closestChoice.value);
-                        dropdownChoiceVal = closestChoice.value;
-                    }
-                } else {
-                    const inpStepVal = (inputDef && typeof inputDef.step === 'string') ? evaluateFormula(inputDef.step, state) : (inputDef ? inputDef.step : undefined);
-                    if (inputDef && inpStepVal) {
-                        newX = Math.round(newX / inpStepVal) * inpStepVal;
-
-                        // Round to same amount of decimals as step
-                        const stepStr = inpStepVal.toString();
-                        const decimalPlaces = stepStr.includes('.') ? stepStr.split('.')[1].length : 0;
-                        newX = parseFloat(newX.toFixed(decimalPlaces));
-                    }
-                }
-
-                // Clamp between absolute min/max bounds (from plot config and input config)
-                let absoluteMin = xMinValDrag;
-                let absoluteMax = xMaxValDrag;
-
-                if (inputDef) {
-                    const inpMinVal = typeof inputDef.min === 'string' ? evaluateFormula(inputDef.min, state) : inputDef.min;
-                    const inpMaxVal = typeof inputDef.max === 'string' ? evaluateFormula(inputDef.max, state) : inputDef.max;
-                    if (inpMinVal !== undefined) absoluteMin = Math.max(absoluteMin, inpMinVal);
-                    if (inpMaxVal !== undefined) absoluteMax = Math.min(absoluteMax, inpMaxVal);
-                }
-
-                newX = Math.max(absoluteMin, Math.min(absoluteMax, newX));
-
-                // Sync Input DOM Elements
-                if (elNum) elNum.value = newX;
-                if (customEl && dropdownChoiceVal === 'custom') {
-                    customEl.classList.remove('hidden');
-                    customEl.value = newX;
-                } else if (customEl) {
-                    customEl.classList.add('hidden');
-                }
-
-                if (elDropdown && dropdownChoiceVal !== null) {
-                    elDropdown.value = dropdownChoiceVal;
-                }
-
-                if (elPrimary) {
-                    if (inputDef && inputDef.type === 'dropdown') {
-                        if (dropdownChoiceVal !== null) {
-                            elPrimary.value = dropdownChoiceVal;
                         } else {
                             elPrimary.value = newX;
                         }
-                    } else {
-                        elPrimary.value = newX;
                     }
-                }
 
-                // Recompute
-                if (window.forceCompute) {
-                    window.forceCompute(plotConfig.x);
-                }
-            });
+                    if (window.forceCompute) {
+                        window.forceCompute(plotConfig.x);
+                    }
+                });
 
-        hit.call(drag);
+            hit.call(drag);
+        });
     });
 
     if (maxObservedBottom > H) {

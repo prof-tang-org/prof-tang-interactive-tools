@@ -134,43 +134,46 @@ const pageData = {
     },
     "plots": {
         "aspectRatio": 1.2,
-        "plotColumns": 2,
         "settings": [
-            {
-                "x": "velocity",
-                "y": "reynolds",
-                "xLabel": "$V \\text{ [m/s]}$",
-                "yLabel": "$Re$",
-                "xMin": 0,
-                "xMax": 5.0,
-                "xTickInterval": 1.0,
-                "yMin": 0,
-                "yMax": [300000, 25000],
-                "yTickInterval": [50000, 5000],
-                "key": "fluid",
-                "activeLabel": "$D = {diameter}\\text{ m}$",
-                "reference": [
-                    {
-                        "diameter": 0.10,
-                        "text": "DN100 reference",
-                        "labelPosition": "above"
-                    }
-                ]
-            },
-            {
-                "x": "diameter",
-                "y": "reynolds",
-                "xLabel": "$D \\text{ [m]}$",
-                "yLabel": "$Re$",
-                "xMin": 0,
-                "xMax": 0.5,
-                "xTickInterval": 0.1,
-                "yMin": 0,
-                "yMax": [300000, 25000],
-                "yTickInterval": [50000, 5000],
-                "key": "fluid",
-                "activeLabel": "$V = {velocity}\\text{ m/s}$"
-            }
+            [
+                {
+                    "x": "velocity",
+                    "y": "reynolds",
+                    "width": "50%",
+                    "xLabel": "$V \\text{ [m/s]}$",
+                    "yLabel": "$Re$",
+                    "xMin": 0,
+                    "xMax": 5.0,
+                    "xTickInterval": 1.0,
+                    "yMin": 0,
+                    "yMax": [300000, 25000],
+                    "yTickInterval": [50000, 5000],
+                    "key": "fluid",
+                    "activeLabel": "$D = {diameter}\\text{ m}$",
+                    "reference": [
+                        {
+                            "diameter": 0.10,
+                            "text": "DN100 reference",
+                            "labelPosition": "above"
+                        }
+                    ]
+                },
+                {
+                    "x": "diameter",
+                    "y": "reynolds",
+                    "width": "50%",
+                    "xLabel": "$D \\text{ [m]}$",
+                    "yLabel": "$Re$",
+                    "xMin": 0,
+                    "xMax": 0.5,
+                    "xTickInterval": 0.1,
+                    "yMin": 0,
+                    "yMax": [300000, 25000],
+                    "yTickInterval": [50000, 5000],
+                    "key": "fluid",
+                    "activeLabel": "$V = {velocity}\\text{ m/s}$"
+                }
+            ]
         ],
         "text": "Adjust fluid, velocity, and pipe diameter to examine their effect on the Reynolds number and flow regime."
     }
