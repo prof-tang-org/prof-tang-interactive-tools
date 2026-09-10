@@ -20,9 +20,9 @@ This guide explains how to create topic-specific JavaScript configuration files 
 Rather than creating separate HTML pages for every physics/engineering topic, the project uses a **template-based page generation system**. 
 
 ### The Render Cycle:
-1. The user visits an HTML skeleton file (e.g., `templates/eq_schem_plot-io.html`) with specific query parameters:
+1. The user visits an HTML skeleton file (e.g., `templates/eq_plot-io.html`) with specific query parameters:
    ```
-   /templates/eq_schem_plot-io.html?course=me310&topic=10.26-eq
+   /templates/eq_plot-io.html?course=me310&topic=10.26-eq
    ```
 2. The HTML skeleton loads [renderer.js](./renderer.js) at the bottom.
 3. [renderer.js](./renderer.js) parses the `course` and `topic` parameters and dynamically inserts a `<script>` tag pointing to the topic configuration:
@@ -414,7 +414,7 @@ The `plots` object governs one or more interactive curves rendered in D3.js.
 
 For a fast, error-free workflow, follow these steps to add a new interactive topic:
 
-1. **Pick the Template**: Determine if your topic needs derivations, equations, and/or plots. Choose the appropriate skeleton HTML in the `templates/` folder (e.g. `eq_schem_plot-io.html`).
+1. **Pick the Template**: Determine if your topic needs derivations, equations, and/or plots. Choose the appropriate skeleton HTML in the `templates/` folder (e.g. `eq_plot-io.html`).
 2. **Create the Script File**: Create a new `.js` file in the course subdirectory, naming it according to the topic index (e.g., `me310/10.27-eq.js`).
 3. **Insert Boilerplate**: Copy the skeleton code from the [Quick Start Boilerplate](#2-quick-start-boilerplate) section and paste it into your new file.
 4. **Customize Metadata**: Change the `title` and set up the column sizes under `layout.grid`.
@@ -438,7 +438,7 @@ Copy and customize this template when prompting an AI assistant:
 ```markdown
 Please generate a topic configuration file `meXXX/YYY-eq.js` defining a global `pageData` object using the schema in `templates/README.md`. 
 
-This page should use the template: `templates/[template_name].html` (Choose from: `eq_schem_plot-io.html`, `eq_deriv-schem-io-plot.html`, or `eq_deriv-schem-io_wide-plot.html`).
+This page should use the template: `templates/[template_name].html` (Choose from: `eq_plot-io.html`, `eq_deriv-schem-io-plot.html`, or `eq_deriv-schem-io_wide-plot.html`).
 
 Here are the specifications for the topic:
 - **Title**: "[Insert Topic Title]"

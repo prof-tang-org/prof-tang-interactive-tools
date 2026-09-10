@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<!-- Include necessary scripts and CSS -->
+
 <head>
   <meta charset="UTF-8" />
   <title></title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- CSS Styling -->
   <link rel="stylesheet" href="../templates/temp-styles.css" />
+  <!-- MathJax for rendering LaTeX -->
   <script>window.MathJax = { chtml: { scale: 0.9 }, options: { renderActions: { addMenu: [] } } }</script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- D3.js for plotting -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <!-- Analytics -->
   <script data-goatcounter="https://thermofluidlearn.goatcounter.com/count" async
     src="https://gc.zgo.at/count.js"></script>
   <script defer src="../analytics.js"></script>
 </head>
 
 <body>
+  <!-- Header bar -->
   <header class="site-header">
     <div class="container">
       <div class="header-row">
@@ -24,29 +31,22 @@
     </div>
   </header>
 
+  <!-- Main body -->
   <main class="container">
+    <!-- Back navigation -->
     <nav class="back-row">
       <a href="../index.html" class="back-home" aria-label=""><span class="chev">←</span> Home</a>
     </nav>
 
+    <!-- Main content area -->
     <section class="grid">
+      <!-- Equation and plot -->
       <div>
+        <!-- Equation -->
         <section class="card">
-          <!-- Adds class="eq-schem" here if schematic enabled -->
-          <div id="eqschem-container">
-            <div id="equation-container">
+          <div id="equation-container">
 
-            </div>
-            <!-- Schematic hidden unless enabled -->
-            <div class="card float hidden" id="schematic-card-container">
-              <h3>Schematic</h3>
-              <div class="dark-card schem" id="schematic-image-container" aria-label="Schematic">
-                <img src="" alt="">
-              </div>
-            </div>
           </div>
-
-
         </section>
         <!-- Plot -->
         <section class="card">
@@ -56,6 +56,7 @@
         </section>
       </div>
 
+      <!-- Inputs and outputs -->
       <div class="card float">
         <div>
           <h3>Inputs</h3>
@@ -79,12 +80,14 @@
     </section>
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
     <div class="container">
       <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
     </div>
   </footer>
 
+  <!-- Script to render the equation and plot -->
   <script src="../templates/renderer.js"></script>
 </body>
 

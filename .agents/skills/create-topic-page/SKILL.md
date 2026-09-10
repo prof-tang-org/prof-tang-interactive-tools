@@ -256,7 +256,7 @@ const pageData = {
 ## 6. Verification and Workflow Guidelines
 
 ### A. Template Prompting
-* If the user asks to create or modify a page but does **not** specify which template HTML to use (e.g. `eq_deriv-schem-io-plot.html`, `eq_schem_plot-io.html`, etc.), you must **prompt the user** to clarify and select/specify the template before defining the implementation plan.
+* If the user asks to create or modify a page but does **not** specify which template HTML to use (e.g. `eq_deriv-schem-io-plot.html`, `eq_plot-io.html`, etc.), you must **prompt the user** to clarify and select/specify the template before defining the implementation plan.
 
 ### B. Math in Artifacts (Readability)
 * Always render mathematical equations, ranges, and formulas in **plain text / unicode** (e.g. `h_L = f * (l / D) * (V^2 / 2g)`) inside implementation plans, task checklists, and walkthrough artifacts. Do NOT use LaTeX math formatting (such as `$`, `\frac`, or `\tau`) in these markdown files as the preview rendering environment does not compile them.

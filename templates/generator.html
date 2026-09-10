@@ -481,7 +481,7 @@
       <div class="toolbar-group">
         <!-- Layout Selection Toggle -->
         <div class="toggle-group" id="layout-toggles">
-          <button class="toggle-btn active" data-template="eq_schem_plot-io">Template 1</button>
+          <button class="toggle-btn active" data-template="eq_plot-io">Template 1</button>
           <button class="toggle-btn" data-template="eq_deriv-schem-io-plot">Template 2</button>
           <button class="toggle-btn" data-template="eq_deriv-schem-io_wide-plot">Template 3</button>
         </div>
@@ -1023,7 +1023,7 @@
   <!-- Generator Visual Logic Script -->
   <script>
     // State management for Generator Editor
-    let activeTemplate = 'eq_schem_plot-io';
+    let activeTemplate = 'eq_plot-io';
     let editState = {
         activeModal: null,
         latexTarget: null,
@@ -1158,7 +1158,7 @@
 
         // Setup specific internal Resizer for Template 1's eqschem-container (Equation vs Schematic)
         const eqschem = document.getElementById('eqschem-container');
-        if (eqschem && eqschem.classList.contains('eq-schem') && templateName === 'eq_schem_plot-io') {
+        if (eqschem && eqschem.classList.contains('eq-schem') && templateName === 'eq_plot-io') {
             const eqCard = document.getElementById('editor-equations-card');
             const schemCard = document.getElementById('editor-schematic-card');
             if (eqCard && schemCard && !schemCard.classList.contains('hidden')) {
@@ -2385,18 +2385,12 @@
         // Clear layout workspace
         workspace.innerHTML = '';
 
-        if (templateName === 'eq_schem_plot-io') {
-            // Layout 1: equations & schematics + plot in left column card, inputs & outputs in right column
+        if (templateName === 'eq_plot-io') {
+            // Layout 1: equations & plot in left column card, inputs & outputs in right column
             const leftColCard = document.createElement('div');
             leftColCard.className = 'card';
             
-            const eqSchemContainer = document.createElement('div');
-            eqSchemContainer.id = 'eqschem-container';
-            eqSchemContainer.className = pageData.schematic ? 'eq-schem' : '';
-            eqSchemContainer.appendChild(equationsCard);
-            eqSchemContainer.appendChild(schematicCard);
-            
-            leftColCard.appendChild(eqSchemContainer);
+            leftColCard.appendChild(equationsCard);
             
             // plots directly appended to leftColCard (so it merges under same outline border)
             plotCard.className = ''; // remove card border
@@ -2468,7 +2462,7 @@
             
             // Adjust template config layout grid rows count
             const tempType = btn.getAttribute('data-template');
-            if (tempType === 'eq_schem_plot-io') {
+            if (tempType === 'eq_plot-io') {
                 pageData.layout.grid = [{ desktop: "1.2fr 0.8fr", mobile: "100%" }];
             } else if (tempType === 'eq_deriv-schem-io-plot') {
                 pageData.layout.grid = [
@@ -2634,7 +2628,7 @@
                             }
 
                             // Auto-detect template type
-                            let detectedTemplate = 'eq_schem_plot-io';
+                            let detectedTemplate = 'eq_plot-io';
                             if (pageData.layout && pageData.layout.grid) {
                                 if (pageData.layout.grid.length === 2) {
                                     detectedTemplate = 'eq_deriv-schem-io-plot';
@@ -2667,7 +2661,7 @@
 
     // Initialize application on window load
     window.addEventListener('load', () => {
-        applyTemplateLayout('eq_schem_plot-io');
+        applyTemplateLayout('eq_plot-io');
     });
 
   </script>
