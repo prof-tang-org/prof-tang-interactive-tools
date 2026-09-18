@@ -6,6 +6,10 @@ const pageData = {
             {
                 "desktop": "1.2fr 0.9fr",
                 "mobile": "100%"
+            },
+            {
+                "desktop": "1fr 1fr",
+                "mobile": "100%"
             }
         ],
         "breakpoint": "1024px"
@@ -13,13 +17,11 @@ const pageData = {
     "equationElements": [
         {
             "type": "assumptions",
-            "content": []
+            "content": ["One-dimensional heat transfer through a plane wall."]
         },
         {
-            "type": "equations",
-            "content": [
-                "\\dot{Q}_{\\text{cond},x} = -kA\\,\\frac{T_2 - T_1}{L}"
-            ]
+            "type": "equation",
+            "text": "\\dot{Q}_{\\text{cond},x} = -kA\\,\\frac{T_2 - T_1}{L}"
         },
         {
             "type": "symbols",
@@ -114,7 +116,9 @@ const pageData = {
                     "xMax": 60,
                     "xTickInterval": 10,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4],
+                    "lockDragUnlessCustom": true
                 },
                 {
                     "x": "A",
@@ -126,7 +130,8 @@ const pageData = {
                     "xMax": 0.5,
                     "xTickInterval": 0.1,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4]
                 }
             ],
             [
@@ -140,7 +145,8 @@ const pageData = {
                     "xMax": 0.5,
                     "xTickInterval": 0.1,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4]
                 },
                 {
                     "x": "T1",
@@ -152,7 +158,8 @@ const pageData = {
                     "xMax": 350,
                     "xTickInterval": 12.5,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4]
                 }
             ]
         ],

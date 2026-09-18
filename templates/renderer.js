@@ -1414,19 +1414,28 @@ function injectPlots(state, pageData) {
             // Draw Draggable Point at current vals
             const currentXVal = state[plotConfig.x];
             const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
+
+            // Optional per-plot lock: when set, the point can't be dragged unless
+            // the x-variable's dropdown is on its 'custom' choice.
+            const dropdownElForLock = document.getElementById(`input_${plotConfig.x}_dropdown`);
+            const isLocked = !!plotConfig.lockDragUnlessCustom && dropdownElForLock && dropdownElForLock.value !== 'custom';
+
             const dragpt = svg.append('circle').attr('class', 'dragpt')
                 .attr('r', 6 * scale)
                 .attr('cx', x(currentXVal))
                 .attr('cy', y(currentYVal))
                 .style('fill', ptGrayed ? 'gray' : '#0075ff')
-                .style('stroke', 'none');
+                .style('stroke', 'none')
+                .style('cursor', isLocked ? 'not-allowed' : null);
 
             // Interaction Background
             const hit = svg.append('rect').attr('class', 'hit')
                 .attr('x', plot_x_offset).attr('y', plot_y_offset)
-                .attr('width', iw).attr('height', ih);
+                .attr('width', iw).attr('height', ih)
+                .style('cursor', isLocked ? 'not-allowed' : null);
 
             const drag = d3.drag()
+                .filter(() => !isLocked)
                 .on('start drag', (event) => {
                     const elPrimary = document.getElementById(`input_${plotConfig.x}`);
                     const elNum = document.getElementById(`input_${plotConfig.x}_num`);
