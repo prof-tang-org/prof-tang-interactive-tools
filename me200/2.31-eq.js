@@ -1,16 +1,17 @@
 /** @type {PageData} */
 const pageData = {
-    "title": "1-D Heat Transfer by Conduction",
+    "title": "Conduction Heat Transfer",
     "layout": {
         "grid": [
             {
-                "desktop": "1.2fr 0.9fr",
+                "desktop": "1.3fr 0.8fr",
                 "mobile": "100%"
             },
             {
-                "desktop": "1fr 1fr",
+                "desktop": "0.8fr 1.3fr",
                 "mobile": "100%"
             }
+
         ],
         "breakpoint": "1024px"
     },
