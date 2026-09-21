@@ -21,6 +21,10 @@ const pageData = {
             "content": ["One-dimensional heat transfer through a plane wall."]
         },
         {
+            "type": "header",
+            "text": "Equation"
+        },
+        {
             "type": "equation",
             "text": "\\dot{Q}_{\\text{cond},x} = -kA\\,\\frac{T_2 - T_1}{L}"
         },
@@ -113,7 +117,7 @@ const pageData = {
                     "width": "50%",
                     "xLabel": "$k$ [W/(m·K)]",
                     "yLabel": "$\\dot{Q}$ [kW]",
-                    "xMin": 0.1,
+                    "xMin": 0,
                     "xMax": 60,
                     "xTickInterval": 10,
                     "yMin": 0,
@@ -127,7 +131,7 @@ const pageData = {
                     "width": "50%",
                     "xLabel": "$A$ [m²]",
                     "yLabel": "$\\dot{Q}$ [kW]",
-                    "xMin": 0.1,
+                    "xMin": 0,
                     "xMax": 0.5,
                     "xTickInterval": 0.1,
                     "yMin": 0,
@@ -142,7 +146,7 @@ const pageData = {
                     "width": "50%",
                     "xLabel": "$L$ [m]",
                     "yLabel": "$\\dot{Q}$ [kW]",
-                    "xMin": 0.1,
+                    "xMin": 0,
                     "xMax": 0.5,
                     "xTickInterval": 0.1,
                     "yMin": 0,
