@@ -566,6 +566,8 @@ function renderGroup(values, containerId, cols = 5) {
         val.id = `value_${value.id}`;
         if (typeof value.value === 'number') {
             val.textContent = formatNumber(value.value, value.decimals);
+        } else if (value.type === 'calculation' || (typeof value.value === 'string' && (value.value.includes('(') || value.value.includes('*') || value.value.includes('+') || value.value.includes('/') || value.value.includes('?')))) {
+            val.textContent = '—';
         } else {
             val.innerHTML = parseText(String(value.value ?? ''));
         }
@@ -621,24 +623,157 @@ function getMappedValue(key, value, state) {
     return value;
 }
 
+/**
+ * Global CoolProp API exposure for inputOutput calculations.
+ * Supports both PropSI() and PropsSI() calling conventions.
+ * Example in pageData: PropSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)
+ */
+let _coolPropInstance = window.CoolProp || window.coolprop || window.CoolPropModule || null;
+
+try {
+    Object.defineProperty(window, 'CoolProp', {
+        get() {
+            return _coolPropInstance;
+        },
+        set(val) {
+            _coolPropInstance = val;
+            if (val && typeof window.forceCompute === 'function') {
+                window.forceCompute();
+            }
+        },
+        configurable: true,
+        enumerable: true
+    });
+} catch (e) {
+    // If window.CoolProp cannot be redefined, fallback to global variable
+}
+
+let coolpropInitPromise = null;
+
+async function initCoolProp() {
+    if (_coolPropInstance) {
+        return _coolPropInstance;
+    }
+    if (!coolpropInitPromise) {
+        coolpropInitPromise = (async () => {
+            try {
+                const isTemplate = window.location.pathname.includes('/templates/');
+                const path = isTemplate ? '../assets/js/coolprop.js' : './assets/js/coolprop.js';
+                const mod = await import(path);
+                const ModuleFunc = mod.default || mod;
+                if (typeof ModuleFunc === 'function') {
+                    const instance = await ModuleFunc();
+                    if (instance && (instance.PropsSI || instance.PropSI)) {
+                        window.CoolProp = instance;
+                        if (typeof window.forceCompute === 'function') {
+                            window.forceCompute();
+                        }
+                        return instance;
+                    }
+                }
+            } catch (e) {
+                // Silently ignore if coolprop.js is not present on non-CoolProp pages
+            }
+            return null;
+        })();
+    }
+    return coolpropInitPromise;
+}
+
+window.PropSI = window.PropsSI = function PropSI(out, in1, val1, in2, val2, fluid) {
+    const cp = window.CoolProp || window.coolprop || window.CoolPropModule;
+    if (cp) {
+        if (typeof cp.PropsSI === 'function') return cp.PropsSI(out, in1, val1, in2, val2, fluid);
+        if (typeof cp.PropSI === 'function') return cp.PropSI(out, in1, val1, in2, val2, fluid);
+    }
+    if (window.Module) {
+        if (typeof window.Module.PropsSI === 'function') return window.Module.PropsSI(out, in1, val1, in2, val2, fluid);
+        if (typeof window.Module.PropSI === 'function') return window.Module.PropSI(out, in1, val1, in2, val2, fluid);
+        if (typeof window.Module.ccall === 'function') {
+            try {
+                return window.Module.ccall('PropsSI', 'number', ['string', 'string', 'number', 'string', 'number', 'string'], [out, in1, val1, in2, val2, fluid]);
+            } catch (e) {
+                console.error("[renderer.js] CoolProp ccall error:", e);
+            }
+        }
+    }
+    if (typeof PropsSI === 'function' && PropsSI !== window.PropSI && PropsSI !== window.PropsSI) {
+        return PropsSI(out, in1, val1, in2, val2, fluid);
+    }
+    console.warn("[renderer.js] CoolProp (PropSI / PropsSI) is not loaded or ready.");
+    return NaN;
+};
+
+window.HAPropsSI = function HAPropsSI(out, in1, val1, in2, val2, in3, val3) {
+    const cp = window.CoolProp || window.coolprop || window.CoolPropModule;
+    if (cp) {
+        if (typeof cp.HAPropsSI === 'function') return cp.HAPropsSI(out, in1, val1, in2, val2, in3, val3);
+    }
+    if (window.Module) {
+        if (typeof window.Module.HAPropsSI === 'function') return window.Module.HAPropsSI(out, in1, val1, in2, val2, in3, val3);
+        if (typeof window.Module.ccall === 'function') {
+            try {
+                return window.Module.ccall('HAPropsSI', 'number', ['string', 'string', 'number', 'string', 'number', 'string', 'number'], [out, in1, val1, in2, val2, in3, val3]);
+            } catch (e) {
+                console.error("[renderer.js] CoolProp HAPropsSI ccall error:", e);
+            }
+        }
+    }
+    if (typeof HAPropsSI === 'function' && HAPropsSI !== window.HAPropsSI) {
+        return HAPropsSI(out, in1, val1, in2, val2, in3, val3);
+    }
+    console.warn("[renderer.js] CoolProp (HAPropsSI) is not loaded or ready.");
+    return NaN;
+};
+
+function getAllStateKeys(state) {
+    const keysSet = new Set(Object.keys(state || {}));
+    if (typeof pageData !== 'undefined' && pageData.inputOutput) {
+        if (Array.isArray(pageData.inputOutput.inputs)) {
+            pageData.inputOutput.inputs.forEach(i => { if (i && i.id) keysSet.add(i.id); });
+        }
+        if (Array.isArray(pageData.inputOutput.fixedInputs)) {
+            pageData.inputOutput.fixedInputs.forEach(i => { if (i && i.id) keysSet.add(i.id); });
+        }
+        if (Array.isArray(pageData.inputOutput.outputs)) {
+            pageData.inputOutput.outputs.forEach(o => { if (o && o.id) keysSet.add(o.id); });
+        }
+    }
+    return Array.from(keysSet).sort((a, b) => b.length - a.length);
+}
+
 function evaluateFormula(formula, state) {
+    if (typeof formula !== 'string') return formula;
+
     let fn = formulaCache.get(formula);
     if (!fn) {
         let parsedFormula = formula;
 
-        // Sort keys descending to safely replace longer IDs first
-        const keys = Object.keys(state).sort((a, b) => b.length - a.length);
+        // 1. Mask string literals ('...' and "...") to prevent string parameters from being corrupted by state key replacements
+        const literals = [];
+        parsedFormula = parsedFormula.replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g, (match) => {
+            literals.push(match);
+            return `___STR_LIT_${literals.length - 1}___`;
+        });
+
+        // 2. Replace state variable keys with state["key"] using ALL known pageData keys
+        const keys = getAllStateKeys(state);
         keys.forEach(k => {
             const escapedKey = k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
             const regex = new RegExp(`(?<![a-zA-Z0-9_])(?<![a-zA-Z0-9_]-)(${escapedKey})(?![a-zA-Z0-9_])(?!-[a-zA-Z0-9_])`, 'g');
             parsedFormula = parsedFormula.replace(regex, `state["${k}"]`);
         });
 
-        // Replace standard math functions with Math.xxx
+        // 3. Replace standard math functions with Math.xxx
         const mathFuncs = Object.getOwnPropertyNames(Math);
         mathFuncs.forEach(func => {
             const regex = new RegExp(`(^|[^a-zA-Z0-9_.])(${func})\\b`, 'g');
             parsedFormula = parsedFormula.replace(regex, `$1Math.$2`);
+        });
+
+        // 4. Restore original string literals
+        literals.forEach((lit, index) => {
+            parsedFormula = parsedFormula.replace(`___STR_LIT_${index}___`, () => lit);
         });
 
         try {
@@ -847,7 +982,7 @@ function setupCalculationEngine(pageData) {
             let val;
             if (output.type === 'map') {
                 val = getMappedValue(output.key, output.value, state);
-            } else if (output.type === 'calculation') {
+            } else if (output.type === 'calculation' || (typeof output.value === 'string' && output.value.length > 0)) {
                 val = evaluateFormula(output.value, state);
             }
 
@@ -1941,9 +2076,15 @@ window.addEventListener('load', async () => {
             }
         }
         renderInputOutput(pageData.inputOutput);
-
         setupCalculationEngine(pageData);
         initStickyFloatCards();
+
+        // Auto-initialize CoolProp if available and trigger recalculation
+        initCoolProp().then(cp => {
+            if (cp && typeof window.forceCompute === 'function') {
+                window.forceCompute();
+            }
+        });
     } else {
         console.error("pageData is not defined. Ensure the data script is loaded before renderer.js.");
     }
