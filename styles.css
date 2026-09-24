@@ -37,6 +37,9 @@ h3 { font-size: 1.125rem; line-height: 1.22; }
   background:linear-gradient(135deg,var(--ink),var(--ink2));
   color:#fff; padding:28px 0;
 }
+.site-header h1 {
+  color: #fff;
+}
 .site-header .container{padding-top:20px;padding-bottom:20px}
 .header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;
