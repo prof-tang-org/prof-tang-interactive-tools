@@ -123,6 +123,7 @@
  * @property {number} [dottedMax] - End boundary of dotted range along the X-axis
  * @property {string} [activeLabel] - Optional text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$")
  * @property {ReferenceSetting[]} [reference] - Auxiliary static reference curves configurations
+ * @property {boolean} [lockDragUnlessCustom] - If true, the plot's draggable point is only interactive when the x-variable's dropdown/slider-dropdown input is set to 'custom'
  */
 
 /**

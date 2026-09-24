@@ -1,25 +1,32 @@
 /** @type {PageData} */
 const pageData = {
-    "title": "1-D Heat Transfer by Conduction",
+    "title": "Conduction Heat Transfer",
     "layout": {
         "grid": [
             {
-                "desktop": "1.2fr 0.9fr",
+                "desktop": "1.3fr 0.8fr",
+                "mobile": "100%"
+            },
+            {
+                "desktop": "0.8fr 1.3fr",
                 "mobile": "100%"
             }
+
         ],
         "breakpoint": "1024px"
     },
     "equationElements": [
         {
             "type": "assumptions",
-            "content": []
+            "content": ["One-dimensional heat transfer through a plane wall."]
         },
         {
-            "type": "equations",
-            "content": [
-                "\\dot{Q}_{\\text{cond},x} = -kA\\,\\frac{T_2 - T_1}{L}"
-            ]
+            "type": "header",
+            "text": "Equation"
+        },
+        {
+            "type": "equation",
+            "text": "\\dot{Q}_{\\text{cond},x} = -kA\\,\\frac{T_2 - T_1}{L}"
         },
         {
             "type": "symbols",
@@ -110,11 +117,13 @@ const pageData = {
                     "width": "50%",
                     "xLabel": "$k$ [W/(m·K)]",
                     "yLabel": "$\\dot{Q}$ [kW]",
-                    "xMin": 0.1,
+                    "xMin": 0,
                     "xMax": 60,
                     "xTickInterval": 10,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4],
+                    "lockDragUnlessCustom": true
                 },
                 {
                     "x": "A",
@@ -122,11 +131,12 @@ const pageData = {
                     "width": "50%",
                     "xLabel": "$A$ [m²]",
                     "yLabel": "$\\dot{Q}$ [kW]",
-                    "xMin": 0.1,
+                    "xMin": 0,
                     "xMax": 0.5,
                     "xTickInterval": 0.1,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4]
                 }
             ],
             [
@@ -136,11 +146,12 @@ const pageData = {
                     "width": "50%",
                     "xLabel": "$L$ [m]",
                     "yLabel": "$\\dot{Q}$ [kW]",
-                    "xMin": 0.1,
+                    "xMin": 0,
                     "xMax": 0.5,
                     "xTickInterval": 0.1,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4]
                 },
                 {
                     "x": "T1",
@@ -152,7 +163,8 @@ const pageData = {
                     "xMax": 350,
                     "xTickInterval": 12.5,
                     "yMin": 0,
-                    "yMax": [0.1, 1, 4, 16]
+                    "yMax": [0.1, 1, 4, 16],
+                    "yTickInterval": [0.025, 0.25, 1, 4]
                 }
             ]
         ],
