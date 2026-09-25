@@ -1580,7 +1580,7 @@ function injectPlots(state, pageData) {
 // ---------------------------------------------------------
 
 function drawReferenceLines(plotCtx) {
-    const { svg, plotConfig, state, accessibleVals, xVals, getPoint, clipId, pageData } = plotCtx;
+    const { svg, plotConfig, state, accessibleVals, xVals, getPoint, clipId, pageData, ih, plot_y_offset } = plotCtx;
     const refSettings = plotConfig.reference;
     if (!refSettings) return;
 
@@ -1619,7 +1619,7 @@ function drawReferenceLines(plotCtx) {
             .style('opacity', '0.6')
             .style('stroke', 'gray')
             .style('fill', 'none')
-            .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
+            .attr('d', d3.line().defined(d => d && !isNaN(d[1]) && d[1] >= plot_y_offset && d[1] <= plot_y_offset + ih)(refData));
 
         const isMatched = Object.keys(refSetting).every(key => {
             if (key === 'text' || key === 'labelPosition') return true;
@@ -1644,80 +1644,40 @@ function drawReferenceLines(plotCtx) {
 }
 
 function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
-    const { svg, m, ih, iw, scale, plot_x_offset, plot_y_offset } = plotCtx;
+    const { svg, ih, iw, scale, plot_x_offset, plot_y_offset } = plotCtx;
 
     if (refSetting.labelPosition === 'above' || refSetting.labelPosition === 'below') {
-        // Find the last point in refData that is within the plot's Y viewport
-        let lastValidPoint = null;
-        let lastValidIndex = -1;
-        for (let i = 0; i < refData.length; i++) {
-            const pt = refData[i];
-            if (pt && !isNaN(pt[0]) && !isNaN(pt[1])) {
-                if (pt[1] >= plot_y_offset && pt[1] <= (plot_y_offset + ih)) {
-                    lastValidPoint = pt;
-                    lastValidIndex = i;
+        // Anchor at the horizontal middle of the plot (50% of its width),
+        // offset 18px up or down depending on whether this is the upper or
+        // lower dashed line.
+        const targetX = plot_x_offset + iw * 0.5;
+        let anchorPoint = null;
+        let bestDist = Infinity;
+        refData.forEach(pt => {
+            if (pt && !isNaN(pt[0]) && !isNaN(pt[1]) && pt[1] >= plot_y_offset && pt[1] <= (plot_y_offset + ih)) {
+                const dist = Math.abs(pt[0] - targetX);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    anchorPoint = pt;
                 }
             }
-        }
+        });
 
-        if (lastValidPoint) {
-            const foHeight = 25 * scale;
-            let foWidth = 150 * scale;
-            let foX, foY, textAlign;
+        if (anchorPoint) {
+            const foHeight = 20 * scale;
+            const foWidth = 120 * scale;
+            const verticalOffset = 18 * scale;
 
-            // Check if the curve exited early before the right edge of the plot
-            const exitedEarly = lastValidIndex < refData.length - 1;
+            const centerY = refSetting.labelPosition === 'above'
+                ? anchorPoint[1] - verticalOffset
+                : anchorPoint[1] + verticalOffset;
 
-            if (exitedEarly) {
-                // Exited top or bottom of the plot area
-                const nextPoint = refData[lastValidIndex + 1];
-                const exitedTop = nextPoint && nextPoint[1] < plot_y_offset;
+            const foX = anchorPoint[0] - foWidth / 2;
+            let foY = centerY - foHeight / 2;
 
-                if (exitedTop) {
-                    foY = plot_y_offset + 4 * scale; // Position just below the top edge
-                } else {
-                    foY = plot_y_offset + ih - foHeight - 4 * scale; // Position just above the bottom edge
-                }
-
-                // Place label to the right of the exit point
-                const availableWidth = (plot_x_offset + iw) - lastValidPoint[0];
-                if (availableWidth >= 100 * scale) {
-                    foX = lastValidPoint[0] + 5 * scale;
-                    foWidth = availableWidth - 10 * scale;
-                    textAlign = 'left';
-                } else {
-                    foX = plot_x_offset + iw - 100 * scale - 5 * scale;
-                    foWidth = 100 * scale;
-                    textAlign = 'right';
-                }
-            } else {
-                // Exited through the right edge of the plot (standard inline right-aligned)
-                foX = plot_x_offset + iw - foWidth - 5 * scale;
-                textAlign = 'right';
-
-                // Calculate if the dotted plot intersects anywhere along the actual width of the text.
-                // Since the text is right-aligned, it occupies the rightmost portion of the label box.
-                const textWidth = 80 * scale;
-                const checkStartX = plot_x_offset + iw - textWidth - 5 * scale;
-                const spanYVals = refData
-                    .filter(pt => pt && !isNaN(pt[0]) && !isNaN(pt[1]) && pt[0] >= checkStartX)
-                    .map(pt => pt[1]);
-
-                const offset = 2 * scale;
-
-                if (refSetting.labelPosition === 'above') {
-                    const minY = spanYVals.length > 0 ? Math.min(...spanYVals) : lastValidPoint[1];
-                    const approxTextHeight = 14 * scale;
-                    foY = minY - approxTextHeight - offset;
-                } else {
-                    const maxY = spanYVals.length > 0 ? Math.max(...spanYVals) : lastValidPoint[1];
-                    foY = maxY + offset;
-                }
-            }
-
-            // Clamp Y within plot boundaries plus a small margin
-            const minYBound = plot_y_offset + 2 * scale;
-            const maxYBound = plot_y_offset + ih; // - foHeight;
+            // Clamp within plot boundaries plus a small margin
+            const minYBound = plot_y_offset;
+            const maxYBound = plot_y_offset + ih - foHeight;
             foY = Math.max(minYBound, Math.min(maxYBound, foY));
 
             const fo = svg.append('foreignObject')
@@ -1730,7 +1690,7 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
             const refDiv = fo.append('xhtml:div')
                 .style('font-size', `${.875 * scale}rem`)
                 .style('color', 'gray')
-                .style('text-align', textAlign)
+                .style('text-align', 'center')
                 .style('width', '100%');
 
             const refText = refSetting.text;
@@ -1812,7 +1772,7 @@ function resolveLabelOverlaps(labelsToDraw, plotCtx) {
 }
 
 function drawActiveLabel(solidData, dottedData, plotCtx) {
-    const { svg, plotConfig, state, scale } = plotCtx;
+    const { svg, plotConfig, state, scale, ih, iw, plot_x_offset, plot_y_offset } = plotCtx;
     if (!plotConfig.activeLabel) return;
 
     let activeText = plotConfig.activeLabel;
@@ -1824,27 +1784,48 @@ function drawActiveLabel(solidData, dottedData, plotCtx) {
         return val !== undefined ? val : '';
     });
 
-    let lastPoint = null;
+    // Anchor at 75% of the plot's width from left to right, offset 18px up.
     const activeData = solidData.length > 0 ? solidData : dottedData;
-    for (let i = activeData.length - 1; i >= 0; i--) {
-        if (activeData[i] && !isNaN(activeData[i][1])) {
-            lastPoint = activeData[i];
-            break;
+    const targetX = plot_x_offset + iw * 0.75;
+    let anchorPoint = null;
+    let bestDist = Infinity;
+    activeData.forEach(pt => {
+        if (pt && !isNaN(pt[0]) && !isNaN(pt[1]) && pt[1] >= plot_y_offset && pt[1] <= (plot_y_offset + ih)) {
+            const dist = Math.abs(pt[0] - targetX);
+            if (dist < bestDist) {
+                bestDist = dist;
+                anchorPoint = pt;
+            }
         }
-    }
+    });
 
-    if (lastPoint) {
+    if (anchorPoint) {
+        const foWidth = 150 * scale;
+        const foHeight = 22 * scale;
+        const verticalOffset = 18 * scale;
+
+        const centerY = anchorPoint[1] - verticalOffset;
+
+        const foX = anchorPoint[0] - foWidth / 2;
+        let foY = centerY - foHeight / 2;
+
+        const minYBound = plot_y_offset;
+        const maxYBound = plot_y_offset + ih - foHeight;
+        foY = Math.max(minYBound, Math.min(maxYBound, foY));
+
         const fo = svg.append('foreignObject')
-            .attr('x', lastPoint[0] + 5)
-            .attr('y', lastPoint[1] - 14 * scale)
-            .attr('width', 200 * scale)
-            .attr('height', 30 * scale)
+            .attr('x', foX)
+            .attr('y', foY)
+            .attr('width', foWidth)
+            .attr('height', foHeight)
             .style('overflow', 'visible');
 
         const activeDiv = fo.append('xhtml:div')
             .style('font-size', `${.875 * scale}rem`)
             .style('font-weight', 'bold')
-            .style('color', '#0075ff');
+            .style('color', '#0075ff')
+            .style('text-align', 'center')
+            .style('width', '100%');
 
         if (mathjaxCache.has(activeText)) {
             activeDiv.html(mathjaxCache.get(activeText));
