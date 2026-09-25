@@ -88,6 +88,11 @@
   </footer>
 
   <!-- Script to render the equation and plot -->
+  <script type="module">
+    import Module from '../assets/js/coolprop.js';
+    window.CoolProp = await Module();
+  </script>
+
   <script src="../templates/renderer.js"></script>
 </body>
 

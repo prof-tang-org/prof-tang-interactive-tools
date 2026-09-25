@@ -115,14 +115,14 @@ The `inputOutput` section coordinates interactive values, dynamic formulas, and 
   }
   ```
 * **Calculation**: Dynamically evaluates a mathematical formula.
-  * Supported math functions: `pow`, `sqrt`, `exp`, `log`, `sin`, `cos`, `tan`, `abs`.
-  * Formulas must reference input/output IDs (e.g. `U * x / nu`).
+  * Supported math functions: standard `Math` methods (`pow`, `sqrt`, `exp`, `log`, `sin`, `cos`, `tan`, `abs`) and CoolProp functions (`PropSI`, `HAPropsSI`).
+  * Formulas reference input/output IDs (e.g. `U * x / nu` or `PropSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)`).
   ```json
   {
-      "text": "Reynolds Number, $Re_x$",
-      "id": "reynolds",
+      "text": "Density from CoolProp, $\\rho$ [kg/m³]",
+      "id": "rho",
       "type": "calculation",
-      "value": "rho * U * x / mu"
+      "value": "PropSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)"
   }
   ```
 
