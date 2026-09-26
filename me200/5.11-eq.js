@@ -4,11 +4,11 @@ const pageData = {
     "layout": {
         "grid": [
             {
-                "desktop": "1.2fr 0.8fr",
+                "desktop": "1.2fr 0.5fr",
                 "mobile": "100%"
             },
             {
-                "desktop": "1fr 1fr",
+                "desktop": "0.8fr 1.3fr",
                 "mobile": "100%"
             }
         ],
@@ -77,7 +77,7 @@ const pageData = {
         ]
     },
     "plots": {
-        "aspectRatio": 2.86,
+        "aspectRatio": 1.6,
         "settings": [
             {
                 "x": "TH",
