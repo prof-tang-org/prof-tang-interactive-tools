@@ -115,14 +115,14 @@ The `inputOutput` section coordinates interactive values, dynamic formulas, and 
   }
   ```
 * **Calculation**: Dynamically evaluates a mathematical formula.
-  * Supported math functions: standard `Math` methods (`pow`, `sqrt`, `exp`, `log`, `sin`, `cos`, `tan`, `abs`) and CoolProp functions (`PropSI`, `HAPropsSI`).
-  * Formulas reference input/output IDs (e.g. `U * x / nu` or `PropSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)`).
+  * Supported math functions: standard `Math` methods (`pow`, `sqrt`, `exp`, `log`, `sin`, `cos`, `tan`, `abs`) and CoolProp functions (`PropsSI`, `HAPropsSI`).
+  * Formulas reference input/output IDs (e.g. `U * x / nu` or `PropsSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)`).
   ```json
   {
       "text": "Density from CoolProp, $\\rho$ [kg/m³]",
       "id": "rho",
       "type": "calculation",
-      "value": "PropSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)"
+      "value": "PropsSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)"
   }
   ```
 
@@ -249,6 +249,55 @@ const pageData = {
         "text": "Interactive plot instruction text here."
     }
 };
+```
+
+---
+
+## 5. Extensible Custom Plot Renderers (Linking External Scripts)
+
+To render complex or domain-specific thermodynamic/fluid mechanics diagrams (e.g. T-s, P-v, Mollier diagrams, Moody charts, custom vector fields), you can link external plot rendering scripts.
+
+### Configuration in `pageData.plots`:
+```javascript
+plots: {
+    "aspectRatio": 1.5,
+    "customScripts": [
+        "../assets/js/plots/ts-diagram.js" // External script file path(s)
+    ],
+    "settings": [
+        [
+            {
+                "customScript": "../assets/js/plots/ts-diagram.js",
+                "customRender": "tsDiagram", // Registered or global function name
+                "mode": "before",            // "before", "overlay", or "standalone"
+                "x": "entropy",
+                "y": "temp",
+                "xLabel": "$s \\text{ [kJ/kg·K]}$",
+                "yLabel": "$T \\text{ [°C]}$",
+                "xMin": 0, "xMax": 9, "yMin": 0, "yMax": 350
+            }
+        ]
+    ]
+}
+```
+
+### Writing a Custom Plot Script (e.g., `assets/js/plots/ts-diagram.js`):
+```javascript
+(function () {
+    function renderTSDiagram(ctx) {
+        // ctx contains: { svg, g, plotConfig, state, pageData, x, y, iw, ih, scale, PropsSI, CoolProp, d3, forceCompute }
+        const { svg, g, state, x, y, PropsSI, d3 } = ctx;
+
+        // Custom D3 rendering logic here...
+    }
+
+    // Register with global renderer system
+    if (typeof window.registerPlotRenderer === 'function') {
+        window.registerPlotRenderer('tsDiagram', renderTSDiagram);
+    } else {
+        window.tsDiagram = renderTSDiagram;
+    }
+})();
 ```
 
 ---

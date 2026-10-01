@@ -24,9 +24,9 @@ const pageData = {
         {
             "type": "equations",
             "content": [
-                "\\rho = \\text{PropSI}('D', 'T', T, 'P', P, \\text{fluid})",
-                "h = \\text{PropSI}('H', 'T', T, 'P', P, \\text{fluid})",
-                "s = \\text{PropSI}('S', 'T', T, 'P', P, \\text{fluid})"
+                "\\rho = \\text{PropsSI}('D', 'T', T, 'P', P, \\text{fluid})",
+                "h = \\text{PropsSI}('H', 'T', T, 'P', P, \\text{fluid})",
+                "s = \\text{PropsSI}('S', 'T', T, 'P', P, \\text{fluid})"
             ]
         },
         {
@@ -82,21 +82,21 @@ const pageData = {
                 "id": "rho",
                 "text": "Density, $\\rho$ [kg/m³]",
                 "type": "calculation",
-                "value": "PropSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)",
+                "value": "PropsSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)",
                 "decimals": 3
             },
             {
                 "id": "enthalpy",
                 "text": "Specific Enthalpy, $h$ [kJ/kg]",
                 "type": "calculation",
-                "value": "PropSI('H', 'T', temp + 273.15, 'P', pressure * 1e5, fluid) / 1000",
+                "value": "PropsSI('H', 'T', temp + 273.15, 'P', pressure * 1e5, fluid) / 1000",
                 "decimals": 2
             },
             {
                 "id": "entropy",
                 "text": "Specific Entropy, $s$ [kJ/kg·K]",
                 "type": "calculation",
-                "value": "PropSI('S', 'T', temp + 273.15, 'P', pressure * 1e5, fluid) / 1000",
+                "value": "PropsSI('S', 'T', temp + 273.15, 'P', pressure * 1e5, fluid) / 1000",
                 "decimals": 4
             }
         ],
@@ -104,6 +104,9 @@ const pageData = {
     },
     "plots": {
         "aspectRatio": 1.5,
+        "customScripts": [
+            "../assets/js/plots/ts-diagram.js"
+        ],
         "settings": [
             [
                 {
@@ -118,9 +121,25 @@ const pageData = {
                     "yMax": 1000,
                     "yTickInterval": 200,
                     "key": "fluid"
+                },
+                {
+                    "customScript": "../assets/js/plots/ts-diagram.js",
+                    "customRender": "tsDiagram",
+                    "mode": "before",
+                    "x": "entropy",
+                    "y": "temp",
+                    "xLabel": "$s \\text{ [kJ/kg·K]}$",
+                    "yLabel": "$T \\text{ [°C]}$",
+                    "xMin": [0, 0.8, 0.8],
+                    "xMax": [10, 2.0, 2.2],
+                    "xTickInterval": [2, 0.2, 0.3],
+                    "yMin": [0, -40, -60],
+                    "yMax": [400, 140, 70],
+                    "yTickInterval": [50, 20, 20],
+                    "key": "fluid"
                 }
             ]
         ],
-        "text": "Demonstration of CoolProp PropSI() dynamic property evaluation for thermophysical calculations."
+        "text": "Demonstration of CoolProp PropsSI() and extensible custom T-s diagram plot script (`ts-diagram.js`)."
     }
 };
