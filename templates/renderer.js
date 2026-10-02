@@ -625,8 +625,8 @@ function getMappedValue(key, value, state) {
 
 /**
  * Global CoolProp API exposure for inputOutput calculations.
- * Supports both PropSI() and PropsSI() calling conventions.
- * Example in pageData: PropSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)
+ * Supports PropsSI() calling convention.
+ * Example in pageData: PropsSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)
  */
 let _coolPropInstance = window.CoolProp || window.coolprop || window.CoolPropModule || null;
 
@@ -663,7 +663,7 @@ async function initCoolProp() {
                 const ModuleFunc = mod.default || mod;
                 if (typeof ModuleFunc === 'function') {
                     const instance = await ModuleFunc();
-                    if (instance && (instance.PropsSI || instance.PropSI)) {
+                    if (instance && (instance.PropsSI)) {
                         window.CoolProp = instance;
                         if (typeof window.forceCompute === 'function') {
                             window.forceCompute();
@@ -680,15 +680,13 @@ async function initCoolProp() {
     return coolpropInitPromise;
 }
 
-window.PropSI = window.PropsSI = function PropSI(out, in1, val1, in2, val2, fluid) {
+window.PropsSI = window.PropsSI = function PropsSI(out, in1, val1, in2, val2, fluid) {
     const cp = window.CoolProp || window.coolprop || window.CoolPropModule;
     if (cp) {
         if (typeof cp.PropsSI === 'function') return cp.PropsSI(out, in1, val1, in2, val2, fluid);
-        if (typeof cp.PropSI === 'function') return cp.PropSI(out, in1, val1, in2, val2, fluid);
     }
     if (window.Module) {
         if (typeof window.Module.PropsSI === 'function') return window.Module.PropsSI(out, in1, val1, in2, val2, fluid);
-        if (typeof window.Module.PropSI === 'function') return window.Module.PropSI(out, in1, val1, in2, val2, fluid);
         if (typeof window.Module.ccall === 'function') {
             try {
                 return window.Module.ccall('PropsSI', 'number', ['string', 'string', 'number', 'string', 'number', 'string'], [out, in1, val1, in2, val2, fluid]);
@@ -697,10 +695,10 @@ window.PropSI = window.PropsSI = function PropSI(out, in1, val1, in2, val2, flui
             }
         }
     }
-    if (typeof PropsSI === 'function' && PropsSI !== window.PropSI && PropsSI !== window.PropsSI) {
+    if (typeof PropsSI === 'function' && PropsSI !== window.PropsSI) {
         return PropsSI(out, in1, val1, in2, val2, fluid);
     }
-    console.warn("[renderer.js] CoolProp (PropSI / PropsSI) is not loaded or ready.");
+    console.warn("[renderer.js] CoolProp (PropsSI) is not loaded or ready.");
     return NaN;
 };
 
@@ -1097,6 +1095,98 @@ function setupCalculationEngine(pageData) {
 
     // Initial compute
     compute();
+}
+
+window.plotRenderers = window.plotRenderers || {};
+
+/**
+ * Global API for registering custom plot renderer functions.
+ * @param {string} name
+ * @param {Function} renderFn
+ */
+window.registerPlotRenderer = function (name, renderFn) {
+    if (typeof name === 'string' && typeof renderFn === 'function') {
+        window.plotRenderers[name] = renderFn;
+    }
+};
+
+const _loadedCustomPlotScripts = new Set();
+
+/**
+ * Dynamically load a single external plot script file.
+ * @param {string} src
+ * @returns {Promise<void>}
+ */
+function loadCustomPlotScript(src) {
+    if (!src || _loadedCustomPlotScripts.has(src)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+            _loadedCustomPlotScripts.add(src);
+            resolve();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => {
+            _loadedCustomPlotScripts.add(src);
+            resolve();
+        };
+        script.onerror = (err) => {
+            console.error(`[renderer.js] Failed to load custom plot script: ${src}`, err);
+            reject(err);
+        };
+        document.head.appendChild(script);
+    });
+}
+
+/**
+ * Scan pageData.plots for specified external custom scripts and load them.
+ * @param {Object} pageData
+ * @returns {Promise<void>}
+ */
+async function ensureCustomPlotScripts(pageData) {
+    if (!pageData || !pageData.plots) return;
+
+    const scriptsToLoad = new Set();
+
+    if (Array.isArray(pageData.plots.customScripts)) {
+        pageData.plots.customScripts.forEach(src => {
+            if (typeof src === 'string') scriptsToLoad.add(src);
+        });
+    }
+
+    if (Array.isArray(pageData.plots.settings)) {
+        const flatSettings = pageData.plots.settings.flat();
+        flatSettings.forEach(p => {
+            if (p && typeof p.customScript === 'string') {
+                scriptsToLoad.add(p.customScript);
+            }
+        });
+    }
+
+    const promises = Array.from(scriptsToLoad).map(src => loadCustomPlotScript(src));
+    await Promise.all(promises);
+}
+
+/**
+ * Resolve a custom render function from plot configuration.
+ * @param {Object} plotConfig
+ * @returns {Function|null}
+ */
+function getCustomRenderFunction(plotConfig) {
+    if (!plotConfig) return null;
+    const target = plotConfig.customRender || plotConfig.customPlot;
+    if (typeof target === 'function') return target;
+    if (typeof target === 'string') {
+        if (window.plotRenderers && typeof window.plotRenderers[target] === 'function') {
+            return window.plotRenderers[target];
+        }
+        if (typeof window[target] === 'function') {
+            return window[target];
+        }
+    }
+    return null;
 }
 
 // ---------------------------------------------------------
@@ -1513,21 +1603,36 @@ function injectPlots(state, pageData) {
                 .append('rect').attr('x', plot_x_offset).attr('y', plot_y_offset)
                 .attr('width', iw).attr('height', ih);
 
-            // Draw solid and dotted parts of the curve
-            if (solidData.length > 0) {
-                _plot(solidData, plotIndex, 'solid', false, 1, '#0075ff', 2 * scale);
+            // Lazy load custom script if not preloaded
+            if (plotConfig.customScript && !_loadedCustomPlotScripts.has(plotConfig.customScript)) {
+                loadCustomPlotScript(plotConfig.customScript).then(() => {
+                    if (typeof window.forceCompute === 'function') {
+                        window.forceCompute();
+                    }
+                });
             }
-            if (dottedData.length > 0) {
-                _plot(dottedData, plotIndex, 'dotted', true, 0.7, 'gray', 2 * scale);
-            }
+
+            const customRenderFn = getCustomRenderFunction(plotConfig);
+            const mode = (plotConfig.mode || (customRenderFn ? (plotConfig.x && plotConfig.y ? 'overlay' : 'standalone') : 'standard')).toLowerCase();
+
+            // Custom layer group clipped to plot boundaries
+            const plotG = svg.append('g')
+                .attr('class', `custom-plot-layer plot-${plotIndex}`)
+                .attr('clip-path', `url(#${clipId})`);
 
             const plotCtx = {
                 svg,
+                g: plotG,
                 plotConfig,
+                customData: plotConfig.customData || plotConfig.customParams || {},
                 state,
                 pageData,
                 x,
                 y,
+                xMinVal,
+                xMaxVal,
+                yMinVal,
+                yMax,
                 m,
                 iw,
                 ih,
@@ -1537,37 +1642,74 @@ function injectPlots(state, pageData) {
                 clipId,
                 accessibleVals,
                 xVals,
-                getPoint
+                getPoint,
+                d3,
+                CoolProp: window.CoolProp || window.coolprop || window.CoolPropModule,
+                PropsSI: window.PropsSI,
+                HAPropsSI: window.HAPropsSI,
+                evaluateFormula,
+                parseText,
+                _plot,
+                forceCompute: window.forceCompute
             };
 
-            // Draw reference lines and labels
-            drawReferenceLines(plotCtx);
+            // Mode 'before': execute custom renderer before standard curves
+            if (customRenderFn && mode === 'before') {
+                try {
+                    customRenderFn(plotCtx);
+                } catch (err) {
+                    console.error(`[renderer.js] Error in custom plot renderer ('${plotConfig.customRender}'):`, err);
+                }
+            }
 
-            // Active curve label
-            drawActiveLabel(solidData, dottedData, plotCtx);
+            // Draw solid and dotted parts of the curve (unless standalone / override mode)
+            if (mode !== 'standalone' && mode !== 'override') {
+                if (solidData.length > 0) {
+                    _plot(solidData, plotIndex, 'solid', false, 1, '#0075ff', 2 * scale);
+                }
+                if (dottedData.length > 0) {
+                    _plot(dottedData, plotIndex, 'dotted', true, 0.7, 'gray', 2 * scale);
+                }
 
-            // Draw Draggable Point at current vals
+                // Draw reference lines and labels
+                drawReferenceLines(plotCtx);
+
+                // Active curve label
+                drawActiveLabel(solidData, dottedData, plotCtx);
+            }
+
+            // Mode 'overlay' / 'standalone' / 'override': execute custom renderer
+            if (customRenderFn && (mode === 'overlay' || mode === 'standalone' || mode === 'override')) {
+                try {
+                    customRenderFn(plotCtx);
+                } catch (err) {
+                    console.error(`[renderer.js] Error in custom plot renderer ('${plotConfig.customRender}'):`, err);
+                }
+            }
+
+            // Draw Draggable Point & Hit area (if x and y defined and not standalone mode)
             const currentXVal = state[plotConfig.x];
             const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
 
-            // Optional per-plot lock: when set, the point can't be dragged unless
-            // the x-variable's dropdown is on its 'custom' choice.
-            const dropdownElForLock = document.getElementById(`input_${plotConfig.x}_dropdown`);
-            const isLocked = !!plotConfig.lockDragUnlessCustom && dropdownElForLock && dropdownElForLock.value !== 'custom';
+            if (plotConfig.x && plotConfig.y && mode !== 'standalone' && mode !== 'override' && currentXVal !== undefined && !isNaN(currentXVal)) {
+                // Optional per-plot lock: when set, the point can't be dragged unless
+                // the x-variable's dropdown is on its 'custom' choice.
+                const dropdownElForLock = document.getElementById(`input_${plotConfig.x}_dropdown`);
+                const isLocked = !!plotConfig.lockDragUnlessCustom && dropdownElForLock && dropdownElForLock.value !== 'custom';
 
-            const dragpt = svg.append('circle').attr('class', 'dragpt')
-                .attr('r', 6 * scale)
-                .attr('cx', x(currentXVal))
-                .attr('cy', y(currentYVal))
-                .style('fill', ptGrayed ? 'gray' : '#0075ff')
-                .style('stroke', 'none')
-                .style('cursor', isLocked ? 'not-allowed' : null);
+                const dragpt = svg.append('circle').attr('class', 'dragpt')
+                    .attr('r', 6 * scale)
+                    .attr('cx', x(currentXVal))
+                    .attr('cy', y(currentYVal))
+                    .style('fill', ptGrayed ? 'gray' : '#0075ff')
+                    .style('stroke', 'none')
+                    .style('cursor', isLocked ? 'not-allowed' : null);
 
-            // Interaction Background
-            const hit = svg.append('rect').attr('class', 'hit')
-                .attr('x', plot_x_offset).attr('y', plot_y_offset)
-                .attr('width', iw).attr('height', ih)
-                .style('cursor', isLocked ? 'not-allowed' : null);
+                // Interaction Background
+                const hit = svg.append('rect').attr('class', 'hit')
+                    .attr('x', plot_x_offset).attr('y', plot_y_offset)
+                    .attr('width', iw).attr('height', ih)
+                    .style('cursor', isLocked ? 'not-allowed' : null);
 
             const drag = d3.drag()
                 .filter(() => !isLocked)
@@ -1666,6 +1808,7 @@ function injectPlots(state, pageData) {
                 });
 
             hit.call(drag);
+            }
         });
     });
 
@@ -2065,6 +2208,10 @@ window.addEventListener('load', async () => {
                 }
             }
         }
+
+        // Ensure external custom plot scripts are loaded before computation
+        await ensureCustomPlotScripts(pageData);
+
         renderInputOutput(pageData.inputOutput);
         setupCalculationEngine(pageData);
         initStickyFloatCards();
