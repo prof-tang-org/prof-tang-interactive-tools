@@ -151,7 +151,7 @@ const pageData = {
                         ["sf(40, fluid)", 40]
                     ],
                     "pointLabels": [
-                        { "text": "$1$", "location": "bottom left", "color": "#ef4444" },
+                        { "text": "$1$", "offsetX": "-0.5", "offsetY": "20", "color": "#ef4444" },
                         { "text": "$2$", "location": "top left", "color": "#ea580c" },
                         { "text": "$3$", "location": "top right", "color": "#0284c7" },
                         { "text": "$4$", "location": "bottom right", "color": "#6366f1" },
