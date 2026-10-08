@@ -107,6 +107,9 @@ const pageData = {
         "customScripts": [
             "../assets/js/plots/ts-diagram.js"
         ],
+        "customScriptFunctions": [
+            ["tsDiagram"]
+        ],
         "settings": [
             [
                 {
@@ -117,14 +120,16 @@ const pageData = {
                     "xMin": 10,
                     "xMax": 300,
                     "xTickInterval": 50,
-                    "yMin": 0,
+                    "yMin": 0.5,
                     "yMax": 1000,
+                    "yLog": true,
                     "yTickInterval": 200,
                     "key": "fluid"
                 },
                 {
                     "customScript": "../assets/js/plots/ts-diagram.js",
                     "customRender": "tsDiagram",
+                    "customScriptFunctions": ["tsDiagram"],
                     "mode": "before",
                     "x": "entropy",
                     "y": "temp",
@@ -136,7 +141,36 @@ const pageData = {
                     "yMin": [0, -40, -60],
                     "yMax": [400, 140, 70],
                     "yTickInterval": [50, 20, 20],
-                    "key": "fluid"
+                    "key": "fluid",
+                    "points": [
+                        ["sf(40, fluid)", 40],
+                        ["sf(temp, fluid)", "temp"],
+                        ["sg(temp, fluid)", "temp"],
+                        ["sg(40, fluid)", "PropsSI('T', 'S', sg(40, fluid), 'P', pressure * 1e5, fluid)"],
+                        ["sg(40, fluid)", 40],
+                        ["sf(40, fluid)", 40]
+                    ],
+                    "pointLabels": [
+                        { "text": "$1$", "location": "bottom left", "color": "#ef4444" },
+                        { "text": "$2$", "location": "top left", "color": "#ea580c" },
+                        { "text": "$3$", "location": "top right", "color": "#0284c7" },
+                        { "text": "$4$", "location": "bottom right", "color": "#6366f1" },
+                        { "text": "$5$", "location": "top left", "color": "#ea580c" },
+                        ""
+                    ],
+                    "pointColors": [
+                        "#ef4444",
+                        "#ea580c",
+                        "#0284c7",
+                        "#6366f1",
+                        "#ef4444"
+                    ],
+                    "pointSegmentColors": [
+                        "#ef4444",
+                        "#ea580c",
+                        "#0284c7",
+                        "#6366f1"
+                    ]
                 }
             ]
         ],
