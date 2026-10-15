@@ -139,6 +139,10 @@
  * @property {string[]} [segmentColors] - Optional list of colors for each connecting segment
  * @property {boolean} [showPoint] - Set to false to disable rendering the default interactive/draggable point
  * @property {boolean} [draggablePoint] - Set to false to disable rendering the default interactive/draggable point
+ * @property {string} [customScript] - Path to an external JS file providing a custom plot renderer
+ * @property {string | Function} [customRender] - Name or function of the custom plot renderer
+ * @property {'standard' | 'override' | 'points' | 'overlay' | 'before'} [mode] - Execution mode for custom plot renderer
+ * @property {Object} [customData] - Arbitrary configuration parameters passed to custom render context
  */
 
 /**

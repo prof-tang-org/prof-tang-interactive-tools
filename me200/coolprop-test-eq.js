@@ -105,10 +105,12 @@ const pageData = {
     "plots": {
         "aspectRatio": 1.5,
         "customScripts": [
-            "../assets/js/plots/ts-diagram.js"
+            "../assets/js/plots/ts-diagram.js",
+            "../assets/py/ph-diagram.py"
         ],
         "customScriptFunctions": [
-            ["tsDiagram"]
+            ["tsDiagram"],
+            ["phDiagram"]
         ],
         "settings": [
             [
@@ -172,8 +174,28 @@ const pageData = {
                         "#6366f1"
                     ]
                 }
+            ],
+            [
+                {
+                    "customScript": "../assets/py/ph-diagram.py",
+                    "customRender": "phDiagram",
+                    "customScriptFunctions": ["phDiagram"],
+                    "mode": "points",
+                    "x": "enthalpy",
+                    "y": "pressure",
+                    "xLabel": "Specific Enthalpy, $h \\text{ [kJ/kg]}$",
+                    "yLabel": "Pressure, $P \\text{ [bar]}$",
+                    "xMin": [0, 100, 0, 100],
+                    "xMax": [3500, 550, 600, 600],
+                    "xTickInterval": [500, 50, 100, 100],
+                    "yMin": [0, 0, 0, 0],
+                    "yMax": [60, 50, 60, 80],
+                    "yTickInterval": [10, 10, 10, 10],
+                    "key": "fluid",
+                    "aspectRatio": 2.2
+                }
             ]
         ],
-        "text": "Demonstration of CoolProp PropsSI() and extensible custom T-s diagram plot script (`ts-diagram.js`)."
+        "text": "Demonstration of CoolProp PropsSI(), custom T-s diagram script (`ts-diagram.js`), and Python-driven P-h diagram script (`ph-diagram.py`)."
     }
 };
