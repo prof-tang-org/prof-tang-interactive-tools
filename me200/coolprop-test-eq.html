@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Thermophysical Properties Evaluation using CoolProp</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- CSS Styling -->
+  <link rel="stylesheet" href="../templates/temp-styles.css" />
+  <!-- MathJax for rendering LaTeX -->
+  <script>window.MathJax = { chtml: { scale: 0.9 }, options: { renderActions: { addMenu: [] } } }</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- D3.js for plotting -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-row">
+        <h1 id="header-title">Thermophysical Properties Evaluation using CoolProp</h1>
+        <a class="btn primary feedback-link" href="../feedback.html" target="_blank" rel="noopener">Send feedback</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main body -->
+  <main class="container">
+    <!-- Back navigation -->
+    <nav class="back-row">
+      <a href="../index.html" class="back-home" aria-label=""><span class="chev">←</span> Home</a>
+    </nav>
+
+    <!-- Equation and schematic -->
+    <section class="grid">
+      <div class="card">
+        <div id="equation-container">
+        </div>
+      </div>
+
+      <div class="card float" id="schematic-card-container">
+        <h3>Schematic</h3>
+        <div class="schem" id="schematic-image-container" aria-label="Schematic">
+          <img src="" alt="">
+        </div>
+      </div>
+    </section>
+
+    <!-- Inputs and outputs and plots -->
+    <section class="grid">
+      <div class="card float">
+        <div>
+          <h3>Inputs</h3>
+
+          <div class="value-group hidden" id="fixed-inputs">
+          </div>
+
+          <div id="controls">
+          </div>
+        </div>
+
+        <div>
+          <div>
+            <h3>Outputs</h3>
+            <label></label>
+            <div class="value-group" id="outputs">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Plots</h3>
+        <svg id="plot" viewBox="0 0 760 320" aria-label="Plots"></svg>
+        <div class="note" id="plot-note"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <a href="../index.html" class="back-home"><span class="chev">←</span> Home</a>
+    </div>
+  </footer>
+
+  <script type="module">
+    import Module from '../assets/js/coolprop.js';
+    window.CoolProp = await Module();
+  </script>
+
+  <script src="./coolprop-test-eq.js"></script>
+  <script src="../templates/renderer.js"></script>
+</body>
+
+</html>

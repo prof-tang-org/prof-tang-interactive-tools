@@ -740,10 +740,11 @@ function getAllStateKeys(state) {
     return Array.from(keysSet).sort((a, b) => b.length - a.length);
 }
 
-function evaluateFormula(formula, state) {
+function evaluateFormula(formula, state, customScope = null) {
     if (typeof formula !== 'string') return formula;
 
-    let fn = formulaCache.get(formula);
+    const cacheKey = formula + (customScope && typeof customScope === 'object' ? '::' + Object.keys(customScope).join(',') : '');
+    let fn = formulaCache.get(cacheKey);
     if (!fn) {
         let parsedFormula = formula;
 
@@ -762,21 +763,29 @@ function evaluateFormula(formula, state) {
             parsedFormula = parsedFormula.replace(regex, `state["${k}"]`);
         });
 
-        // 3. Replace standard math functions with Math.xxx
+        // 3. Replace custom scoped helper function calls (e.g. sf(...), sg(...)) with scope["func"](...)
+        if (customScope && typeof customScope === 'object') {
+            Object.keys(customScope).forEach(funcName => {
+                const regex = new RegExp(`(?<![a-zA-Z0-9_])(${funcName})\\s*\\(`, 'g');
+                parsedFormula = parsedFormula.replace(regex, `scope["${funcName}"](`);
+            });
+        }
+
+        // 4. Replace standard math functions with Math.xxx
         const mathFuncs = Object.getOwnPropertyNames(Math);
         mathFuncs.forEach(func => {
             const regex = new RegExp(`(^|[^a-zA-Z0-9_.])(${func})\\b`, 'g');
             parsedFormula = parsedFormula.replace(regex, `$1Math.$2`);
         });
 
-        // 4. Restore original string literals
+        // 5. Restore original string literals
         literals.forEach((lit, index) => {
             parsedFormula = parsedFormula.replace(`___STR_LIT_${index}___`, () => lit);
         });
 
         try {
-            fn = new Function('state', `return ${parsedFormula};`);
-            formulaCache.set(formula, fn);
+            fn = new Function('state', 'scope', `return ${parsedFormula};`);
+            formulaCache.set(cacheKey, fn);
         } catch (e) {
             console.error("Evaluation Compilation Error:", formula, parsedFormula, e);
             return NaN;
@@ -784,7 +793,7 @@ function evaluateFormula(formula, state) {
     }
 
     try {
-        return fn(state);
+        return fn(state, customScope || {});
     } catch (e) {
         console.error("Evaluation Execution Error:", formula, e);
         return NaN;
@@ -1099,6 +1108,22 @@ function setupCalculationEngine(pageData) {
 
 window.plotRenderers = window.plotRenderers || {};
 
+let _customScriptCounter = 0;
+const _loadedCustomPlotScripts = new Map();
+const _scriptUniqueNameMap = new Map();
+const _scriptFunctionsScope = new Map();
+
+/**
+ * Global helper to allow IIFE / script-tag custom scripts to register returned function exports.
+ * @param {string} src
+ * @param {Object} exportsObj
+ */
+window.registerCustomPlotModule = function (src, exportsObj) {
+    if (src && exportsObj && typeof exportsObj === 'object') {
+        window._lastCustomModuleExports = { src, exports: exportsObj };
+    }
+};
+
 /**
  * Global API for registering custom plot renderer functions.
  * @param {string} name
@@ -1110,49 +1135,123 @@ window.registerPlotRenderer = function (name, renderFn) {
     }
 };
 
-const _loadedCustomPlotScripts = new Set();
-
 /**
- * Dynamically load a single external plot script file.
- * @param {string} src
- * @returns {Promise<void>}
+ * Dynamically load an external custom plot script file, catch returned function exports,
+ * validate expected function names, and map them to unique function names.
+ * @param {string} src - Script URL or relative path
+ * @param {Array<string>|string} [expectedFuncNames] - List of expected function names
+ * @returns {Promise<Object>} Returns map of original function names to unique registered function names
  */
-function loadCustomPlotScript(src) {
-    if (!src || _loadedCustomPlotScripts.has(src)) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-            _loadedCustomPlotScripts.add(src);
-            resolve();
-            return;
+async function loadCustomPlotScript(src, expectedFuncNames = []) {
+    if (!src) return {};
+
+    const expectedList = Array.isArray(expectedFuncNames)
+        ? expectedFuncNames.filter(Boolean)
+        : (expectedFuncNames ? [expectedFuncNames] : []);
+
+    if (_loadedCustomPlotScripts.has(src)) {
+        const existingMapping = _loadedCustomPlotScripts.get(src);
+        expectedList.forEach(funcName => {
+            const key = `${src}::${funcName}`;
+            if (!_scriptUniqueNameMap.has(key)) {
+                console.warn(`[renderer.js] Warning: expected function '${funcName}' was not previously registered for '${src}'.`);
+            }
+        });
+        return existingMapping;
+    }
+
+    let returnedFunctions = {};
+
+    try {
+        window._lastCustomModuleExports = null;
+        const mod = await import(src);
+        if (mod) {
+            if (mod.default && typeof mod.default === 'object') {
+                Object.assign(returnedFunctions, mod.default);
+            }
+            Object.assign(returnedFunctions, mod);
         }
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = () => {
-            _loadedCustomPlotScripts.add(src);
-            resolve();
-        };
-        script.onerror = (err) => {
-            console.error(`[renderer.js] Failed to load custom plot script: ${src}`, err);
-            reject(err);
-        };
-        document.head.appendChild(script);
+    } catch (e) {
+        // Fallback for non-ES module scripts
+        await new Promise((resolve, reject) => {
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => resolve();
+            script.onerror = (err) => reject(err);
+            document.head.appendChild(script);
+        });
+
+        if (window._lastCustomModuleExports && window._lastCustomModuleExports.exports) {
+            Object.assign(returnedFunctions, window._lastCustomModuleExports.exports);
+        }
+    }
+
+    // Store custom helper functions scope for evaluation (without placing on window)
+    _scriptFunctionsScope.set(src, returnedFunctions);
+
+    // Fallback check on window / plotRenderers for functions matching expected names
+    expectedList.forEach(funcName => {
+        if (!returnedFunctions[funcName]) {
+            if (window.plotRenderers && typeof window.plotRenderers[funcName] === 'function') {
+                returnedFunctions[funcName] = window.plotRenderers[funcName];
+            } else if (typeof window[funcName] === 'function') {
+                returnedFunctions[funcName] = window[funcName];
+            }
+        }
     });
+
+    // Validate that ALL expected function names were provided
+    const missing = expectedList.filter(funcName => typeof returnedFunctions[funcName] !== 'function');
+    if (missing.length > 0) {
+        const errMsg = `[renderer.js] Custom plot script validation failed for '${src}': Expected function(s) [${missing.join(', ')}] were not provided by the script.`;
+        console.error(errMsg);
+        throw new Error(errMsg);
+    }
+
+    // Assign each returned function to a UNIQUE function name
+    const scriptMapping = {};
+    Object.keys(returnedFunctions).forEach(origName => {
+        const fn = returnedFunctions[origName];
+        if (typeof fn === 'function') {
+            const uniqueId = ++_customScriptCounter;
+            const uniqueName = `__custom_${origName}_${uniqueId}`;
+
+            window.plotRenderers[uniqueName] = fn;
+
+            const fullKey = `${src}::${origName}`;
+            _scriptUniqueNameMap.set(fullKey, uniqueName);
+            _scriptUniqueNameMap.set(origName, uniqueName);
+            scriptMapping[origName] = uniqueName;
+        }
+    });
+
+    _loadedCustomPlotScripts.set(src, scriptMapping);
+    return scriptMapping;
 }
 
 /**
- * Scan pageData.plots for specified external custom scripts and load them.
+ * Scan pageData.plots for specified external custom scripts, validate their function names, and load them.
  * @param {Object} pageData
  * @returns {Promise<void>}
  */
 async function ensureCustomPlotScripts(pageData) {
     if (!pageData || !pageData.plots) return;
 
-    const scriptsToLoad = new Set();
+    const scriptFuncsMap = new Map();
 
     if (Array.isArray(pageData.plots.customScripts)) {
-        pageData.plots.customScripts.forEach(src => {
-            if (typeof src === 'string') scriptsToLoad.add(src);
+        const funcNamesList = pageData.plots.customScriptFunctions || pageData.plots.customFunctions || pageData.plots.customScriptFunctionNames || [];
+        pageData.plots.customScripts.forEach((src, idx) => {
+            if (typeof src === 'string') {
+                if (!scriptFuncsMap.has(src)) scriptFuncsMap.set(src, new Set());
+                const expected = Array.isArray(funcNamesList[idx]) ? funcNamesList[idx] : (typeof funcNamesList[idx] === 'string' ? [funcNamesList[idx]] : []);
+                expected.forEach(fn => scriptFuncsMap.get(src).add(fn));
+            }
         });
     }
 
@@ -1160,25 +1259,57 @@ async function ensureCustomPlotScripts(pageData) {
         const flatSettings = pageData.plots.settings.flat();
         flatSettings.forEach(p => {
             if (p && typeof p.customScript === 'string') {
-                scriptsToLoad.add(p.customScript);
+                const src = p.customScript;
+                if (!scriptFuncsMap.has(src)) scriptFuncsMap.set(src, new Set());
+
+                const targetFn = p.customRender || p.customPlot || p.customRenderer;
+                if (typeof targetFn === 'string') {
+                    scriptFuncsMap.get(src).add(targetFn);
+                }
+
+                const addFuncs = p.customScriptFunctions || p.customFunctions || p.customScriptFunctionNames;
+                if (Array.isArray(addFuncs)) {
+                    addFuncs.forEach(fn => typeof fn === 'string' && scriptFuncsMap.get(src).add(fn));
+                }
             }
         });
     }
 
-    const promises = Array.from(scriptsToLoad).map(src => loadCustomPlotScript(src));
+    const promises = Array.from(scriptFuncsMap.entries()).map(([src, funcSet]) => {
+        return loadCustomPlotScript(src, Array.from(funcSet));
+    });
     await Promise.all(promises);
 }
 
 /**
- * Resolve a custom render function from plot configuration.
+ * Resolve a custom render function from plot configuration using unique mapped function names.
  * @param {Object} plotConfig
  * @returns {Function|null}
  */
 function getCustomRenderFunction(plotConfig) {
     if (!plotConfig) return null;
-    const target = plotConfig.customRender || plotConfig.customPlot;
+    const target = plotConfig.customRender || plotConfig.customPlot || plotConfig.customRenderer;
     if (typeof target === 'function') return target;
+
     if (typeof target === 'string') {
+        const scriptSrc = plotConfig.customScript;
+        if (scriptSrc) {
+            const fullKey = `${scriptSrc}::${target}`;
+            if (_scriptUniqueNameMap.has(fullKey)) {
+                const uniqueName = _scriptUniqueNameMap.get(fullKey);
+                if (window.plotRenderers && typeof window.plotRenderers[uniqueName] === 'function') {
+                    return window.plotRenderers[uniqueName];
+                }
+            }
+        }
+
+        if (_scriptUniqueNameMap.has(target)) {
+            const uniqueName = _scriptUniqueNameMap.get(target);
+            if (window.plotRenderers && typeof window.plotRenderers[uniqueName] === 'function') {
+                return window.plotRenderers[uniqueName];
+            }
+        }
+
         if (window.plotRenderers && typeof window.plotRenderers[target] === 'function') {
             return window.plotRenderers[target];
         }
@@ -1687,11 +1818,15 @@ function injectPlots(state, pageData) {
                 }
             }
 
-            // Draw Draggable Point & Hit area (if x and y defined and not standalone mode)
+            // Draw configured points, connecting segments, nondraggable point markers, and point labels
+            drawPlotPoints(plotCtx);
+
+            // Draw Draggable Point & Hit area (if x and y defined, not standalone mode, and showPoint is not false)
             const currentXVal = state[plotConfig.x];
             const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
+            const shouldShowInteractivePoint = plotConfig.showPoint !== false && plotConfig.draggablePoint !== false && plotConfig.showDraggablePoint !== false && !plotConfig.hidePoint && !plotConfig.hideDraggablePoint;
 
-            if (plotConfig.x && plotConfig.y && mode !== 'standalone' && mode !== 'override' && currentXVal !== undefined && !isNaN(currentXVal)) {
+            if (shouldShowInteractivePoint && plotConfig.x && plotConfig.y && mode !== 'standalone' && mode !== 'override' && currentXVal !== undefined && !isNaN(currentXVal)) {
                 // Optional per-plot lock: when set, the point can't be dragged unless
                 // the x-variable's dropdown is on its 'custom' choice.
                 const dropdownElForLock = document.getElementById(`input_${plotConfig.x}_dropdown`);
@@ -1711,103 +1846,103 @@ function injectPlots(state, pageData) {
                     .attr('width', iw).attr('height', ih)
                     .style('cursor', isLocked ? 'not-allowed' : null);
 
-            const drag = d3.drag()
-                .filter(() => !isLocked)
-                .on('start drag', (event) => {
-                    const elPrimary = document.getElementById(`input_${plotConfig.x}`);
-                    const elNum = document.getElementById(`input_${plotConfig.x}_num`);
-                    const customEl = document.getElementById(`input_${plotConfig.x}_custom`);
-                    const elDropdown = document.getElementById(`input_${plotConfig.x}_dropdown`);
+                const drag = d3.drag()
+                    .filter(() => !isLocked)
+                    .on('start drag', (event) => {
+                        const elPrimary = document.getElementById(`input_${plotConfig.x}`);
+                        const elNum = document.getElementById(`input_${plotConfig.x}_num`);
+                        const customEl = document.getElementById(`input_${plotConfig.x}_custom`);
+                        const elDropdown = document.getElementById(`input_${plotConfig.x}_dropdown`);
 
-                    let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
-                    let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
-                    let newX = Math.max(xMinValDrag, Math.min(xMaxValDrag, x.invert(event.x)));
+                        let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
+                        let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
+                        let newX = Math.max(xMinValDrag, Math.min(xMaxValDrag, x.invert(event.x)));
 
-                    const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
-                    let dropdownChoiceVal = null;
+                        const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
+                        let dropdownChoiceVal = null;
 
-                    if (inputDef && (inputDef.type === 'dropdown' || inputDef.type === 'slider-dropdown')) {
-                        const hasCustom = inputDef.choices && inputDef.choices.some(c => c.value === 'custom');
-                        const matchingChoice = inputDef.choices ? inputDef.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - newX) < 1e-5) : null;
+                        if (inputDef && (inputDef.type === 'dropdown' || inputDef.type === 'slider-dropdown')) {
+                            const hasCustom = inputDef.choices && inputDef.choices.some(c => c.value === 'custom');
+                            const matchingChoice = inputDef.choices ? inputDef.choices.find(c => c.value !== 'custom' && Math.abs(parseFloat(c.value) - newX) < 1e-5) : null;
 
-                        if (matchingChoice) {
-                            newX = parseFloat(matchingChoice.value);
-                            dropdownChoiceVal = matchingChoice.value;
-                        } else if (hasCustom) {
-                            dropdownChoiceVal = 'custom';
-                            let clampedX = newX;
-                            if (inputDef.min !== undefined) clampedX = Math.max(inputDef.min, clampedX);
-                            if (inputDef.max !== undefined) clampedX = Math.min(inputDef.max, clampedX);
-                            newX = clampedX;
-                        } else if (inputDef.choices) {
-                            let closestChoice = inputDef.choices[0];
-                            let minDiff = Infinity;
-                            inputDef.choices.forEach(choice => {
-                                const val = parseFloat(choice.value);
-                                if (!isNaN(val)) {
-                                    const diff = Math.abs(val - newX);
-                                    if (diff < minDiff) {
-                                        minDiff = diff;
-                                        closestChoice = choice;
+                            if (matchingChoice) {
+                                newX = parseFloat(matchingChoice.value);
+                                dropdownChoiceVal = matchingChoice.value;
+                            } else if (hasCustom) {
+                                dropdownChoiceVal = 'custom';
+                                let clampedX = newX;
+                                if (inputDef.min !== undefined) clampedX = Math.max(inputDef.min, clampedX);
+                                if (inputDef.max !== undefined) clampedX = Math.min(inputDef.max, clampedX);
+                                newX = clampedX;
+                            } else if (inputDef.choices) {
+                                let closestChoice = inputDef.choices[0];
+                                let minDiff = Infinity;
+                                inputDef.choices.forEach(choice => {
+                                    const val = parseFloat(choice.value);
+                                    if (!isNaN(val)) {
+                                        const diff = Math.abs(val - newX);
+                                        if (diff < minDiff) {
+                                            minDiff = diff;
+                                            closestChoice = choice;
+                                        }
                                     }
+                                });
+                                newX = parseFloat(closestChoice.value);
+                                dropdownChoiceVal = closestChoice.value;
+                            }
+                        } else {
+                            const inpStepVal = (inputDef && typeof inputDef.step === 'string') ? evaluateFormula(inputDef.step, state) : (inputDef ? inputDef.step : undefined);
+                            if (inputDef && inpStepVal) {
+                                newX = Math.round(newX / inpStepVal) * inpStepVal;
+
+                                const stepStr = inpStepVal.toString();
+                                const decimalPlaces = stepStr.includes('.') ? stepStr.split('.')[1].length : 0;
+                                newX = parseFloat(newX.toFixed(decimalPlaces));
+                            }
+                        }
+
+                        let absoluteMin = xMinValDrag;
+                        let absoluteMax = xMaxValDrag;
+
+                        if (inputDef) {
+                            const inpMinVal = typeof inputDef.min === 'string' ? evaluateFormula(inputDef.min, state) : inputDef.min;
+                            const inpMaxVal = typeof inputDef.max === 'string' ? evaluateFormula(inputDef.max, state) : inputDef.max;
+                            if (inpMinVal !== undefined) absoluteMin = Math.max(absoluteMin, inpMinVal);
+                            if (inpMaxVal !== undefined) absoluteMax = Math.min(absoluteMax, inpMaxVal);
+                        }
+
+                        newX = Math.max(absoluteMin, Math.min(absoluteMax, newX));
+
+                        if (elNum) elNum.value = newX;
+                        if (customEl && dropdownChoiceVal === 'custom') {
+                            customEl.classList.remove('hidden');
+                            customEl.value = newX;
+                        } else if (customEl) {
+                            customEl.classList.add('hidden');
+                        }
+
+                        if (elDropdown && dropdownChoiceVal !== null) {
+                            elDropdown.value = dropdownChoiceVal;
+                        }
+
+                        if (elPrimary) {
+                            if (inputDef && inputDef.type === 'dropdown') {
+                                if (dropdownChoiceVal !== null) {
+                                    elPrimary.value = dropdownChoiceVal;
+                                } else {
+                                    elPrimary.value = newX;
                                 }
-                            });
-                            newX = parseFloat(closestChoice.value);
-                            dropdownChoiceVal = closestChoice.value;
-                        }
-                    } else {
-                        const inpStepVal = (inputDef && typeof inputDef.step === 'string') ? evaluateFormula(inputDef.step, state) : (inputDef ? inputDef.step : undefined);
-                        if (inputDef && inpStepVal) {
-                            newX = Math.round(newX / inpStepVal) * inpStepVal;
-
-                            const stepStr = inpStepVal.toString();
-                            const decimalPlaces = stepStr.includes('.') ? stepStr.split('.')[1].length : 0;
-                            newX = parseFloat(newX.toFixed(decimalPlaces));
-                        }
-                    }
-
-                    let absoluteMin = xMinValDrag;
-                    let absoluteMax = xMaxValDrag;
-
-                    if (inputDef) {
-                        const inpMinVal = typeof inputDef.min === 'string' ? evaluateFormula(inputDef.min, state) : inputDef.min;
-                        const inpMaxVal = typeof inputDef.max === 'string' ? evaluateFormula(inputDef.max, state) : inputDef.max;
-                        if (inpMinVal !== undefined) absoluteMin = Math.max(absoluteMin, inpMinVal);
-                        if (inpMaxVal !== undefined) absoluteMax = Math.min(absoluteMax, inpMaxVal);
-                    }
-
-                    newX = Math.max(absoluteMin, Math.min(absoluteMax, newX));
-
-                    if (elNum) elNum.value = newX;
-                    if (customEl && dropdownChoiceVal === 'custom') {
-                        customEl.classList.remove('hidden');
-                        customEl.value = newX;
-                    } else if (customEl) {
-                        customEl.classList.add('hidden');
-                    }
-
-                    if (elDropdown && dropdownChoiceVal !== null) {
-                        elDropdown.value = dropdownChoiceVal;
-                    }
-
-                    if (elPrimary) {
-                        if (inputDef && inputDef.type === 'dropdown') {
-                            if (dropdownChoiceVal !== null) {
-                                elPrimary.value = dropdownChoiceVal;
                             } else {
                                 elPrimary.value = newX;
                             }
-                        } else {
-                            elPrimary.value = newX;
                         }
-                    }
 
-                    if (window.forceCompute) {
-                        window.forceCompute(plotConfig.x);
-                    }
-                });
+                        if (window.forceCompute) {
+                            window.forceCompute(plotConfig.x);
+                        }
+                    });
 
-            hit.call(drag);
+                hit.call(drag);
             }
         });
     });
@@ -2113,6 +2248,230 @@ function drawActiveLabel(solidData, dottedData, plotCtx) {
                 .attr('data-raw-text', activeText);
         }
     }
+}
+
+function drawPlotPoints(plotCtx) {
+    const { svg, plotConfig, state, x, y, scale, clipId } = plotCtx;
+    if (!plotConfig || !plotConfig.points || !Array.isArray(plotConfig.points) || plotConfig.points.length === 0) {
+        return;
+    }
+
+    const customScope = (plotConfig.customScript && _scriptFunctionsScope.get(plotConfig.customScript)) || null;
+
+    const rawPoints = plotConfig.points;
+    const pointColors = Array.isArray(plotConfig.pointColors) ? plotConfig.pointColors : [];
+    const pointLabels = Array.isArray(plotConfig.pointLabels) ? plotConfig.pointLabels : [];
+
+    // Evaluate coordinates for each point
+    const evaluatedPoints = [];
+    rawPoints.forEach((pt, idx) => {
+        if (!Array.isArray(pt) || pt.length < 2) return;
+        const rawX = pt[0];
+        const rawY = pt[1];
+
+        const valX = typeof rawX === 'string' ? evaluateFormula(rawX, state, customScope) : rawX;
+        const valY = typeof rawY === 'string' ? evaluateFormula(rawY, state, customScope) : rawY;
+
+        if (valX === undefined || valY === undefined || isNaN(valX) || isNaN(valY)) return;
+
+        const px = x(valX);
+        const py = y(valY);
+
+        if (isNaN(px) || isNaN(py)) return;
+
+        evaluatedPoints.push({
+            valX,
+            valY,
+            px,
+            py,
+            originalIndex: idx
+        });
+    });
+
+    if (evaluatedPoints.length === 0) return;
+
+    const defaultStrokeColor = '#0075ff';
+
+    const segmentColors = Array.isArray(plotConfig.pointSegmentColors) ? plotConfig.pointSegmentColors : [];
+
+    // 1. Draw solid line segments connecting adjacent points
+    for (let i = 0; i < evaluatedPoints.length - 1; i++) {
+        const p1 = evaluatedPoints[i];
+        const p2 = evaluatedPoints[i + 1];
+
+        let segColor = defaultStrokeColor;
+
+        if (segmentColors[i] !== undefined && segmentColors[i] !== null && segmentColors[i] !== '') {
+            segColor = segmentColors[i];
+        } else if (pointColors[p1.originalIndex] !== undefined && pointColors[p1.originalIndex] !== null && pointColors[p1.originalIndex] !== '') {
+            segColor = pointColors[p1.originalIndex];
+        } else if (pointColors[p2.originalIndex] !== undefined && pointColors[p2.originalIndex] !== null && pointColors[p2.originalIndex] !== '') {
+            segColor = pointColors[p2.originalIndex];
+        }
+
+        svg.append('line')
+            .attr('class', 'point-segment')
+            .attr('clip-path', `url(#${clipId})`)
+            .attr('x1', p1.px)
+            .attr('y1', p1.py)
+            .attr('x2', p2.px)
+            .attr('y2', p2.py)
+            .style('stroke', segColor)
+            .style('stroke-width', `${2 * scale}px`)
+            .style('stroke-linecap', 'round');
+    }
+
+    // 2. Draw nondraggable points
+    evaluatedPoints.forEach(p => {
+        const ptColor = pointColors[p.originalIndex] || defaultStrokeColor;
+
+        svg.append('circle')
+            .attr('class', 'nondragpt')
+            .attr('clip-path', `url(#${clipId})`)
+            .attr('cx', p.px)
+            .attr('cy', p.py)
+            .attr('r', 5 * scale)
+            .style('fill', ptColor)
+            .style('stroke', '#ffffff')
+            .style('stroke-width', `${1.5 * scale}px`)
+            .style('cursor', 'default');
+    });
+
+    // 3. Draw point labels
+    evaluatedPoints.forEach(p => {
+        const labelDef = pointLabels[p.originalIndex];
+        if (labelDef === undefined || labelDef === null) return;
+
+        let labelText = '';
+        let location = 'top';
+        let customOffsetX = undefined;
+        let customOffsetY = undefined;
+        let labelColor = pointColors[p.originalIndex] || defaultStrokeColor;
+
+        if (typeof labelDef === 'string') {
+            labelText = labelDef;
+        } else if (typeof labelDef === 'object') {
+            labelText = labelDef.text !== undefined ? labelDef.text : (labelDef.label !== undefined ? labelDef.label : (labelDef.content !== undefined ? labelDef.content : ''));
+            if (labelDef.location) location = labelDef.location;
+
+            customOffsetX = labelDef.offsetX !== undefined ? labelDef.offsetX : (labelDef['offset x'] !== undefined ? labelDef['offset x'] : labelDef.xOffset);
+            customOffsetY = labelDef.offsetY !== undefined ? labelDef.offsetY : (labelDef['offset y'] !== undefined ? labelDef['offset y'] : labelDef.yOffset);
+
+            if (labelDef.color) labelColor = labelDef.color;
+        }
+
+        if (typeof labelText !== 'string') labelText = String(labelText);
+        if (!labelText || labelText.trim() === '') return; // Empty string omits label
+
+        const locStr = location.toString().toLowerCase().trim().replace(/-/g, ' ');
+        const dist = 14 * scale;
+
+        let baseDx = 0;
+        let baseDy = -dist;
+        let textAnchor = 'center';
+        let align = 'bottom';
+
+        switch (locStr) {
+            case 'top':
+            case 'north':
+            case 'n':
+                baseDx = 0; baseDy = -dist; textAnchor = 'center'; align = 'bottom';
+                break;
+            case 'bottom':
+            case 'south':
+            case 's':
+                baseDx = 0; baseDy = dist; textAnchor = 'center'; align = 'top';
+                break;
+            case 'left':
+            case 'west':
+            case 'w':
+                baseDx = -dist; baseDy = 0; textAnchor = 'right'; align = 'middle';
+                break;
+            case 'right':
+            case 'east':
+            case 'e':
+                baseDx = dist; baseDy = 0; textAnchor = 'left'; align = 'middle';
+                break;
+            case 'top left':
+            case 'topleft':
+            case 'nw':
+            case 'northwest':
+                baseDx = -dist * 0.707; baseDy = -dist * 0.707; textAnchor = 'right'; align = 'bottom';
+                break;
+            case 'top right':
+            case 'topright':
+            case 'ne':
+            case 'northeast':
+                baseDx = dist * 0.707; baseDy = -dist * 0.707; textAnchor = 'left'; align = 'bottom';
+                break;
+            case 'bottom left':
+            case 'bottomleft':
+            case 'sw':
+            case 'southwest':
+                baseDx = -dist * 0.707; baseDy = dist * 0.707; textAnchor = 'right'; align = 'top';
+                break;
+            case 'bottom right':
+            case 'bottomright':
+            case 'se':
+            case 'southeast':
+                baseDx = dist * 0.707; baseDy = dist * 0.707; textAnchor = 'left'; align = 'top';
+                break;
+            case 'center':
+            case 'middle':
+                baseDx = 0; baseDy = 0; textAnchor = 'center'; align = 'middle';
+                break;
+            default:
+                baseDx = 0; baseDy = -dist; textAnchor = 'center'; align = 'bottom';
+                break;
+        }
+
+        let finalDx = baseDx;
+        let finalDy = baseDy;
+
+        if (customOffsetX !== undefined && customOffsetX !== null && !isNaN(parseFloat(customOffsetX))) {
+            finalDx = parseFloat(customOffsetX) * scale;
+        }
+        if (customOffsetY !== undefined && customOffsetY !== null && !isNaN(parseFloat(customOffsetY))) {
+            finalDy = parseFloat(customOffsetY) * scale;
+        }
+
+        const foWidth = 100 * scale;
+        const foHeight = 26 * scale;
+
+        let foX = p.px + finalDx;
+        if (textAnchor === 'center') foX -= foWidth / 2;
+        else if (textAnchor === 'right') foX -= foWidth;
+
+        let foY = p.py + finalDy;
+        if (align === 'middle') foY -= foHeight / 2;
+        else if (align === 'bottom') foY -= foHeight;
+
+        const fo = svg.append('foreignObject')
+            .attr('x', foX)
+            .attr('y', foY)
+            .attr('width', foWidth)
+            .attr('height', foHeight)
+            .style('overflow', 'visible');
+
+        const div = fo.append('xhtml:div')
+            .style('font-size', `${0.875 * scale}rem`)
+            .style('font-weight', '600')
+            .style('color', labelColor)
+            .style('display', 'flex')
+            .style('width', '100%')
+            .style('height', '100%')
+            .style('justify-content', textAnchor === 'center' ? 'center' : (textAnchor === 'right' ? 'flex-end' : 'flex-start'))
+            .style('align-items', align === 'middle' ? 'center' : (align === 'bottom' ? 'flex-end' : 'flex-start'))
+            .style('line-height', '1.2');
+
+        if (mathjaxCache.has(labelText)) {
+            div.html(mathjaxCache.get(labelText));
+        } else {
+            div.html(parseText(labelText))
+                .classed('needs-typeset', true)
+                .attr('data-raw-text', labelText);
+        }
+    });
 }
 
 function renderInputOutput(inputOutput) {

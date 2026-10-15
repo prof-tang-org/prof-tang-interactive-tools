@@ -103,6 +103,15 @@
  */
 
 /**
+ * @typedef {Object} PointLabelConfig
+ * @property {string} [text] - Text content for the point label (supports MathJax, e.g. "$1$")
+ * @property {'top' | 'bottom' | 'left' | 'right' | 'top left' | 'top right' | 'bottom left' | 'bottom right' | 'center'} [location] - Position relative to point
+ * @property {number} [offsetX] - Custom X pixel offset overriding location
+ * @property {number} [offsetY] - Custom Y pixel offset overriding location
+ * @property {string} [color] - Text color for the point label
+ */
+
+/**
  * @typedef {Object} PlotSetting
  * @property {string} x - Unique ID of the variable to plot on the X-axis (must be an input parameter)
  * @property {string} y - Unique ID of the variable to plot on the Y-axis (can be an input or output parameter)
@@ -124,12 +133,20 @@
  * @property {string} [activeLabel] - Optional text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$")
  * @property {ReferenceSetting[]} [reference] - Auxiliary static reference curves configurations
  * @property {boolean} [lockDragUnlessCustom] - If true, the plot's draggable point is only interactive when the x-variable's dropdown/slider-dropdown input is set to 'custom'
+ * @property {Array<[number | string, number | string]>} [points] - List of 2D tuples representing point coordinates in plot scale
+ * @property {Array<string | PointLabelConfig>} [pointLabels] - List of label strings or PointLabelConfig objects for each point
+ * @property {string[]} [pointColors] - List of colors for each point
+ * @property {string[]} [segmentColors] - Optional list of colors for each connecting segment
+ * @property {boolean} [showPoint] - Set to false to disable rendering the default interactive/draggable point
+ * @property {boolean} [draggablePoint] - Set to false to disable rendering the default interactive/draggable point
  */
 
 /**
  * @typedef {Object} PlotsConfig
  * @property {number} [aspectRatio] - Width-to-height ratio of each individual plot (defaults to 1.5)
  * @property {number} [plotColumns] - Number of plot columns per row (e.g. 2)
+ * @property {string[]} [customScripts] - List of external custom plot scripts to load
+ * @property {Array<string | string[]>} [customScriptFunctions] - List of expected function names exported by custom scripts (validated on load)
  * @property {PlotSetting[]} settings - List of active interactive charts to plot side-by-side
  * @property {string} text - Instructive annotation text shown below the chart container
  */
