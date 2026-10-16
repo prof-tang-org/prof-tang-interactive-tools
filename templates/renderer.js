@@ -1135,8 +1135,148 @@ window.registerPlotRenderer = function (name, renderFn) {
     }
 };
 
+let _pyodidePromise = null;
+
 /**
- * Dynamically load an external custom plot script file, catch returned function exports,
+ * Lazy initialize Pyodide Python runtime and bridge CoolProp/PropsSI to Python sys.modules.
+ * @returns {Promise<Object>}
+ */
+async function getPyodideInstance() {
+    if (window._pyodideInstance) return window._pyodideInstance;
+    if (_pyodidePromise) return _pyodidePromise;
+
+    _pyodidePromise = (async () => {
+        try {
+            await initCoolProp();
+        } catch (e) {
+            console.warn('[renderer.js] initCoolProp warning before Pyodide:', e);
+        }
+
+        if (!window.loadPyodide) {
+            await new Promise((resolve, reject) => {
+                const existing = document.querySelector('script[data-pyodide]');
+                if (existing) {
+                    existing.addEventListener('load', () => resolve());
+                    existing.addEventListener('error', (err) => reject(err));
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+                script.setAttribute('data-pyodide', 'true');
+                script.onload = () => resolve();
+                script.onerror = (err) => reject(new Error('Failed to load Pyodide from CDN: ' + err));
+                document.head.appendChild(script);
+            });
+        }
+
+        const pyodide = await window.loadPyodide({
+            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/'
+        });
+
+        // Initialize CoolProp bridge in Python sys.modules
+        await pyodide.runPythonAsync(`
+import sys
+import types
+import js
+
+try:
+    cp_mod = types.ModuleType("CoolProp")
+    cp_sub = types.ModuleType("CoolProp.CoolProp")
+
+    def _props_si(out_prop, name1, val1, name2, val2, fluid):
+        try:
+            return float(js.PropsSI(str(out_prop), str(name1), float(val1), str(name2), float(val2), str(fluid)))
+        except Exception as err:
+            return float('nan')
+
+    def _ha_props_si(out_prop, name1, val1, name2, val2, name3, val3):
+        try:
+            return float(js.HAPropsSI(str(out_prop), str(name1), float(val1), str(name2), float(val2), str(name3), float(val3)))
+        except Exception as err:
+            return float('nan')
+
+    cp_sub.PropsSI = _props_si
+    cp_sub.HAPropsSI = _ha_props_si
+    cp_mod.CoolProp = cp_sub
+    cp_mod.PropsSI = _props_si
+    cp_mod.HAPropsSI = _ha_props_si
+    sys.modules["CoolProp"] = cp_mod
+    sys.modules["CoolProp.CoolProp"] = cp_sub
+except Exception as e:
+    print("[renderer.js] Warning: Failed to initialize CoolProp Python bridge:", e)
+        `);
+
+        window._pyodideInstance = pyodide;
+        return pyodide;
+    })();
+
+    return _pyodidePromise;
+}
+
+/**
+ * Fetch and execute a Python plot script via Pyodide, wrapping exported functions.
+ * @param {string} src
+ * @param {Array<string>} expectedList
+ * @param {Object} returnedFunctions
+ */
+async function loadPyodidePlotScript(src, expectedList, returnedFunctions) {
+    const pyodide = await getPyodideInstance();
+    const resp = await fetch(src);
+    if (!resp.ok) {
+        throw new Error(`[renderer.js] Failed to fetch Python script '${src}': HTTP ${resp.status}`);
+    }
+    const pyCode = await resp.text();
+
+    await pyodide.runPythonAsync(pyCode);
+
+    const targetNames = new Set(expectedList);
+    if (targetNames.size === 0) {
+        const globalKeys = pyodide.runPython("list(globals().keys())").toJs();
+        globalKeys.forEach(name => {
+            if (!name.startsWith('_')) {
+                const item = pyodide.globals.get(name);
+                if (typeof item === 'function') {
+                    targetNames.add(name);
+                }
+            }
+        });
+    }
+
+    targetNames.forEach(funcName => {
+        const pyFunc = pyodide.globals.get(funcName);
+        if (typeof pyFunc === 'function') {
+            returnedFunctions[funcName] = function(plotCtx) {
+                try {
+                    let rawResult;
+                    try {
+                        rawResult = pyFunc(plotCtx);
+                    } catch (callErr) {
+                        if (callErr && callErr.message && callErr.message.includes('takes 0 positional arguments')) {
+                            rawResult = pyFunc();
+                        } else {
+                            throw callErr;
+                        }
+                    }
+
+                    if (rawResult && typeof rawResult.toJs === 'function') {
+                        const jsResult = rawResult.toJs({ dict_converter: Object.fromEntries });
+                        if (typeof rawResult.destroy === 'function') {
+                            rawResult.destroy();
+                        }
+                        return jsResult;
+                    }
+                    return rawResult;
+                } catch (err) {
+                    console.error(`[renderer.js] Error executing Python function '${funcName}':`, err);
+                    throw err;
+                }
+            };
+        }
+    });
+}
+
+/**
+ * Dynamically load an external custom plot script file (JS or Python), catch returned function exports,
  * validate expected function names, and map them to unique function names.
  * @param {string} src - Script URL or relative path
  * @param {Array<string>|string} [expectedFuncNames] - List of expected function names
@@ -1162,32 +1302,38 @@ async function loadCustomPlotScript(src, expectedFuncNames = []) {
 
     let returnedFunctions = {};
 
-    try {
-        window._lastCustomModuleExports = null;
-        const mod = await import(src);
-        if (mod) {
-            if (mod.default && typeof mod.default === 'object') {
-                Object.assign(returnedFunctions, mod.default);
-            }
-            Object.assign(returnedFunctions, mod);
-        }
-    } catch (e) {
-        // Fallback for non-ES module scripts
-        await new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${src}"]`);
-            if (existing) {
-                resolve();
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = () => resolve();
-            script.onerror = (err) => reject(err);
-            document.head.appendChild(script);
-        });
+    const isPython = typeof src === 'string' && src.trim().toLowerCase().split('?')[0].endsWith('.py');
 
-        if (window._lastCustomModuleExports && window._lastCustomModuleExports.exports) {
-            Object.assign(returnedFunctions, window._lastCustomModuleExports.exports);
+    if (isPython) {
+        await loadPyodidePlotScript(src, expectedList, returnedFunctions);
+    } else {
+        try {
+            window._lastCustomModuleExports = null;
+            const mod = await import(src);
+            if (mod) {
+                if (mod.default && typeof mod.default === 'object') {
+                    Object.assign(returnedFunctions, mod.default);
+                }
+                Object.assign(returnedFunctions, mod);
+            }
+        } catch (e) {
+            // Fallback for non-ES module scripts
+            await new Promise((resolve, reject) => {
+                const existing = document.querySelector(`script[src="${src}"]`);
+                if (existing) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => resolve();
+                script.onerror = (err) => reject(err);
+                document.head.appendChild(script);
+            });
+
+            if (window._lastCustomModuleExports && window._lastCustomModuleExports.exports) {
+                Object.assign(returnedFunctions, window._lastCustomModuleExports.exports);
+            }
         }
     }
 
@@ -1351,6 +1497,74 @@ function _plot(refData, clipId = 0, name = '', dashed = false, opacity = 1, stro
         .attr('d', d3.line().defined(d => d && !isNaN(d[1]))(refData));
 }
 
+/**
+ * Determine if an item is a coordinate pair or point object rather than a series descriptor.
+ */
+function isPointItem(item) {
+    if (!item) return false;
+    if (Array.isArray(item)) {
+        return typeof item[0] === 'number' || (!isNaN(parseFloat(item[0])) && item.length >= 2);
+    }
+    if (typeof item === 'object') {
+        return ('x' in item || 'y' in item);
+    }
+    return false;
+}
+
+/**
+ * Convert a data point [x, y] or {x, y} to pixel coordinates using D3 scales.
+ */
+function toPixelPoint(pt, xScale, yScale) {
+    if (!pt) return null;
+    let xv, yv;
+    if (Array.isArray(pt)) {
+        xv = typeof pt[0] === 'number' ? pt[0] : parseFloat(pt[0]);
+        yv = typeof pt[1] === 'number' ? pt[1] : parseFloat(pt[1]);
+    } else if (typeof pt === 'object') {
+        xv = pt.x !== undefined ? (typeof pt.x === 'number' ? pt.x : parseFloat(pt.x)) : (pt[0] !== undefined ? parseFloat(pt[0]) : undefined);
+        yv = pt.y !== undefined ? (typeof pt.y === 'number' ? pt.y : parseFloat(pt.y)) : (pt[1] !== undefined ? parseFloat(pt[1]) : undefined);
+    }
+    if (xv === undefined || yv === undefined || isNaN(xv) || isNaN(yv)) return null;
+    return [xScale(xv), yScale(yv)];
+}
+
+/**
+ * Linearly interpolate Y value corresponding to a target X value from an array of data points.
+ */
+function interpolateYFromPoints(pts, targetX) {
+    if (!pts || !Array.isArray(pts) || pts.length === 0) return undefined;
+    const cleanPts = pts.map(pt => {
+        if (!pt) return null;
+        let xv, yv;
+        if (Array.isArray(pt)) {
+            xv = typeof pt[0] === 'number' ? pt[0] : parseFloat(pt[0]);
+            yv = typeof pt[1] === 'number' ? pt[1] : parseFloat(pt[1]);
+        } else if (typeof pt === 'object') {
+            xv = pt.x !== undefined ? parseFloat(pt.x) : parseFloat(pt[0]);
+            yv = pt.y !== undefined ? parseFloat(pt.y) : parseFloat(pt[1]);
+        }
+        if (xv === undefined || yv === undefined || isNaN(xv) || isNaN(yv)) return null;
+        return [xv, yv];
+    }).filter(Boolean).sort((a, b) => a[0] - b[0]);
+
+    if (cleanPts.length === 0) return undefined;
+    if (targetX <= cleanPts[0][0]) return cleanPts[0][1];
+    if (targetX >= cleanPts[cleanPts.length - 1][0]) return cleanPts[cleanPts.length - 1][1];
+
+    for (let i = 0; i < cleanPts.length - 1; i++) {
+        const x0 = cleanPts[i][0];
+        const y0 = cleanPts[i][1];
+        const x1 = cleanPts[i + 1][0];
+        const y1 = cleanPts[i + 1][1];
+        if (targetX >= x0 && targetX <= x1) {
+            if (Math.abs(x1 - x0) < 1e-12) return y0;
+            const t = (targetX - x0) / (x1 - x0);
+            return y0 + t * (y1 - y0);
+        }
+    }
+    return cleanPts[0][1];
+}
+
 function injectPlots(state, pageData) {
     if (!pageData.plots || !pageData.plots.settings || pageData.plots.settings.length === 0 || typeof d3 === 'undefined') return;
 
@@ -1478,8 +1692,12 @@ function injectPlots(state, pageData) {
 
             const plotIndex = globalPlotIndex++;
 
+            const preCustomFn = getCustomRenderFunction(plotConfig);
+            let preMode = (plotConfig.mode || (preCustomFn ? 'override' : 'standard')).toLowerCase();
+            if (preMode === 'standalone') preMode = 'override';
+
             let currentYVal = state[plotConfig.y];
-            if (currentYVal === undefined || isNaN(currentYVal)) return;
+            if ((currentYVal === undefined || isNaN(currentYVal)) && preMode !== 'override' && preMode !== 'points' && !preCustomFn) return;
 
             const dropdownIndex = getDropdownSelectedIndex(plotConfig.key, state);
             let yIndex = dropdownIndex !== -1 ? dropdownIndex : 0;
@@ -1493,7 +1711,7 @@ function injectPlots(state, pageData) {
                     // Evaluate dynamic max bounds based on current Y value
                     const matchedVal = yMaxRaw.find(maxVal => {
                         const evaluatedMax = typeof maxVal === 'string' ? evaluateFormula(maxVal, state) : maxVal;
-                        return currentYVal <= evaluatedMax;
+                        return (currentYVal !== undefined && !isNaN(currentYVal)) ? (currentYVal <= evaluatedMax) : true;
                     });
                     if (matchedVal !== undefined) {
                         yIndex = yMaxRaw.indexOf(matchedVal);
@@ -1709,25 +1927,6 @@ function injectPlots(state, pageData) {
 
             const accessibleVals = xVals.filter(v => v >= accMin && v <= accMax);
 
-            let solidData = [];
-            let dottedData = [];
-
-            if (dottedMin !== undefined && dottedMax !== undefined) {
-                const solidVals = [];
-                const dottedVals = [];
-                accessibleVals.forEach(v => {
-                    if (v >= dottedMin && v <= dottedMax) {
-                        dottedVals.push(v);
-                    } else {
-                        solidVals.push(v);
-                    }
-                });
-                solidData = solidVals.map(v => getPoint(v, state));
-                dottedData = dottedVals.map(v => getPoint(v, state));
-            } else {
-                solidData = accessibleVals.map(v => getPoint(v, state));
-            }
-
             // Add clip path for the plot
             const clipId = `clip-${plotIndex}`;
             svg.append('clipPath').attr('id', clipId)
@@ -1744,7 +1943,8 @@ function injectPlots(state, pageData) {
             }
 
             const customRenderFn = getCustomRenderFunction(plotConfig);
-            const mode = (plotConfig.mode || (customRenderFn ? (plotConfig.x && plotConfig.y ? 'overlay' : 'standalone') : 'standard')).toLowerCase();
+            let mode = (plotConfig.mode || (customRenderFn ? 'override' : 'standard')).toLowerCase();
+            if (mode === 'standalone') mode = 'override';
 
             // Custom layer group clipped to plot boundaries
             const plotG = svg.append('g')
@@ -1793,13 +1993,148 @@ function injectPlots(state, pageData) {
                 }
             }
 
-            // Draw solid and dotted parts of the curve (unless standalone / override mode)
-            if (mode !== 'standalone' && mode !== 'override') {
-                if (solidData.length > 0) {
-                    _plot(solidData, plotIndex, 'solid', false, 1, '#0075ff', 2 * scale);
+            const currentXVal = state[plotConfig.x];
+
+            let solidData = [];
+            let dottedData = [];
+            let customSeriesList = null;
+            let customSolidColor = '#0075ff';
+            let customSolidWidth = 2 * scale;
+            let customSolidDashed = false;
+
+            // Mode 'points': custom script provides data points for renderer to plot
+            if (mode === 'points') {
+                let customPointsResult = null;
+                if (customRenderFn) {
+                    try {
+                        customPointsResult = customRenderFn(plotCtx);
+                    } catch (err) {
+                        console.error(`[renderer.js] Error in custom points renderer ('${plotConfig.customRender}'):`, err);
+                    }
                 }
-                if (dottedData.length > 0) {
-                    _plot(dottedData, plotIndex, 'dotted', true, 0.7, 'gray', 2 * scale);
+                const rawPointsData = customPointsResult !== undefined && customPointsResult !== null
+                    ? customPointsResult
+                    : (plotCtx.curvePoints || plotCtx.pointsData || (Array.isArray(plotCtx.points) && plotCtx.points !== plotConfig.points ? plotCtx.points : null));
+
+                if (rawPointsData) {
+                    if (Array.isArray(rawPointsData) && rawPointsData.length > 0 && !isPointItem(rawPointsData[0]) && (rawPointsData[0].points || Array.isArray(rawPointsData[0]))) {
+                        // Multi-series array: [{ points, color, dashed, opacity, strokeWidth, name }, ...] or [[[x,y],...], ...]
+                        customSeriesList = rawPointsData.map((series, sIdx) => {
+                            const sPts = Array.isArray(series) ? series : (series.points || []);
+                            const sColor = series.color || (sIdx === 0 ? '#0075ff' : (sIdx === 1 ? '#dc2626' : (sIdx === 2 ? '#16a34a' : '#d97706')));
+                            const sDashed = series.dashed !== undefined ? series.dashed : false;
+                            const sOpacity = series.opacity !== undefined ? series.opacity : 1;
+                            const sWidth = series.strokeWidth || (2 * scale);
+                            const sName = series.name || `series-${sIdx}`;
+                            const mappedData = sPts.map(pt => toPixelPoint(pt, x, y)).filter(Boolean);
+                            return {
+                                data: mappedData,
+                                color: sColor,
+                                dashed: sDashed,
+                                opacity: sOpacity,
+                                strokeWidth: sWidth,
+                                name: sName
+                            };
+                        });
+
+                        if ((currentYVal === undefined || isNaN(currentYVal)) && currentXVal !== undefined && !isNaN(currentXVal)) {
+                            const firstSeries = Array.isArray(rawPointsData[0]) ? rawPointsData[0] : (rawPointsData[0].points || []);
+                            const interp = interpolateYFromPoints(firstSeries, currentXVal);
+                            if (interp !== undefined && !isNaN(interp)) {
+                                currentYVal = interp;
+                                if (plotConfig.y) state[plotConfig.y] = currentYVal;
+                            }
+                        }
+                    } else if (typeof rawPointsData === 'object' && !Array.isArray(rawPointsData) && (rawPointsData.solid || rawPointsData.dotted)) {
+                        // Explicit solid and dotted segments: { solid: [...], dotted: [...] }
+                        const solidPts = rawPointsData.solid || [];
+                        const dottedPts = rawPointsData.dotted || [];
+                        solidData = solidPts.map(pt => toPixelPoint(pt, x, y)).filter(Boolean);
+                        dottedData = dottedPts.map(pt => toPixelPoint(pt, x, y)).filter(Boolean);
+                        if (rawPointsData.color) customSolidColor = rawPointsData.color;
+                        if (rawPointsData.strokeWidth) customSolidWidth = rawPointsData.strokeWidth;
+                        if (rawPointsData.dashed !== undefined) customSolidDashed = rawPointsData.dashed;
+
+                        if ((currentYVal === undefined || isNaN(currentYVal)) && currentXVal !== undefined && !isNaN(currentXVal)) {
+                            const interp = interpolateYFromPoints([...solidPts, ...dottedPts], currentXVal);
+                            if (interp !== undefined && !isNaN(interp)) {
+                                currentYVal = interp;
+                                if (plotConfig.y) state[plotConfig.y] = currentYVal;
+                            }
+                        }
+                    } else {
+                        // Single dataset: array of points [[x, y], ...], { points: [...] }, or { x: [], y: [] }
+                        let pts = [];
+                        if (Array.isArray(rawPointsData)) {
+                            pts = rawPointsData;
+                        } else if (rawPointsData.points && Array.isArray(rawPointsData.points)) {
+                            pts = rawPointsData.points;
+                            if (rawPointsData.color) customSolidColor = rawPointsData.color;
+                            if (rawPointsData.strokeWidth) customSolidWidth = rawPointsData.strokeWidth;
+                            if (rawPointsData.dashed !== undefined) customSolidDashed = rawPointsData.dashed;
+                        } else if (Array.isArray(rawPointsData.x) && Array.isArray(rawPointsData.y)) {
+                            pts = rawPointsData.x.map((xv, idx) => [xv, rawPointsData.y[idx]]);
+                        }
+
+                        if (dottedMin !== undefined && dottedMax !== undefined) {
+                            const solidPts = [];
+                            const dottedPts = [];
+                            pts.forEach(pt => {
+                                const xv = Array.isArray(pt) ? pt[0] : (pt && pt.x);
+                                if (xv !== undefined && xv >= dottedMin && xv <= dottedMax) {
+                                    dottedPts.push(pt);
+                                } else {
+                                    solidPts.push(pt);
+                                }
+                            });
+                            solidData = solidPts.map(pt => toPixelPoint(pt, x, y)).filter(Boolean);
+                            dottedData = dottedPts.map(pt => toPixelPoint(pt, x, y)).filter(Boolean);
+                        } else {
+                            solidData = pts.map(pt => toPixelPoint(pt, x, y)).filter(Boolean);
+                        }
+
+                        if ((currentYVal === undefined || isNaN(currentYVal)) && currentXVal !== undefined && !isNaN(currentXVal)) {
+                            const interp = interpolateYFromPoints(pts, currentXVal);
+                            if (interp !== undefined && !isNaN(interp)) {
+                                currentYVal = interp;
+                                if (plotConfig.y) state[plotConfig.y] = currentYVal;
+                            }
+                        }
+                    }
+                }
+            } else if (mode !== 'override') {
+                if (dottedMin !== undefined && dottedMax !== undefined) {
+                    const solidVals = [];
+                    const dottedVals = [];
+                    accessibleVals.forEach(v => {
+                        if (v >= dottedMin && v <= dottedMax) {
+                            dottedVals.push(v);
+                        } else {
+                            solidVals.push(v);
+                        }
+                    });
+                    solidData = solidVals.map(v => getPoint(v, state));
+                    dottedData = dottedVals.map(v => getPoint(v, state));
+                } else {
+                    solidData = accessibleVals.map(v => getPoint(v, state));
+                }
+            }
+
+            // Draw solid and dotted parts of the curve (unless override mode)
+            if (mode !== 'override') {
+                if (customSeriesList && customSeriesList.length > 0) {
+                    customSeriesList.forEach((series, sIdx) => {
+                        if (series.data && series.data.length > 0) {
+                            _plot(series.data, plotIndex, series.name || `series-${sIdx}`, series.dashed, series.opacity, series.color, series.strokeWidth);
+                        }
+                    });
+                } else {
+                    if (solidData.length > 0) {
+                        _plot(solidData, plotIndex, 'solid', customSolidDashed, 1, customSolidColor, customSolidWidth);
+                    }
+                    if (dottedData.length > 0) {
+                        _plot(dottedData, plotIndex, 'dotted', true, 0.7, 'gray', customSolidWidth);
+                    }
                 }
 
                 // Draw reference lines and labels
@@ -1809,8 +2144,8 @@ function injectPlots(state, pageData) {
                 drawActiveLabel(solidData, dottedData, plotCtx);
             }
 
-            // Mode 'overlay' / 'standalone' / 'override': execute custom renderer
-            if (customRenderFn && (mode === 'overlay' || mode === 'standalone' || mode === 'override')) {
+            // Mode 'overlay' / 'override': execute custom renderer
+            if (customRenderFn && (mode === 'overlay' || mode === 'override')) {
                 try {
                     customRenderFn(plotCtx);
                 } catch (err) {
@@ -1821,12 +2156,11 @@ function injectPlots(state, pageData) {
             // Draw configured points, connecting segments, nondraggable point markers, and point labels
             drawPlotPoints(plotCtx);
 
-            // Draw Draggable Point & Hit area (if x and y defined, not standalone mode, and showPoint is not false)
-            const currentXVal = state[plotConfig.x];
+            // Draw Draggable Point & Hit area (if x and y defined, not override mode, and showPoint is not false)
             const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
             const shouldShowInteractivePoint = plotConfig.showPoint !== false && plotConfig.draggablePoint !== false && plotConfig.showDraggablePoint !== false && !plotConfig.hidePoint && !plotConfig.hideDraggablePoint;
 
-            if (shouldShowInteractivePoint && plotConfig.x && plotConfig.y && mode !== 'standalone' && mode !== 'override' && currentXVal !== undefined && !isNaN(currentXVal)) {
+            if (shouldShowInteractivePoint && plotConfig.x && plotConfig.y && mode !== 'override' && currentXVal !== undefined && !isNaN(currentXVal) && currentYVal !== undefined && !isNaN(currentYVal)) {
                 // Optional per-plot lock: when set, the point can't be dragged unless
                 // the x-variable's dropdown is on its 'custom' choice.
                 const dropdownElForLock = document.getElementById(`input_${plotConfig.x}_dropdown`);

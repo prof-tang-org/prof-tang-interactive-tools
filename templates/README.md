@@ -426,6 +426,16 @@ The `plots` object governs one or more interactive curves rendered in D3.js. Plo
   * You can also supply a JS formula string (e.g., `"(5 / nu) < 5e5 ? 5e5 : 5e6"`).
 * **Crash Prevention**: Always ensure `yTickInterval` is sufficiently large so that `(yMax - yMin) / yTickInterval` does not exceed ~200, preventing browser stalls or crashes.
 
+### Custom Plot Scripts & Modes (`customRender`):
+When standard 1D equation evaluation is insufficient, you can attach custom plot renderers:
+* **`customScript`**: Relative path to an external script (e.g. `"../assets/js/plots/my-plot.js"`).
+* **`customRender`**: Name of the global or exported function to invoke.
+* **`mode`**:
+  * **`"override"`** *(default when `customRender` is defined)*: Suppresses default 1D curve plotting and the standard draggable point. The custom function receives `plotCtx` and has full rendering control inside `plotCtx.g` (e.g., custom geometric drawings or diagrams). `standalone` is supported as an alias.
+  * **`"points"`**: The custom script computes and returns $(x, y)$ data points (or multiple series), and the renderer handles scaling, solid/dotted intervals, reference lines, and the interactive draggable point.
+  * **`"overlay"`**: Renders standard 1D curves, then calls the custom renderer on top.
+  * **`"before"`**: Calls the custom renderer first (e.g. to draw background grids, domes, or contours), then renders standard 1D curves on top.
+
 ---
 
 ## 6. Succinct Step-by-Step for Creating a New Page

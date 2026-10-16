@@ -209,7 +209,7 @@ const pageData = {
                 {
                     "customScript": "../assets/js/plots/triangular-panel.js",
                     "customRender": "triangularPanel",
-                    "mode": "standalone",
+                    "mode": "override",
                     "x": "d",
                     "y": "a",
                     "xLabel": "",
@@ -229,7 +229,7 @@ const pageData = {
                 {
                     "customScript": "../assets/js/plots/triangular-panel.js",
                     "customRender": "cpVsDepth",
-                    "mode": "standalone",
+                    "mode": "override",
                     "x": "D",
                     "y": "dx",
                     "xLabel": "Depth, $D \\text{ [m]}$",
@@ -249,7 +249,7 @@ const pageData = {
                 {
                     "customScript": "../assets/js/plots/triangular-panel.js",
                     "customRender": "cpVsTheta",
-                    "mode": "standalone",
+                    "mode": "override",
                     "x": "theta",
                     "y": "dx",
                     "xLabel": "Angle, $\\theta \\text{ [deg]}$",
@@ -269,7 +269,7 @@ const pageData = {
                 {
                     "customScript": "../assets/js/plots/triangular-panel.js",
                     "customRender": "cpVsDoverB",
-                    "mode": "standalone",
+                    "mode": "override",
                     "x": "d_over_b",
                     "y": "dx",
                     "xLabel": "Ratio, $d/b \\text{ [-]}$",
