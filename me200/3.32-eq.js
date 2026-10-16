@@ -128,6 +128,7 @@ const pageData = {
                         { "p": 1000, "text": "$p = 1000$ kPa" }
                     ]
                 },
+                { "width": "0%" },
                 {
                     "x": "p",
                     "y": "v",
