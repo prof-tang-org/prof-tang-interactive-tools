@@ -6,10 +6,6 @@ const pageData = {
             {
                 "desktop": "1.2fr 0.8fr",
                 "mobile": "100%"
-            },
-            {
-                "desktop": "1.2fr 0.8fr",
-                "mobile": "100%"
             }
         ]
     },
@@ -107,13 +103,13 @@ const pageData = {
         "outputColumns": 1
     },
     "plots": {
-        "aspectRatio": 1.75,
+        "aspectRatio": 2.25,
         "settings": [
             [
                 {
                     "x": "T",
                     "y": "v",
-                    "width": "45%",
+                    "width": "90%",
                     "xLabel": "$T$ [K]",
                     "yLabel": "$v$ [m³/kg]",
                     "xMin": 0,
@@ -127,12 +123,13 @@ const pageData = {
                         { "p": 100, "text": "$p = 100$ kPa" },
                         { "p": 1000, "text": "$p = 1000$ kPa" }
                     ]
-                },
-                { "width": "0%" },
+                }
+            ],
+            [
                 {
                     "x": "p",
                     "y": "v",
-                    "width": "45%",
+                    "width": "90%",
                     "xLabel": "$p$ [kPa]",
                     "yLabel": "$v$ [m³/kg]",
                     "xMin": 0,

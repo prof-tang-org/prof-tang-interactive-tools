@@ -6,10 +6,6 @@ const pageData = {
             {
                 "desktop": "1.2fr 0.8fr",
                 "mobile": "100%"
-            },
-            {
-                "desktop": "1.2fr 0.8fr",
-                "mobile": "100%"
             }
         ]
     },
