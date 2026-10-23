@@ -54,7 +54,7 @@
 
 /**
  * @typedef {Object} InputConfig
- * @property {'slider' | 'number' | 'dropdown' | 'slider-dropdown'} type - Type of input control
+ * @property {'slider' | 'number' | 'dropdown' | 'slider-dropdown' | 'swap'} type - Type of input control
  * @property {string} id - Unique identifier used in equations and plots
  * @property {string} [text] - Label for the input control (supports MathJax)
  * @property {number | string} [min] - Minimum boundary value or JS conditional expression (e.g. 0.1, or "conversion-factor == 1.0 ? 5.0 : 15.0")
@@ -65,6 +65,20 @@
  * @property {DropdownChoice[]} [choices] - Array of options (for dropdown and slider-dropdown)
  * @property {number} [initialChoiceIndex] - Index of the initial selected choice (for dropdown and slider-dropdown)
  * @property {string} [notes] - Small descriptive notes rendered under the control (for dropdown and slider-dropdown)
+ * @property {SwapOption[]} [options] - Variables the user chooses between (for swap); the selected one is an input, the rest are outputs
+ */
+
+/**
+ * @typedef {Object} SwapOption
+ * @property {string} id - Variable ID, used as both the slider ID and the output ID
+ * @property {string} text - Slider and output label (supports MathJax)
+ * @property {string} formula - Value of this variable when it is not the selected input (e.g. "p1 * V1 / V2")
+ * @property {string} [choiceText] - Plain-text label for the selector dropdown (defaults to text)
+ * @property {number | string} [min] - Slider minimum
+ * @property {number | string} [max] - Slider maximum
+ * @property {number | string} [step] - Slider step
+ * @property {number} [initialValue] - Slider starting value
+ * @property {number | string} [decimals] - Output decimal places
  */
 
 /**
@@ -115,6 +129,7 @@
  * @typedef {Object} PlotSetting
  * @property {string} x - Unique ID of the variable to plot on the X-axis (must be an input parameter)
  * @property {string} y - Unique ID of the variable to plot on the Y-axis (can be an input or output parameter)
+ * @property {string} [showWhen] - JS condition; the plot is only drawn while it is truthy (e.g. "spec == 'p2'")
  * @property {string} xLabel - Label for the X-axis (supports MathJax)
  * @property {string} yLabel - Label for the Y-axis (supports MathJax)
  * @property {number | string} xMin - X-axis lower boundary (number or JS conditional expression)

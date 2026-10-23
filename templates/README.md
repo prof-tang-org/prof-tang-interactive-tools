@@ -310,6 +310,24 @@ Interactive controls rendered inside the `#controls` container.
 * `notes` (String, optional): Explanatory note displayed directly beneath the dropdown control.
 * `notation` (String, optional): `"standard"` | `"scientific"`. Determines how numeric values are formatted and rendered. Defaults to `"standard"`.
 
+##### Swap inputs (`"type": "swap"`)
+Lets the user choose which of several variables is the input; the others become outputs. The swap renders a selector dropdown (its `id` holds the selected option's `id`) and one slider per option. Only the selected option's slider is shown, and each unselected option is shown as an output calculated from its `formula`. Swap outputs are placed before the regular `outputs`, so later outputs can reference them. When the selection changes, the newly selected slider starts at the value it had as an output.
+```json
+{
+    "type": "swap",
+    "id": "spec",
+    "text": "Specify the final state by",
+    "options": [
+        { "id": "p2", "choiceText": "Final pressure, p₂", "text": "Final pressure, $p_2$ [kPa]",
+          "min": 100, "max": 1000, "step": 10, "initialValue": 450, "formula": "p1 * V1 / V2" },
+        { "id": "V2", "choiceText": "Final volume, V₂", "text": "Final volume, $V_2$ [m³]",
+          "min": 0.1, "max": 1, "step": 0.01, "initialValue": 0.2, "formula": "V1 * p1 / p2" }
+    ],
+    "initialChoiceIndex": 0
+}
+```
+Plots must use the selected variable as `x`, so pair a swap with one plot per option using `showWhen` (e.g. `"showWhen": "spec == 'p2'"`). See `me200/3.A-eq.js`.
+
 #### 3. `outputs` (Array of Objects)
 Dynamically updated outputs rendered under `#outputs`.
 * `id` (String): Unique identifier. Can be referenced by *subsequent* outputs or plot configs.
@@ -410,6 +428,7 @@ The `plots` object governs one or more interactive curves rendered in D3.js. Plo
 ```
 
 ### Curve Drawing Details:
+* **Conditional Plots**: Set `showWhen` to a JS condition (e.g. `"spec == 'p2'"`) to draw a plot only while it is truthy. Hidden plots are removed from the layout, so the remaining plots fill the row.
 * **Resolution**: The engine generates curves by evaluating the function at 100 points between `xMin` and `xMax`.
 * **State Syncing**: The current input/output state is rendered as a red circular dot (`circle.dragpt`).
 * **Drag-to-Update**: Clicking and dragging the dot horizontally changes the input variable state, updating the sliders, inputs, math equations, and other curves dynamically in real-time.

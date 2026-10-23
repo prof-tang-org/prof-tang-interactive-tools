@@ -1076,6 +1076,43 @@ function setupCalculationEngine(pageData) {
         });
     }
 
+    const swaps = pageData.inputOutput._swaps || [];
+    let lastState = null;
+
+    // When a swap selector changes, start the newly selected slider at the value it had as an output
+    function carryOverSwapValue(targetId) {
+        if (!lastState) return;
+        const swap = swaps.find(s => `input_${s.id}` === targetId);
+        if (!swap) return;
+
+        const activeId = document.getElementById(targetId).value;
+        const val = lastState[activeId];
+        const range = document.getElementById(`input_${activeId}`);
+        const num = document.getElementById(`input_${activeId}_num`);
+        if (!range || typeof val !== 'number' || !Number.isFinite(val)) return;
+
+        range.value = val; // range inputs clamp and snap to their own min/max/step
+        if (num) {
+            const inputDef = pageData.inputOutput.inputs.find(i => i.id === activeId);
+            const snapped = parseFloat(range.value);
+            num.value = inputDef && inputDef.notation === 'scientific' ? formatScientific(snapped, inputDef) : snapped;
+        }
+    }
+
+    // Show only the selected option's slider, and only the unselected options' outputs
+    function updateSwapVisibility(state) {
+        swaps.forEach(swap => {
+            const activeId = state[swap.id];
+            swap.optionIds.forEach(id => {
+                const isActive = id === activeId;
+                const wrapper = document.getElementById(`wrapper_input_${id}`);
+                if (wrapper) wrapper.classList.toggle('hidden', !isActive);
+                const valueEl = document.getElementById(`value_${id}`);
+                if (valueEl && valueEl.parentElement) valueEl.parentElement.classList.toggle('hidden', isActive);
+            });
+        });
+    }
+
     function compute(e) {
         if (e && e.target && e.target.id) {
             // strip 'input_' and '_num' prefixes/suffixes to get core ID
@@ -1083,14 +1120,17 @@ function setupCalculationEngine(pageData) {
             if (pageData.inputOutput.inputs.find(i => i.id === rawId)) {
                 lastChangedInputId = rawId;
             }
+            carryOverSwapValue(e.target.id);
         }
 
         const state = gatherInputs();
         updateInputBounds(state);
         calculateOutputs(state);
+        updateSwapVisibility(state);
         updateDottedRangeStyling(state);
 
         injectPlots(state, pageData);
+        lastState = state;
     }
 
     // Expose a global hook for D3 drag events to trigger calculations
@@ -1573,16 +1613,19 @@ function injectPlots(state, pageData) {
     svg.selectAll('*').remove(); // Clear previous plot
 
     const rawSettings = pageData.plots.settings;
+    // Plots with a `showWhen` condition are only drawn while it evaluates truthy
+    const isShown = p => !p || !p.showWhen || !!evaluateFormula(p.showWhen, state);
     let rows = [];
     if (Array.isArray(rawSettings) && rawSettings.length > 0) {
         if (Array.isArray(rawSettings[0])) {
-            rows = rawSettings;
+            rows = rawSettings.map(row => row.filter(isShown)).filter(row => row.length > 0);
         } else {
+            const shownSettings = rawSettings.filter(isShown);
             const cols = (pageData.plots.plotColumns && pageData.plots.plotColumns > 0)
-                ? Math.min(pageData.plots.plotColumns, rawSettings.length)
-                : rawSettings.length;
-            for (let i = 0; i < rawSettings.length; i += cols) {
-                rows.push(rawSettings.slice(i, i + cols));
+                ? Math.min(pageData.plots.plotColumns, shownSettings.length)
+                : shownSettings.length;
+            for (let i = 0; i < shownSettings.length; i += cols) {
+                rows.push(shownSettings.slice(i, i + cols));
             }
         }
     }
@@ -2808,7 +2851,54 @@ function drawPlotPoints(plotCtx) {
     });
 }
 
+// Expands each "swap" input into a selector dropdown, one slider per option, and one output per option.
+// The selected option is an input (its output passes the slider value through); the others are
+// calculated from their `formula`. Swap outputs are prepended so later outputs can reference them.
+function expandSwapInputs(inputOutput) {
+    if (!inputOutput || !Array.isArray(inputOutput.inputs)) return;
+    if (!inputOutput.inputs.some(input => input && input.type === 'swap')) return;
+
+    const expandedInputs = [];
+    const swapOutputs = [];
+    inputOutput._swaps = [];
+
+    inputOutput.inputs.forEach(input => {
+        if (!input || input.type !== 'swap') {
+            expandedInputs.push(input);
+            return;
+        }
+
+        const options = input.options || [];
+        expandedInputs.push({
+            type: 'dropdown',
+            id: input.id,
+            text: input.text,
+            choices: options.map(opt => ({ text: opt.choiceText || opt.text, value: opt.id })),
+            initialChoiceIndex: input.initialChoiceIndex,
+            notes: input.notes
+        });
+
+        options.forEach(opt => {
+            const { choiceText, formula, decimals, ...sliderDef } = opt;
+            expandedInputs.push({ type: 'slider', ...sliderDef });
+            swapOutputs.push({
+                id: opt.id,
+                text: opt.text,
+                type: 'calculation',
+                value: `${input.id} == '${opt.id}' ? ${opt.id} : (${formula})`,
+                decimals: decimals
+            });
+        });
+
+        inputOutput._swaps.push({ id: input.id, optionIds: options.map(opt => opt.id) });
+    });
+
+    inputOutput.inputs = expandedInputs;
+    inputOutput.outputs = [...swapOutputs, ...(inputOutput.outputs || [])];
+}
+
 function renderInputOutput(inputOutput) {
+    expandSwapInputs(inputOutput);
     renderGroup(inputOutput.fixedInputs, 'fixed-inputs', inputOutput.inputColumns);
     renderControls(inputOutput.inputs);
     renderGroup(inputOutput.outputs, 'outputs', inputOutput.outputColumns);

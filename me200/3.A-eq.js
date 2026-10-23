@@ -55,29 +55,42 @@ const pageData = {
                 "initialValue": 0.3
             },
             {
-                "type": "slider",
-                "id": "p2",
-                "text": "Final pressure, $p_2$ [kPa]",
-                "min": 100,
-                "max": 1000,
-                "step": 10,
-                "initialValue": 450
+                "type": "swap",
+                "id": "spec",
+                "text": "Specify the final state by",
+                "options": [
+                    {
+                        "id": "p2",
+                        "choiceText": "Final pressure, p₂",
+                        "text": "Final pressure, $p_2$ [kPa]",
+                        "min": 100,
+                        "max": 1000,
+                        "step": 1,
+                        "initialValue": 450,
+                        "formula": "p1 * V1 / V2"
+                    },
+                    {
+                        "id": "V2",
+                        "choiceText": "Final volume, V₂",
+                        "text": "Final volume, $V_2$ [m³]",
+                        "min": 0.1,
+                        "max": 1,
+                        "step": 0.01,
+                        "initialValue": 0.2,
+                        "formula": "V1 * p1 / p2"
+                    }
+                ],
+                "initialChoiceIndex": 0
             }
         ],
-        "outputs": [
-            {
-                "id": "V2",
-                "text": "Final volume, $V_2$ [m³]",
-                "type": "calculation",
-                "value": "V1 * p1 / p2"
-            }
-        ],
+        "outputs": [],
         "outputColumns": 1
     },
     "plots": {
         "aspectRatio": 2,
         "settings": [
             {
+                "showWhen": "spec == 'p2'",
                 "x": "p2",
                 "y": "V2",
                 "xLabel": "$p_2$ [kPa]",
@@ -88,8 +101,21 @@ const pageData = {
                 "yMin": 0,
                 "yMax": [1, 10],
                 "yTickInterval": [0.2, 2]
+            },
+            {
+                "showWhen": "spec == 'V2'",
+                "x": "V2",
+                "y": "p2",
+                "xLabel": "$V_2$ [m³]",
+                "yLabel": "$p_2$ [kPa]",
+                "xMin": 0,
+                "xMax": 1,
+                "xTickInterval": 0.1,
+                "yMin": 0,
+                "yMax": [1000, 10000],
+                "yTickInterval": [200, 2000]
             }
         ],
-        "text": "The curve shows the final volume $V_2$ vs the final pressure $p_2$ for the current initial state. **Drag the marked point** or use the sliders above to change the final state."
+        "text": "The curve shows the calculated final-state variable vs the specified one for the current initial state. **Drag the marked point** or use the sliders above to change the final state."
     }
 };

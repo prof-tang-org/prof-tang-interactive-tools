@@ -55,29 +55,42 @@ const pageData = {
                 "initialValue": 400
             },
             {
-                "type": "slider",
-                "id": "p2",
-                "text": "Final pressure, $p_2$ [kPa]",
-                "min": 100,
-                "max": 1000,
-                "step": 10,
-                "initialValue": 600
+                "type": "swap",
+                "id": "spec",
+                "text": "Specify the final state by",
+                "options": [
+                    {
+                        "id": "p2",
+                        "choiceText": "Final pressure, p₂",
+                        "text": "Final pressure, $p_2$ [kPa]",
+                        "min": 100,
+                        "max": 1000,
+                        "step": 10,
+                        "initialValue": 600,
+                        "formula": "p1 * T2 / T1"
+                    },
+                    {
+                        "id": "T2",
+                        "choiceText": "Final temperature, T₂",
+                        "text": "Final temperature, $T_2$ [K]",
+                        "min": 300,
+                        "max": 1000,
+                        "step": 1,
+                        "initialValue": 750,
+                        "formula": "T1 * p2 / p1"
+                    }
+                ],
+                "initialChoiceIndex": 0
             }
         ],
-        "outputs": [
-            {
-                "id": "T2",
-                "text": "Final temperature, $T_2$ [K]",
-                "type": "calculation",
-                "value": "T1 * p2 / p1"
-            }
-        ],
+        "outputs": [],
         "outputColumns": 1
     },
     "plots": {
         "aspectRatio": 2,
         "settings": [
             {
+                "showWhen": "spec == 'p2'",
                 "x": "p2",
                 "y": "T2",
                 "xLabel": "$p_2$ [kPa]",
@@ -86,10 +99,23 @@ const pageData = {
                 "xMax": 1000,
                 "xTickInterval": 100,
                 "yMin": 0,
-                "yMax": [2000, 10000],
-                "yTickInterval": [250, 1000]
+                "yMax": "T1 * 1000 / p1 < 2000 ? 2000 : 10000",
+                "yTickInterval": "T1 * 1000 / p1 < 2000 ? 250 : 1000"
+            },
+            {
+                "showWhen": "spec == 'T2'",
+                "x": "T2",
+                "y": "p2",
+                "xLabel": "$T_2$ [K]",
+                "yLabel": "$p_2$ [kPa]",
+                "xMin": 0,
+                "xMax": 1000,
+                "xTickInterval": 100,
+                "yMin": 0,
+                "yMax": "p1 * 1000 / T1 < 500 ? 500 : 3500",
+                "yTickInterval": "p1 * 1000 / T1 < 500 ? 100 : 500"
             }
         ],
-        "text": "The line shows the final temperature $T_2$ vs the final pressure $p_2$ for the current initial state. **Drag the marked point** or use the sliders above to change the final state."
+        "text": "The line shows the calculated final-state variable vs the specified one for the current initial state. **Drag the marked point** or use the sliders above to change the final state."
     }
 };
