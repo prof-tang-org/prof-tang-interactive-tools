@@ -45,7 +45,10 @@ const pageData = {
         "alt": "Thermophysical property evaluation using CoolProp database."
     },
     "inputOutput": {
-        "pythonScript": "../me200/coolprop-test-eq.py",
+        "pythonScript": {
+            "path": "../test/coolprop-test-eq.py",
+            "function": "calculate"
+        },
         "inputs": [
             {
                 "type": "dropdown",

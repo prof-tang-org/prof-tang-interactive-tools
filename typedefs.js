@@ -100,9 +100,15 @@
  */
 
 /**
+ * @typedef {Object} PythonScriptConfig
+ * @property {string} path - Relative path to the Python script file (e.g. "../test/refrigeration-cycle-calc.py")
+ * @property {string} function - Name of function in the Python script to call (e.g. "calculate_cycle")
+ */
+
+/**
  * @typedef {Object} InputOutputConfig
- * @property {string} [pythonScript] - Relative path to an external Python calculation engine script (e.g. "../me200/coolprop-test-eq.py")
- * @property {string} [pythonFunction] - Name of function in pythonScript to call (defaults to 'calculate', 'compute', or 'main')
+ * @property {string | PythonScriptConfig} [pythonScript] - External Python calculation engine script config or relative path
+ * @property {string} [pythonFunction] - Name of function in pythonScript to call when pythonScript is a path string
  * @property {FixedInput[]} [fixedInputs] - Read-only constant values in calculations
  * @property {InputConfig[]} inputs - Interactive control parameters
  * @property {OutputConfig[]} outputs - Computed outcomes

@@ -342,8 +342,15 @@ Dynamically updated outputs rendered under `#outputs`.
 
 #### 4. Python Calculation Engine (`pythonScript`)
 Allows a topic configuration to delegate all or part of its mathematical/thermodynamic calculations to a Python script executed in Pyodide.
-* **`pythonScript`** (String, optional): Relative path to an external Python file located in the same folder as the topic script (e.g. `"../me200/coolprop-test-eq.py"` or `"coolprop-test-eq.py"`).
-* **`pythonFunction`** (String, optional): Target function name to execute (defaults to `'calculate'`, `'compute'`, or `'main'`).
+* **`pythonScript`** (Object | String, optional): An object specifying the script path and target calculation function:
+  ```json
+  "pythonScript": {
+      "path": "../test/refrigeration-cycle-calc.py",
+      "function": "calculate_cycle"
+  }
+  ```
+  Alternatively, can be a relative path string pointing to the Python file.
+* **`pythonFunction`** (String, optional): Target function name to execute if `pythonScript` was supplied as a string path (defaults to `'calculate'`, `'compute'`, or `'main'`).
 
 ##### Writing the Python Calculation Engine:
 The Python function receives an `inputs` dictionary containing current interactive input and fixed input values. Variables can be accessed directly using dictionary lookup (e.g., `inputs["temp"]`, `inputs["fluid"]`). The function returns a dictionary of computed output values:

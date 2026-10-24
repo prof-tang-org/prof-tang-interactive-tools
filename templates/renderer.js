@@ -1293,6 +1293,9 @@ async function fetchPythonScript(src) {
 
     if (!candidates.includes(src)) candidates.push(src);
 
+    const sameFolder = `./${cleanBase}`;
+    if (!candidates.includes(sameFolder)) candidates.push(sameFolder);
+
     if (course) {
         const directCourse = `${course}/${cleanBase}`;
         if (!candidates.includes(directCourse)) candidates.push(directCourse);
@@ -1317,6 +1320,7 @@ async function fetchPythonScript(src) {
 /**
  * Scan pageData.inputOutput for pythonScript, load Pyodide runtime and the script,
  * and register the calculation function.
+ * Supports { "path": "...", "function": "..." } object or string path.
  * @param {Object} pageData
  * @returns {Promise<void>}
  */
@@ -1325,10 +1329,22 @@ async function ensurePythonEngine(pageData) {
         return;
     }
 
-    const scriptSrc = pageData.inputOutput.pythonScript;
-    const specifiedFunc = pageData.inputOutput.pythonFunction;
+    const pyScriptCfg = pageData.inputOutput.pythonScript;
+    let scriptSrc = null;
+    let specifiedFunc = null;
 
-    if (_pythonEnginePromise && _pythonCalculationScriptName === scriptSrc) {
+    if (typeof pyScriptCfg === 'object' && pyScriptCfg !== null) {
+        scriptSrc = pyScriptCfg.path || pyScriptCfg.src;
+        specifiedFunc = pyScriptCfg.function || pyScriptCfg.name;
+    } else if (typeof pyScriptCfg === 'string') {
+        scriptSrc = pyScriptCfg;
+        specifiedFunc = pageData.inputOutput.pythonFunction;
+    }
+
+    if (!scriptSrc) return;
+
+    const cacheKey = `${scriptSrc}::${specifiedFunc || ''}`;
+    if (_pythonEnginePromise && _pythonCalculationScriptName === cacheKey) {
         return _pythonEnginePromise;
     }
 
@@ -1340,10 +1356,14 @@ async function ensurePythonEngine(pageData) {
             // Execute script in Pyodide
             await pyodide.runPythonAsync(pyCode);
 
-            // Determine calculation function: specified -> calculate/compute/main/run -> first exported callable
+            // Determine calculation function: use specified function directly
             let targetFunc = null;
-            if (specifiedFunc && typeof pyodide.globals.get(specifiedFunc) === 'function') {
+            if (specifiedFunc) {
                 targetFunc = pyodide.globals.get(specifiedFunc);
+                if (typeof targetFunc !== 'function') {
+                    console.error(`[renderer.js] Function '${specifiedFunc}' was not found in Python script '${scriptSrc}'.`);
+                    return;
+                }
             } else {
                 const candidateNames = ['calculate', 'compute', 'main', 'run'];
                 for (const name of candidateNames) {
@@ -1355,26 +1375,13 @@ async function ensurePythonEngine(pageData) {
                 }
             }
 
-            if (!targetFunc) {
-                const globalKeys = pyodide.runPython("list(globals().keys())").toJs();
-                for (const name of globalKeys) {
-                    if (!name.startsWith('_') && !['sys', 'types', 'js', 'CoolProp', 'CP', 'PropsSI', 'HAPropsSI'].includes(name)) {
-                        const item = pyodide.globals.get(name);
-                        if (typeof item === 'function') {
-                            targetFunc = item;
-                            break;
-                        }
-                    }
-                }
-            }
-
             if (typeof targetFunc !== 'function') {
-                console.error(`[renderer.js] No calculation function found in Python script '${scriptSrc}'. Expected 'def calculate(inputs):'.`);
+                console.error(`[renderer.js] No calculation function found in Python script '${scriptSrc}'. Expected { "path": "...", "function": "function_name" }.`);
                 return;
             }
 
             _pythonCalculationFunction = targetFunc;
-            _pythonCalculationScriptName = scriptSrc;
+            _pythonCalculationScriptName = cacheKey;
 
             // Trigger recompute if controls are already active
             if (typeof window.forceCompute === 'function') {
@@ -2823,13 +2830,20 @@ function drawActiveLabel(solidData, dottedData, plotCtx) {
 
 function drawPlotPoints(plotCtx) {
     const { svg, plotConfig, state, x, y, scale, clipId } = plotCtx;
-    if (!plotConfig || !plotConfig.points || !Array.isArray(plotConfig.points) || plotConfig.points.length === 0) {
+    if (!plotConfig || !plotConfig.points) {
+        return;
+    }
+
+    let rawPoints = plotConfig.points;
+    if (typeof rawPoints === 'string' && Array.isArray(state[rawPoints])) {
+        rawPoints = state[rawPoints];
+    }
+    if (!Array.isArray(rawPoints) || rawPoints.length === 0) {
         return;
     }
 
     const customScope = (plotConfig.customScript && _scriptFunctionsScope.get(plotConfig.customScript)) || null;
 
-    const rawPoints = plotConfig.points;
     const pointColors = Array.isArray(plotConfig.pointColors) ? plotConfig.pointColors : [];
     const pointLabels = Array.isArray(plotConfig.pointLabels) ? plotConfig.pointLabels : [];
 
@@ -2874,9 +2888,9 @@ function drawPlotPoints(plotCtx) {
 
         if (segmentColors[i] !== undefined && segmentColors[i] !== null && segmentColors[i] !== '') {
             segColor = segmentColors[i];
-        } else if (pointColors[p1.originalIndex] !== undefined && pointColors[p1.originalIndex] !== null && pointColors[p1.originalIndex] !== '') {
+        } else if (pointColors[p1.originalIndex] !== undefined && pointColors[p1.originalIndex] !== null && pointColors[p1.originalIndex] !== '' && pointColors[p1.originalIndex] !== 'none' && pointColors[p1.originalIndex] !== 'transparent') {
             segColor = pointColors[p1.originalIndex];
-        } else if (pointColors[p2.originalIndex] !== undefined && pointColors[p2.originalIndex] !== null && pointColors[p2.originalIndex] !== '') {
+        } else if (pointColors[p2.originalIndex] !== undefined && pointColors[p2.originalIndex] !== null && pointColors[p2.originalIndex] !== '' && pointColors[p2.originalIndex] !== 'none' && pointColors[p2.originalIndex] !== 'transparent') {
             segColor = pointColors[p2.originalIndex];
         }
 
@@ -2895,6 +2909,7 @@ function drawPlotPoints(plotCtx) {
     // 2. Draw nondraggable points
     evaluatedPoints.forEach(p => {
         const ptColor = pointColors[p.originalIndex] || defaultStrokeColor;
+        if (ptColor === 'none' || ptColor === 'transparent') return;
 
         svg.append('circle')
             .attr('class', 'nondragpt')
@@ -2911,7 +2926,7 @@ function drawPlotPoints(plotCtx) {
     // 3. Draw point labels
     evaluatedPoints.forEach(p => {
         const labelDef = pointLabels[p.originalIndex];
-        if (labelDef === undefined || labelDef === null) return;
+        if (labelDef === undefined || labelDef === null || labelDef === '' || (typeof labelDef === 'object' && !labelDef.text)) return;
 
         let labelText = '';
         let location = 'top';
