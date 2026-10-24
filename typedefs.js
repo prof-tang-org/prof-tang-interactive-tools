@@ -101,6 +101,8 @@
 
 /**
  * @typedef {Object} InputOutputConfig
+ * @property {string} [pythonScript] - Relative path to an external Python calculation engine script (e.g. "../me200/coolprop-test-eq.py")
+ * @property {string} [pythonFunction] - Name of function in pythonScript to call (defaults to 'calculate', 'compute', or 'main')
  * @property {FixedInput[]} [fixedInputs] - Read-only constant values in calculations
  * @property {InputConfig[]} inputs - Interactive control parameters
  * @property {OutputConfig[]} outputs - Computed outcomes

@@ -566,7 +566,7 @@ function renderGroup(values, containerId, cols = 5) {
         val.id = `value_${value.id}`;
         if (typeof value.value === 'number') {
             val.textContent = formatNumber(value.value, value.decimals);
-        } else if (value.type === 'calculation' || (typeof value.value === 'string' && (value.value.includes('(') || value.value.includes('*') || value.value.includes('+') || value.value.includes('/') || value.value.includes('?')))) {
+        } else if (value.value === undefined || value.type === 'calculation' || value.type === 'python' || (typeof value.value === 'string' && (value.value.includes('(') || value.value.includes('*') || value.value.includes('+') || value.value.includes('/') || value.value.includes('?')))) {
             val.textContent = '—';
         } else {
             val.innerHTML = parseText(String(value.value ?? ''));
@@ -971,29 +971,43 @@ function setupCalculationEngine(pageData) {
             });
         }
 
-        pageData.inputOutput.outputs.forEach(output => {
-            if (typeof output.text === 'string' && output.text.includes('?')) {
-                const labelEl = document.getElementById(`label_${output.id}`);
-                if (labelEl) {
-                    const evalText = evaluateFormula(output.text, state);
-                    if (labelEl.getAttribute('data-eval-text') !== evalText) {
-                        labelEl.setAttribute('data-eval-text', evalText);
-                        labelEl.innerHTML = parseText(evalText);
-                        if (window.MathJax && window.MathJax.typesetPromise) {
-                            window.MathJax.typesetPromise([labelEl]).catch(err => console.error(err));
+        // Execute Python calculation engine if configured on inputOutput
+        let pyOutputs = null;
+        if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
+            pyOutputs = runPythonCalculation(state);
+            if (pyOutputs && typeof pyOutputs === 'object') {
+                Object.assign(state, pyOutputs);
+            }
+        }
+
+        if (Array.isArray(pageData.inputOutput.outputs)) {
+            pageData.inputOutput.outputs.forEach(output => {
+                if (typeof output.text === 'string' && output.text.includes('?')) {
+                    const labelEl = document.getElementById(`label_${output.id}`);
+                    if (labelEl) {
+                        const evalText = evaluateFormula(output.text, state);
+                        if (labelEl.getAttribute('data-eval-text') !== evalText) {
+                            labelEl.setAttribute('data-eval-text', evalText);
+                            labelEl.innerHTML = parseText(evalText);
+                            if (window.MathJax && window.MathJax.typesetPromise) {
+                                window.MathJax.typesetPromise([labelEl]).catch(err => console.error(err));
+                            }
                         }
                     }
                 }
-            }
 
-            let val;
-            if (output.type === 'map') {
-                val = getMappedValue(output.key, output.value, state);
-            } else if (output.type === 'calculation' || (typeof output.value === 'string' && output.value.length > 0)) {
-                val = evaluateFormula(output.value, state);
-            }
+                let val;
+                if (pyOutputs && output.id in pyOutputs) {
+                    val = pyOutputs[output.id];
+                } else if (output.type === 'map') {
+                    val = getMappedValue(output.key, output.value, state);
+                } else if (output.type === 'calculation' || (typeof output.value === 'string' && output.value.length > 0)) {
+                    val = evaluateFormula(output.value, state);
+                } else if (state[output.id] !== undefined) {
+                    val = state[output.id];
+                }
 
-            state[output.id] = val;
+                state[output.id] = val;
 
             const el = document.getElementById(`value_${output.id}`);
             if (el) {
@@ -1029,6 +1043,7 @@ function setupCalculationEngine(pageData) {
             }
         });
     }
+}
 
     // Cache DOM element references and state tracking for high-performance dotted-range updates
     const dottedRangeState = new Map();
@@ -1251,6 +1266,173 @@ except Exception as e:
     })();
 
     return _pyodidePromise;
+}
+
+let _pythonCalculationFunction = null;
+let _pythonCalculationScriptName = null;
+let _pythonEnginePromise = null;
+
+/**
+ * Fetch Python script source with candidate path resolution for topic pages and courses.
+ * @param {string} src
+ * @returns {Promise<{text: string, url: string}>}
+ */
+async function fetchPythonScript(src) {
+    if (!src || typeof src !== 'string') {
+        throw new Error('[renderer.js] Invalid pythonScript path: ' + src);
+    }
+    const candidates = [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const course = urlParams.get('course');
+    const cleanBase = src.split('/').pop().split('\\').pop();
+
+    if (course) {
+        const courseRel = `../${course}/${cleanBase}`;
+        if (!candidates.includes(courseRel)) candidates.push(courseRel);
+    }
+
+    if (!candidates.includes(src)) candidates.push(src);
+
+    if (course) {
+        const directCourse = `${course}/${cleanBase}`;
+        if (!candidates.includes(directCourse)) candidates.push(directCourse);
+    }
+
+    if (!candidates.includes(cleanBase)) candidates.push(cleanBase);
+
+    for (const url of candidates) {
+        try {
+            const resp = await fetch(url);
+            if (resp.ok) {
+                const text = await resp.text();
+                return { text, url };
+            }
+        } catch (e) {
+            // Check next candidate
+        }
+    }
+    throw new Error(`[renderer.js] Failed to fetch Python script '${src}'. Tried candidate paths: [${candidates.join(', ')}]`);
+}
+
+/**
+ * Scan pageData.inputOutput for pythonScript, load Pyodide runtime and the script,
+ * and register the calculation function.
+ * @param {Object} pageData
+ * @returns {Promise<void>}
+ */
+async function ensurePythonEngine(pageData) {
+    if (!pageData || !pageData.inputOutput || !pageData.inputOutput.pythonScript) {
+        return;
+    }
+
+    const scriptSrc = pageData.inputOutput.pythonScript;
+    const specifiedFunc = pageData.inputOutput.pythonFunction;
+
+    if (_pythonEnginePromise && _pythonCalculationScriptName === scriptSrc) {
+        return _pythonEnginePromise;
+    }
+
+    _pythonEnginePromise = (async () => {
+        try {
+            const pyodide = await getPyodideInstance();
+            const { text: pyCode } = await fetchPythonScript(scriptSrc);
+
+            // Execute script in Pyodide
+            await pyodide.runPythonAsync(pyCode);
+
+            // Determine calculation function: specified -> calculate/compute/main/run -> first exported callable
+            let targetFunc = null;
+            if (specifiedFunc && typeof pyodide.globals.get(specifiedFunc) === 'function') {
+                targetFunc = pyodide.globals.get(specifiedFunc);
+            } else {
+                const candidateNames = ['calculate', 'compute', 'main', 'run'];
+                for (const name of candidateNames) {
+                    const fn = pyodide.globals.get(name);
+                    if (typeof fn === 'function') {
+                        targetFunc = fn;
+                        break;
+                    }
+                }
+            }
+
+            if (!targetFunc) {
+                const globalKeys = pyodide.runPython("list(globals().keys())").toJs();
+                for (const name of globalKeys) {
+                    if (!name.startsWith('_') && !['sys', 'types', 'js', 'CoolProp', 'CP', 'PropsSI', 'HAPropsSI'].includes(name)) {
+                        const item = pyodide.globals.get(name);
+                        if (typeof item === 'function') {
+                            targetFunc = item;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (typeof targetFunc !== 'function') {
+                console.error(`[renderer.js] No calculation function found in Python script '${scriptSrc}'. Expected 'def calculate(inputs):'.`);
+                return;
+            }
+
+            _pythonCalculationFunction = targetFunc;
+            _pythonCalculationScriptName = scriptSrc;
+
+            // Trigger recompute if controls are already active
+            if (typeof window.forceCompute === 'function') {
+                window.forceCompute();
+            }
+        } catch (err) {
+            console.error(`[renderer.js] Failed to initialize Python calculation engine '${scriptSrc}':`, err);
+        }
+    })();
+
+    return _pythonEnginePromise;
+}
+
+/**
+ * Execute the registered Python calculation function with the current input state dictionary.
+ * @param {Object} state - Interactive state
+ * @returns {Object|null} Dictionary of calculated outputs or null on failure
+ */
+function runPythonCalculation(state) {
+    if (!_pythonCalculationFunction || !window._pyodideInstance) {
+        return null;
+    }
+
+    const pyodide = window._pyodideInstance;
+
+    // Filter out internal state keys and functions to provide a clean dictionary
+    const inputs = {};
+    for (const [key, val] of Object.entries(state || {})) {
+        if (!key.startsWith('_') && typeof val !== 'function') {
+            inputs[key] = val;
+        }
+    }
+
+    let pyInputs = null;
+    let rawResult = null;
+
+    try {
+        pyInputs = pyodide.toPy(inputs);
+        rawResult = _pythonCalculationFunction(pyInputs);
+
+        let jsResult = {};
+        if (rawResult && typeof rawResult.toJs === 'function') {
+            jsResult = rawResult.toJs({ dict_converter: Object.fromEntries });
+        } else if (rawResult && typeof rawResult === 'object') {
+            jsResult = rawResult;
+        }
+        return jsResult;
+    } catch (err) {
+        console.error('[renderer.js] Error executing Python calculation function:', err);
+        return null;
+    } finally {
+        if (pyInputs && typeof pyInputs.destroy === 'function') {
+            pyInputs.destroy();
+        }
+        if (rawResult && typeof rawResult.destroy === 'function') {
+            rawResult.destroy();
+        }
+    }
 }
 
 /**
@@ -1514,11 +1696,23 @@ function _calculateState(baseState, xVal, plotConfig, pageData) {
     const tempState = { ...baseState };
     tempState[plotConfig.x] = xVal;
 
-    pageData.inputOutput.outputs.forEach(output => {
-        if (output.type === 'calculation') {
-            tempState[output.id] = evaluateFormula(output.value, tempState);
+    let pyOutputs = null;
+    if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
+        pyOutputs = runPythonCalculation(tempState);
+        if (pyOutputs && typeof pyOutputs === 'object') {
+            Object.assign(tempState, pyOutputs);
         }
-    });
+    }
+
+    if (pageData.inputOutput && Array.isArray(pageData.inputOutput.outputs)) {
+        pageData.inputOutput.outputs.forEach(output => {
+            if (pyOutputs && output.id in pyOutputs) {
+                tempState[output.id] = pyOutputs[output.id];
+            } else if (output.type === 'calculation' && output.value) {
+                tempState[output.id] = evaluateFormula(output.value, tempState);
+            }
+        });
+    }
     return tempState;
 }
 
@@ -2994,6 +3188,9 @@ window.addEventListener('load', async () => {
 
         // Ensure external custom plot scripts are loaded before computation
         await ensureCustomPlotScripts(pageData);
+
+        // Ensure Python calculation engine is initialized if configured
+        await ensurePythonEngine(pageData);
 
         renderInputOutput(pageData.inputOutput);
         setupCalculationEngine(pageData);

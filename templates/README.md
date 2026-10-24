@@ -340,7 +340,55 @@ Dynamically updated outputs rendered under `#outputs`.
 * `decimals` (Number | String, optional): Decimal precision (integer or conditional JS expression string).
 * `display` (String, optional): String template with `{value}` and `{variable_id}` placeholders to format output display.
 
-#### 4. Additional `inputOutput` Options
+#### 4. Python Calculation Engine (`pythonScript`)
+Allows a topic configuration to delegate all or part of its mathematical/thermodynamic calculations to a Python script executed in Pyodide.
+* **`pythonScript`** (String, optional): Relative path to an external Python file located in the same folder as the topic script (e.g. `"../me200/coolprop-test-eq.py"` or `"coolprop-test-eq.py"`).
+* **`pythonFunction`** (String, optional): Target function name to execute (defaults to `'calculate'`, `'compute'`, or `'main'`).
+
+##### Writing the Python Calculation Engine:
+The Python function receives an `inputs` dictionary containing current interactive input and fixed input values. Variables can be accessed directly using dictionary lookup (e.g., `inputs["temp"]`, `inputs["fluid"]`). The function returns a dictionary of computed output values:
+
+```python
+import CoolProp.CoolProp as CP
+
+def calculate(inputs):
+    fluid = str(inputs.get("fluid", "Water"))
+    T_K = float(inputs.get("temp", 100)) + 273.15
+    P_Pa = float(inputs.get("pressure", 2.0)) * 1e5
+
+    rho = CP.PropsSI('D', 'T', T_K, 'P', P_Pa, fluid)
+    enthalpy = CP.PropsSI('H', 'T', T_K, 'P', P_Pa, fluid) / 1000.0
+    entropy = CP.PropsSI('S', 'T', T_K, 'P', P_Pa, fluid) / 1000.0
+
+    return {
+        "rho": rho,
+        "enthalpy": enthalpy,
+        "entropy": entropy,
+        # Additional properties can be returned; they are placed into interactive state
+        # for use by other formulas or plots even if not listed in UI outputs:
+        "internal_energy": CP.PropsSI('U', 'T', T_K, 'P', P_Pa, fluid) / 1000.0
+    }
+```
+
+##### Output Display Mapping:
+The `inputOutput.outputs` list only needs to define the subset of calculated variables to display on the page:
+```json
+"outputs": [
+    {
+        "id": "rho",
+        "text": "Density, $\\rho$ [kg/m³]",
+        "decimals": 3
+    },
+    {
+        "id": "enthalpy",
+        "text": "Specific Enthalpy, $h$ [kJ/kg]",
+        "decimals": 2
+    }
+]
+```
+If an output item's `id` matches a key returned by the Python script, its value is automatically assigned. Any extra variables returned by Python are stored in `state` so other formulas, dynamic slider bounds, and plots can use them directly.
+
+#### 5. Additional `inputOutput` Options
 * **`outputColumns`** (Number, optional): Number of columns to display outputs in a responsive grid (e.g. `3` or `4`).
 * **`dottedRange`** (Object | Array of Objects, optional): Configuration to visually gray-out inputs/outputs when an input is within an invalid or non-applicable range:
   ```json
