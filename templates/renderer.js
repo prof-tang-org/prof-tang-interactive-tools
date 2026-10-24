@@ -1919,6 +1919,7 @@ function injectPlots(state, pageData) {
     const scale = (renderedWidth > 0) ? W / renderedWidth : 1;
 
     let maxObservedBottom = 0;
+    let minObservedLeft = 0;
     let globalPlotIndex = 0;
 
     rowLayouts.forEach((layout, rowIndex) => {
@@ -1931,13 +1932,13 @@ function injectPlots(state, pageData) {
             const plot_x_offset = currentX;
             currentX += iw + gapX;
 
-            const isEmptySlot = !plotConfig || Object.keys(plotConfig).length === 0 || (!plotConfig.x && !plotConfig.y);
+            const isEmptySlot = !plotConfig || Object.keys(plotConfig).length === 0 || (!plotConfig.x && !plotConfig.y && !plotConfig.series && !plotConfig.points);
             if (isEmptySlot) return;
 
             const plotIndex = globalPlotIndex++;
 
             const preCustomFn = getCustomRenderFunction(plotConfig);
-            let preMode = (plotConfig.mode || (preCustomFn ? 'override' : 'standard')).toLowerCase();
+            let preMode = (plotConfig.mode || (preCustomFn || plotConfig.series || plotConfig.points ? 'override' : 'standard')).toLowerCase();
             if (preMode === 'standalone') preMode = 'override';
 
             let currentYVal = state[plotConfig.y];
@@ -2112,11 +2113,13 @@ function injectPlots(state, pageData) {
             }
 
             const yAxisBBox = yAxisG.node().getBBox();
+            const yLabelLeft = plot_x_offset - yAxisBBox.width - 40;
+            minObservedLeft = Math.min(minObservedLeft, yLabelLeft - 8 * scale);
 
             const yLabelFO = svg.append('foreignObject')
                 .attr('width', ih)
                 .attr('height', 50)
-                .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${plot_y_offset + ih}) rotate(-90)`);
+                .attr('transform', `translate(${yLabelLeft}, ${plot_y_offset + ih}) rotate(-90)`);
 
             const yLabelDiv = yLabelFO.append('xhtml:div')
                 .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
@@ -2187,7 +2190,7 @@ function injectPlots(state, pageData) {
             }
 
             const customRenderFn = getCustomRenderFunction(plotConfig);
-            let mode = (plotConfig.mode || (customRenderFn ? 'override' : 'standard')).toLowerCase();
+            let mode = (plotConfig.mode || (customRenderFn || plotConfig.series || plotConfig.points ? 'override' : 'standard')).toLowerCase();
             if (mode === 'standalone') mode = 'override';
 
             // Custom layer group clipped to plot boundaries
@@ -2399,6 +2402,8 @@ function injectPlots(state, pageData) {
 
             // Draw configured points, connecting segments, nondraggable point markers, and point labels
             drawPlotPoints(plotCtx);
+            // Series share axes and are painted in declaration order.
+            (plotConfig.series || []).forEach(series => drawPlotPoints({ ...plotCtx, plotConfig: series }));
 
             // Draw Draggable Point & Hit area (if x and y defined, not override mode, and showPoint is not false)
             const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
@@ -2530,6 +2535,11 @@ function injectPlots(state, pageData) {
         if (svgEl) {
             svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
         }
+    }
+
+    // Rotated y labels can extend beyond the fixed left margin at narrow widths.
+    if (svgEl && minObservedLeft < 0) {
+        svgEl.setAttribute('viewBox', `${minObservedLeft} 0 ${W - minObservedLeft} ${H}`);
     }
 
     const plotNote = document.getElementById("plot-note");
@@ -2857,7 +2867,7 @@ function drawPlotPoints(plotCtx) {
         const valX = typeof rawX === 'string' ? evaluateFormula(rawX, state, customScope) : rawX;
         const valY = typeof rawY === 'string' ? evaluateFormula(rawY, state, customScope) : rawY;
 
-        if (valX === undefined || valY === undefined || isNaN(valX) || isNaN(valY)) return;
+        if (valX == null || valY == null || !Number.isFinite(Number(valX)) || !Number.isFinite(Number(valY))) return;
 
         const px = x(valX);
         const py = y(valY);
@@ -2875,7 +2885,7 @@ function drawPlotPoints(plotCtx) {
 
     if (evaluatedPoints.length === 0) return;
 
-    const defaultStrokeColor = '#0075ff';
+    const defaultStrokeColor = plotConfig.pointsColor || '#0075ff';
 
     const segmentColors = Array.isArray(plotConfig.pointSegmentColors) ? plotConfig.pointSegmentColors : [];
 
@@ -2884,10 +2894,11 @@ function drawPlotPoints(plotCtx) {
         const p1 = evaluatedPoints[i];
         const p2 = evaluatedPoints[i + 1];
 
+        if (plotConfig.showLines === false || p2.originalIndex !== p1.originalIndex + 1) continue;
         let segColor = defaultStrokeColor;
 
-        if (segmentColors[i] !== undefined && segmentColors[i] !== null && segmentColors[i] !== '') {
-            segColor = segmentColors[i];
+        if (segmentColors[p1.originalIndex] !== undefined && segmentColors[p1.originalIndex] !== null && segmentColors[p1.originalIndex] !== '') {
+            segColor = segmentColors[p1.originalIndex];
         } else if (pointColors[p1.originalIndex] !== undefined && pointColors[p1.originalIndex] !== null && pointColors[p1.originalIndex] !== '' && pointColors[p1.originalIndex] !== 'none' && pointColors[p1.originalIndex] !== 'transparent') {
             segColor = pointColors[p1.originalIndex];
         } else if (pointColors[p2.originalIndex] !== undefined && pointColors[p2.originalIndex] !== null && pointColors[p2.originalIndex] !== '' && pointColors[p2.originalIndex] !== 'none' && pointColors[p2.originalIndex] !== 'transparent') {
@@ -2902,21 +2913,23 @@ function drawPlotPoints(plotCtx) {
             .attr('x2', p2.px)
             .attr('y2', p2.py)
             .style('stroke', segColor)
-            .style('stroke-width', `${2 * scale}px`)
+            .style('stroke-width', `${(plotConfig.lineWidth ?? 2) * scale}px`)
+            .style('stroke-dasharray', plotConfig.lineDash || (plotConfig.dashed ? `${4 * scale} ${4 * scale}` : null))
+            .style('opacity', plotConfig.opacity ?? 1)
             .style('stroke-linecap', 'round');
     }
 
     // 2. Draw nondraggable points
     evaluatedPoints.forEach(p => {
         const ptColor = pointColors[p.originalIndex] || defaultStrokeColor;
-        if (ptColor === 'none' || ptColor === 'transparent') return;
+        if (plotConfig.showPoints === false || ptColor === 'none' || ptColor === 'transparent') return;
 
         svg.append('circle')
             .attr('class', 'nondragpt')
             .attr('clip-path', `url(#${clipId})`)
             .attr('cx', p.px)
             .attr('cy', p.py)
-            .attr('r', 5 * scale)
+            .attr('r', (plotConfig.pointRadius ?? 5) * scale)
             .style('fill', ptColor)
             .style('stroke', '#ffffff')
             .style('stroke-width', `${1.5 * scale}px`)
@@ -3021,6 +3034,14 @@ function drawPlotPoints(plotCtx) {
             finalDy = parseFloat(customOffsetY) * scale;
         }
 
+        // Exact label displacement in screen pixels (positive y points down).
+        if (Array.isArray(labelDef.offset)) {
+            const [dx, dy] = labelDef.offset;
+            finalDx = dx * scale;
+            finalDy = dy * scale;
+            textAnchor = labelDef.anchor || 'left';
+            align = labelDef.align || 'middle';
+        }
         const foWidth = 100 * scale;
         const foHeight = 26 * scale;
 

@@ -36,14 +36,38 @@ const pageData = {
         {
             "type": "symbols",
             "content": [
-                { "symbol": "$T$", "definition": "temperature" },
-                { "symbol": "$P$", "definition": "pressure" },
-                { "symbol": "$h$", "definition": "specific enthalpy" },
-                { "symbol": "$s$", "definition": "specific entropy" },
-                { "symbol": "$q_{\\text{in}}$", "definition": "refrigeration cooling capacity" },
-                { "symbol": "$w_{\\text{in}}$", "definition": "compressor work input" },
-                { "symbol": "$q_{\\text{out}}$", "definition": "condenser heat rejection" },
-                { "symbol": "$\\text{COP}_R$", "definition": "coefficient of performance" }
+                {
+                    "symbol": "$T$",
+                    "definition": "temperature"
+                },
+                {
+                    "symbol": "$P$",
+                    "definition": "pressure"
+                },
+                {
+                    "symbol": "$h$",
+                    "definition": "specific enthalpy"
+                },
+                {
+                    "symbol": "$s$",
+                    "definition": "specific entropy"
+                },
+                {
+                    "symbol": "$q_{\\text{in}}$",
+                    "definition": "refrigeration cooling capacity"
+                },
+                {
+                    "symbol": "$w_{\\text{in}}$",
+                    "definition": "compressor work input"
+                },
+                {
+                    "symbol": "$q_{\\text{out}}$",
+                    "definition": "condenser heat rejection"
+                },
+                {
+                    "symbol": "$\\text{COP}_R$",
+                    "definition": "coefficient of performance"
+                }
             ]
         }
     ],
@@ -52,6 +76,12 @@ const pageData = {
         "alt": "Ideal vapor-compression refrigeration cycle diagram."
     },
     "inputOutput": {
+        // Load this Python file through Pyodide and call calculate_cycle(inputs)
+        // when inputs change. The dictionary includes values keyed by input IDs,
+        // e.g. inputs['fluid'], inputs['T_evap'], and inputs['T_cond'].
+        // Returned dictionary keys become renderer variables, including lists.
+        // Only keys listed in outputs below get visible output cards; plot-only
+        // lists such as ts_liquid and ts_cycle do not need output entries.
         "pythonScript": {
             "path": "../test/refrigeration-cycle-calc.py",
             "function": "calculate_cycle"
@@ -62,11 +92,26 @@ const pageData = {
                 "id": "fluid",
                 "text": "Refrigerant",
                 "choices": [
-                    { "text": "R134a (1,1,1,2-Tetrafluoroethane)", "value": "R134a" },
-                    { "text": "R1234yf (HFO Refrigerant)", "value": "R1234yf" },
-                    { "text": "Propane (R290)", "value": "Propane" },
-                    { "text": "Ammonia (R717)", "value": "Ammonia" },
-                    { "text": "Carbon Dioxide (R744)", "value": "CO2" }
+                    {
+                        "text": "R134a (1,1,1,2-Tetrafluoroethane)",
+                        "value": "R134a"
+                    },
+                    {
+                        "text": "R1234yf (HFO Refrigerant)",
+                        "value": "R1234yf"
+                    },
+                    {
+                        "text": "Propane (R290)",
+                        "value": "Propane"
+                    },
+                    {
+                        "text": "Ammonia (R717)",
+                        "value": "Ammonia"
+                    },
+                    {
+                        "text": "Carbon Dioxide (R744)",
+                        "value": "CO2"
+                    }
                 ],
                 "initialChoiceIndex": 0
             },
@@ -135,70 +180,116 @@ const pageData = {
     },
     "plots": {
         "aspectRatio": 1.45,
-        "customScripts": [
-            "../assets/js/plots/ts-diagram.js",
-            "../assets/js/plots/ph-diagram.js"
-        ],
-        "customScriptFunctions": [
-            ["tsDiagram"],
-            ["phDiagram", "thDiagram"]
-        ],
+        // Each inner array is a row; each object in that row is a separate plot.
+        // This page has T-s and p-h side by side, then T-h on the next row.
+        // Axis labels, bounds, ticks, and log scaling belong to the plot object.
         "settings": [
             [
                 {
-                    "customScript": "../assets/js/plots/ts-diagram.js",
-                    "customRender": "tsDiagram",
-                    "customScriptFunctions": ["tsDiagram"],
-                    "mode": "before",
                     "x": "s",
                     "y": "T",
-                    "xLabel": "$s \\text{ [kJ/(kg·K)]}$",
-                    "yLabel": "$T \\text{ [°C]}$",
+                    "xLabel": "$s \\text{ [kJ/(kg?K)]}$",
+                    "yLabel": "$T \\text{ [?C]}$",
                     "xMin": 0.8,
-                    "xMax": 2.0,
+                    "xMax": 2,
                     "xTickInterval": 0.2,
-                    "yMin": -20,
-                    "yMax": 80,
+                    "yMin": -10,
+                    "yMax": 70,
                     "yTickInterval": 20,
-                    "key": "fluid",
-                    "points": [
-                        ["s1", "T1"],
-                        ["s2", "T2"],
-                        ["sa", "Ta"],
-                        ["s3", "T3"],
-                        ["s4", "T4"],
-                        ["s1", "T1"]
-                    ],
-                    "pointLabels": [
-                        { "text": "$1$", "location": "bottom right", "color": "#0284c7" },
-                        { "text": "$2$", "location": "top right", "color": "#ef4444" },
-                        "",
-                        { "text": "$3$", "location": "top left", "color": "#10b981" },
-                        { "text": "$4$", "location": "bottom left", "color": "#f59e0b" },
-                        ""
-                    ],
-                    "pointColors": [
-                        "#0284c7",
-                        "#ef4444",
-                        "none",
-                        "#10b981",
-                        "#f59e0b",
-                        "none"
-                    ],
-                    "pointSegmentColors": [
-                        "#ef4444",
-                        "#ef4444",
-                        "#10b981",
-                        "#f59e0b",
-                        "#0284c7"
+                    // Series are layers on these SAME axes, drawn in array order:
+                    // liquid curve, vapor curve, then cycle on top of both.
+                    // With series, coordinates come from points rather than an
+                    // input sweep; x/y above identify the axes, not list lookups.
+                    "series": [
+                        {
+                            // Resolve the Python return key 'ts_liquid' to a list
+                            // of [x, y] pairs, e.g. [[s0, T0], [s1, T1], ...].
+                            // A literal list of pairs is also accepted here.
+                            "points": "ts_liquid",
+                            // Uniform color for lines, markers, and labels unless
+                            // overridden by per-point/segment/label colors.
+                            "pointsColor": "#16a34a",
+                            "dashed": true,
+                            // Connect the coordinates without drawing markers.
+                            // showLines: false instead makes a scatter layer.
+                            "showPoints": false,
+                            // Line width and marker radius are specified in pixels.
+                            "lineWidth": 1.5
+                        },
+                        {
+                            "points": "ts_vapor",
+                            "pointsColor": "#16a34a",
+                            "dashed": true,
+                            "showPoints": false,
+                            "lineWidth": 1.5
+                        },
+                        {
+                            // Literal coordinate list: strings resolve to Python
+                            // output variables, so these points still update with
+                            // the inputs. Numbers can also be used, e.g. [1.7, 10].
+                            // Equivalent to points: "ts_cycle" returned by Python.
+                            "points": [
+                                ["s1", "T1"],
+                                ["s2", "T2"],
+                                ["sa", "Ta"],
+                                ["s3", "T3"],
+                                ["s4", "T4"],
+                                ["s1", "T1"]
+                            ],
+                            "pointsColor": "#2563eb",
+                            "pointRadius": 4,
+                            // Entries follow Python's point order: 1, 2, a, 3, 4, 1.
+                            // 'none' hides a marker while keeping connecting lines.
+                            // pointSegmentColors can separately color each segment.
+                            "pointColors": [
+                                "#2563eb",
+                                "#2563eb",
+                                "none",
+                                "#2563eb",
+                                "#2563eb",
+                                "none"
+                            ],
+                            // Labels use the same point order; '' omits a label.
+                            // offset: [dx, dy] moves the label in screen pixels:
+                            // positive dx is right, positive dy is down.
+                            // Optional anchor (left/center/right) and align
+                            // (top/middle/bottom) control alignment at that offset.
+                            "pointLabels": [
+                                {
+                                    "text": "$1$",
+                                    "offset": [
+                                        8,
+                                        6
+                                    ]
+                                },
+                                {
+                                    "text": "$2$",
+                                    "offset": [
+                                        8,
+                                        6
+                                    ]
+                                },
+                                "",
+                                {
+                                    "text": "$3$",
+                                    "offset": [
+                                        -24,
+                                        6
+                                    ]
+                                },
+                                {
+                                    "text": "$4$",
+                                    "offset": [
+                                        -24,
+                                        6
+                                    ]
+                                },
+                                ""
+                            ]
+                        }
                     ]
                 },
                 {
-                    "customScript": "../assets/js/plots/ph-diagram.js",
-                    "customRender": "phDiagram",
-                    "customScriptFunctions": ["phDiagram"],
-                    "mode": "before",
-                    "pressureUnit": "kPa",
                     "x": "h",
                     "y": "P",
                     "xLabel": "$h \\text{ [kJ/kg]}$",
@@ -207,94 +298,149 @@ const pageData = {
                     "xMax": 500,
                     "xTickInterval": 50,
                     "yMin": 100,
-                    "yMax": 2500,
-                    "yTickInterval": 400,
-                    "key": "fluid",
-                    "points": [
-                        ["h1", "P1_kPa"],
-                        ["h2", "P2_kPa"],
-                        ["ha", "Pa_kPa"],
-                        ["h3", "P3_kPa"],
-                        ["h4", "P4_kPa"],
-                        ["h1", "P1_kPa"]
-                    ],
-                    "pointLabels": [
-                        { "text": "$1$", "location": "bottom right", "color": "#0284c7" },
-                        { "text": "$2$", "location": "top right", "color": "#ef4444" },
-                        "",
-                        { "text": "$3$", "location": "top left", "color": "#10b981" },
-                        { "text": "$4$", "location": "bottom left", "color": "#f59e0b" },
-                        ""
-                    ],
-                    "pointColors": [
-                        "#0284c7",
-                        "#ef4444",
-                        "none",
-                        "#10b981",
-                        "#f59e0b",
-                        "none"
-                    ],
-                    "pointSegmentColors": [
-                        "#ef4444",
-                        "#ef4444",
-                        "#10b981",
-                        "#f59e0b",
-                        "#0284c7"
+                    "yMax": 3000,
+                    "yLog": true,
+                    "series": [
+                        {
+                            "points": "ph_liquid",
+                            "pointsColor": "#16a34a",
+                            "dashed": true,
+                            "showPoints": false,
+                            "lineWidth": 1.5
+                        },
+                        {
+                            "points": "ph_vapor",
+                            "pointsColor": "#16a34a",
+                            "dashed": true,
+                            "showPoints": false,
+                            "lineWidth": 1.5
+                        },
+                        {
+                            "points": "ph_cycle",
+                            "pointsColor": "#2563eb",
+                            "pointRadius": 4,
+                            "pointColors": [
+                                "#2563eb",
+                                "#2563eb",
+                                "none",
+                                "#2563eb",
+                                "#2563eb",
+                                "none"
+                            ],
+                            "pointLabels": [
+                                {
+                                    "text": "$1$",
+                                    "offset": [
+                                        8,
+                                        6
+                                    ]
+                                },
+                                {
+                                    "text": "$2$",
+                                    "offset": [
+                                        8,
+                                        6
+                                    ]
+                                },
+                                "",
+                                {
+                                    "text": "$3$",
+                                    "offset": [
+                                        -24,
+                                        6
+                                    ]
+                                },
+                                {
+                                    "text": "$4$",
+                                    "offset": [
+                                        -24,
+                                        6
+                                    ]
+                                },
+                                ""
+                            ]
+                        }
                     ]
                 }
             ],
             [
                 {
-                    "customScript": "../assets/js/plots/ph-diagram.js",
-                    "customRender": "thDiagram",
-                    "customScriptFunctions": ["thDiagram"],
-                    "mode": "before",
                     "x": "h",
                     "y": "T",
                     "xLabel": "$h \\text{ [kJ/kg]}$",
-                    "yLabel": "$T \\text{ [°C]}$",
+                    "yLabel": "$T \\text{ [?C]}$",
                     "xMin": 150,
                     "xMax": 500,
                     "xTickInterval": 50,
-                    "yMin": -20,
-                    "yMax": 80,
+                    "yMin": -10,
+                    "yMax": 70,
                     "yTickInterval": 20,
-                    "key": "fluid",
-                    "points": [
-                        ["h1", "T1"],
-                        ["h2", "T2"],
-                        ["ha", "Ta"],
-                        ["h3", "T3"],
-                        ["h4", "T4"],
-                        ["h1", "T1"]
-                    ],
-                    "pointLabels": [
-                        { "text": "$1$", "location": "bottom right", "color": "#0284c7" },
-                        { "text": "$2$", "location": "top right", "color": "#ef4444" },
-                        "",
-                        { "text": "$3$", "location": "top left", "color": "#10b981" },
-                        { "text": "$4$", "location": "bottom left", "color": "#f59e0b" },
-                        ""
-                    ],
-                    "pointColors": [
-                        "#0284c7",
-                        "#ef4444",
-                        "none",
-                        "#10b981",
-                        "#f59e0b",
-                        "none"
-                    ],
-                    "pointSegmentColors": [
-                        "#ef4444",
-                        "#ef4444",
-                        "#10b981",
-                        "#f59e0b",
-                        "#0284c7"
-                    ],
-                    "aspectRatio": 2.2
-                }
-            ]
+                    "aspectRatio": 2.2,
+                    "series": [
+                        {
+                            "points": "th_liquid",
+                            "pointsColor": "#16a34a",
+                            "dashed": true,
+                            "showPoints": false,
+                            "lineWidth": 1.5
+                        },
+                        {
+                            "points": "th_vapor",
+                            "pointsColor": "#16a34a",
+                            "dashed": true,
+                            "showPoints": false,
+                            "lineWidth": 1.5
+                        },
+                        {
+                            "points": "th_cycle",
+                            "pointsColor": "#2563eb",
+                            "pointRadius": 4,
+                            "pointColors": [
+                                "#2563eb",
+                                "#2563eb",
+                                "none",
+                                "#2563eb",
+                                "#2563eb",
+                                "none"
+                            ],
+                            "pointLabels": [
+                                {
+                                    "text": "$1$",
+                                    "offset": [
+                                        8,
+                                        6
+                                    ]
+                                },
+                                {
+                                    "text": "$2$",
+                                    "offset": [
+                                        8,
+                                        6
+                                    ]
+                                },
+                                "",
+                                {
+                                    "text": "$3$",
+                                    "offset": [
+                                        -24,
+                                        6
+                                    ]
+                                },
+                                {
+                                    "text": "$4$",
+                                    "offset": [
+                                        -24,
+                                        6
+                                    ]
+                                },
+                                ""
+                            ]
+                        }
+                    ]
+                },
+                {}
+            ],
         ],
-        "text": "Ideal vapor-compression refrigeration cycle diagrams (T-s, p-h, T-h) computed via Python calculation engine (`refrigeration-cycle-calc.py`) and rendered with D3.js point segments."
+        "text": "Saturation curves and cycle states calculated in Python; each diagram composes styled series on shared axes."
     }
 };

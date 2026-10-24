@@ -6,6 +6,9 @@ R134a liquid exits the condenser at 40 ˚C. Plot the T-s, p-h, and T-h diagram
 of this cycle by coding in Python. The saturated liquid line and the saturated 
 vapor line must be shown in the figure. The axes must be properly labeled, 
 and the number labels of the states must be presented in the figure.
+
+Programmed by Ke Tang
+Update date: 6-22-24
 """
 
 import CoolProp.CoolProp as CP
