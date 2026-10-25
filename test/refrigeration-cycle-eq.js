@@ -84,6 +84,7 @@ const pageData = {
         // lists such as ts_liquid and ts_cycle do not need output entries.
         "pythonScript": {
             "path": "../test/refrigeration-cycle-calc.py",
+            // "path": "../test/refrigeration-cycle-calc-no-cache.py",
             "function": "calculate_cycle"
         },
         "inputs": [
@@ -179,7 +180,7 @@ const pageData = {
         "outputColumns": 4
     },
     "plots": {
-        "aspectRatio": 1.45,
+        "aspectRatio": 1.5,
         // Each inner array is a row; each object in that row is a separate plot.
         // This page has T-s and p-h side by side, then T-h on the next row.
         // Axis labels, bounds, ticks, and log scaling belong to the plot object.
@@ -188,8 +189,8 @@ const pageData = {
                 {
                     "x": "s",
                     "y": "T",
-                    "xLabel": "$s \\text{ [kJ/(kg?K)]}$",
-                    "yLabel": "$T \\text{ [?C]}$",
+                    "xLabel": "$s \\text{ [kJ/(kg·K)]}$",
+                    "yLabel": "$T \\text{ [°C]}$",
                     "xMin": 0.8,
                     "xMax": 2,
                     "xTickInterval": 0.2,
@@ -368,7 +369,7 @@ const pageData = {
                     "x": "h",
                     "y": "T",
                     "xLabel": "$h \\text{ [kJ/kg]}$",
-                    "yLabel": "$T \\text{ [?C]}$",
+                    "yLabel": "$T \\text{ [°C]}$",
                     "xMin": 150,
                     "xMax": 500,
                     "xTickInterval": 50,
