@@ -114,6 +114,27 @@
  * @description Key-value mapping of input IDs to target values for plotting static reference curves (e.g. polytropic-n: 1.4), alongside an optional text label.
  * @property {string} [text] - Label indicating the parameters of the reference curve (supports MathJax, e.g. "$n = 1.4$")
  * @property {'above' | 'below'} [labelPosition] - Direction to render label text relative to the reference curve within the plot (if set, overrides default right-aligned labels)
+ * @property {LabelOffset} [offset] - Nudges the label from its default position, in on-screen pixels
+ * @property {LabelAt} [at] - Places the label's center at this point, in axis units (overrides offset and labelPosition)
+ */
+
+/**
+ * @typedef {Object} LabelOffset
+ * @property {number} [x] - Horizontal nudge in on-screen pixels (+ is right)
+ * @property {number} [y] - Vertical nudge in on-screen pixels (+ is down)
+ */
+
+/**
+ * @typedef {Object} LabelAt
+ * @property {number} x - X-axis value of the label's center
+ * @property {number} y - Y-axis value of the label's center
+ */
+
+/**
+ * @typedef {Object} ActiveLabelConfig
+ * @property {string} text - Label text (supports MathJax and `{input_id}` placeholders)
+ * @property {LabelOffset} [offset] - Nudges the label from its default position, in on-screen pixels; the label still follows the curve
+ * @property {LabelAt} [at] - Places the label's center at this point, in axis units (overrides offset)
  */
 
 /**
@@ -145,7 +166,7 @@
  * @property {boolean} [yExponential] - If true, format Y-axis tick labels in exponential form
  * @property {number} [dottedMin] - Start boundary of dotted range along the X-axis (useful for showing physically impossible regions)
  * @property {number} [dottedMax] - End boundary of dotted range along the X-axis
- * @property {string} [activeLabel] - Optional text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$")
+ * @property {string | ActiveLabelConfig} [activeLabel] - Optional text label rendered on the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$"), or an object adding manual placement
  * @property {ReferenceSetting[]} [reference] - Auxiliary static reference curves configurations
  * @property {boolean} [lockDragUnlessCustom] - If true, the plot's draggable point is only interactive when the x-variable's dropdown/slider-dropdown input is set to 'custom'
  * @property {Array<[number | string, number | string]>} [points] - List of 2D tuples representing point coordinates in plot scale

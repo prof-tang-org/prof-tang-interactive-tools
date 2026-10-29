@@ -92,8 +92,8 @@ const pageData = {
                 "yTickInterval": 5,
                 "activeLabel": "$T_H = {TH}$ K",
                 "reference": [
-                    { "TH": 275, "text": "$T_H = 275$ K", "labelPosition": "above" },
-                    { "TH": 325, "text": "$T_H = 325$ K", "labelPosition": "below" }
+                    { "TH": 275, "text": "$T_H = 275$ K", "labelPosition": "above", "at": { "x": 236, "y": 20 } },
+                    { "TH": 325, "text": "$T_H = 325$ K", "labelPosition": "below", "at": { "x": 282, "y": 3 } }
                 ]
             }
         ],

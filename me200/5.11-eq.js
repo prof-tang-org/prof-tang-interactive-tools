@@ -92,8 +92,8 @@ const pageData = {
                 "yTickInterval": 5,
                 "activeLabel": "$T_C = {TC}$ K",
                 "reference": [
-                    { "TC": 275, "text": "$T_C = 275$ K", "labelPosition": "below" },
-                    { "TC": 325, "text": "$T_C = 325$ K", "labelPosition": "above" }
+                    { "TC": 275, "text": "$T_C = 275$ K", "labelPosition": "below", "at": { "x": 334, "y": 3.35 } },
+                    { "TC": 325, "text": "$T_C = 325$ K", "labelPosition": "above", "at": { "x": 366, "y": 15.3 } }
                 ]
             }
         ],

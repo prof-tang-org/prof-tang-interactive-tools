@@ -428,6 +428,18 @@ The `plots` object governs one or more interactive curves rendered in D3.js. Plo
 ```
 
 ### Curve Drawing Details:
+* **Label Placement**: By default the active label sits on the curve at 75% of the plot width, 18 px above it; `"above"`/`"below"` reference labels sit at 50% width, 18 px from the curve; other reference labels sit past the curve's right end and are spread apart automatically. Override any label with:
+  * `offset`: `{ "x": 0, "y": 8 }` nudges it from that default spot in on-screen pixels (+y is down). The active label still follows its curve.
+  * `at`: `{ "x": 700, "y": 0.6 }` places the label's center at that point in axis units, regardless of where the curve is.
+
+  Manually placed labels are not moved by the automatic overlap spreading. `activeLabel` accepts either a string or an object:
+  ```json
+  "activeLabel": { "text": "$T = {T}$ K", "offset": { "x": 0, "y": 8 } },
+  "reference": [
+      { "T": 300, "text": "$T = 300$ K", "offset": { "x": -10, "y": 0 } },
+      { "T": 1000, "text": "$T = 1000$ K", "at": { "x": 700, "y": 0.6 } }
+  ]
+  ```
 * **Conditional Plots**: Set `showWhen` to a JS condition (e.g. `"spec == 'p2'"`) to draw a plot only while it is truthy. Hidden plots are removed from the layout, so the remaining plots fill the row.
 * **Resolution**: The engine generates curves by evaluating the function at 100 points between `xMin` and `xMax`.
 * **State Syncing**: The current input/output state is rendered as a red circular dot (`circle.dragpt`).
@@ -570,6 +582,7 @@ Guidelines for the AI:
 - **Curve Annotations**:
   - `activeLabel`: Text label format rendered at the end of the active curve (supports MathJax and `{input_id}` placeholders, e.g. `"$n = {polytropic-n}$"`).
   - `reference`: Array of static auxiliary reference curves. Each item maps input IDs to target values (e.g. `"U": 1.0`), alongside a `text` label and optional `labelPosition` (`"above" | "below"`).
+  - Label placement: `activeLabel` may also be an object `{ "text": "...", "offset": { "x": 0, "y": 8 } }`. Both it and `reference` items accept `offset` (on-screen pixels from the default spot, +y is down) or `at` (`{ "x": ..., "y": ... }` in axis units, the label's center).
 
 ### 5. Wide Layout Guidelines (`io_wide` template)
 - Balance desktop column widths for inputs and outputs in `layout.grid` (e.g. `"desktop": "2fr 1fr"`).
