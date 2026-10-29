@@ -566,7 +566,7 @@ function renderGroup(values, containerId, cols = 5) {
         val.id = `value_${value.id}`;
         if (typeof value.value === 'number') {
             val.textContent = formatNumber(value.value, value.decimals);
-        } else if (value.type === 'calculation' || (typeof value.value === 'string' && (value.value.includes('(') || value.value.includes('*') || value.value.includes('+') || value.value.includes('/') || value.value.includes('?')))) {
+        } else if (value.value === undefined || value.type === 'calculation' || value.type === 'python' || (typeof value.value === 'string' && (value.value.includes('(') || value.value.includes('*') || value.value.includes('+') || value.value.includes('/') || value.value.includes('?')))) {
             val.textContent = '—';
         } else {
             val.innerHTML = parseText(String(value.value ?? ''));
@@ -971,29 +971,43 @@ function setupCalculationEngine(pageData) {
             });
         }
 
-        pageData.inputOutput.outputs.forEach(output => {
-            if (typeof output.text === 'string' && output.text.includes('?')) {
-                const labelEl = document.getElementById(`label_${output.id}`);
-                if (labelEl) {
-                    const evalText = evaluateFormula(output.text, state);
-                    if (labelEl.getAttribute('data-eval-text') !== evalText) {
-                        labelEl.setAttribute('data-eval-text', evalText);
-                        labelEl.innerHTML = parseText(evalText);
-                        if (window.MathJax && window.MathJax.typesetPromise) {
-                            window.MathJax.typesetPromise([labelEl]).catch(err => console.error(err));
+        // Execute Python calculation engine if configured on inputOutput
+        let pyOutputs = null;
+        if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
+            pyOutputs = runPythonCalculation(state);
+            if (pyOutputs && typeof pyOutputs === 'object') {
+                Object.assign(state, pyOutputs);
+            }
+        }
+
+        if (Array.isArray(pageData.inputOutput.outputs)) {
+            pageData.inputOutput.outputs.forEach(output => {
+                if (typeof output.text === 'string' && output.text.includes('?')) {
+                    const labelEl = document.getElementById(`label_${output.id}`);
+                    if (labelEl) {
+                        const evalText = evaluateFormula(output.text, state);
+                        if (labelEl.getAttribute('data-eval-text') !== evalText) {
+                            labelEl.setAttribute('data-eval-text', evalText);
+                            labelEl.innerHTML = parseText(evalText);
+                            if (window.MathJax && window.MathJax.typesetPromise) {
+                                window.MathJax.typesetPromise([labelEl]).catch(err => console.error(err));
+                            }
                         }
                     }
                 }
-            }
 
-            let val;
-            if (output.type === 'map') {
-                val = getMappedValue(output.key, output.value, state);
-            } else if (output.type === 'calculation' || (typeof output.value === 'string' && output.value.length > 0)) {
-                val = evaluateFormula(output.value, state);
-            }
+                let val;
+                if (pyOutputs && output.id in pyOutputs) {
+                    val = pyOutputs[output.id];
+                } else if (output.type === 'map') {
+                    val = getMappedValue(output.key, output.value, state);
+                } else if (output.type === 'calculation' || (typeof output.value === 'string' && output.value.length > 0)) {
+                    val = evaluateFormula(output.value, state);
+                } else if (state[output.id] !== undefined) {
+                    val = state[output.id];
+                }
 
-            state[output.id] = val;
+                state[output.id] = val;
 
             const el = document.getElementById(`value_${output.id}`);
             if (el) {
@@ -1029,6 +1043,7 @@ function setupCalculationEngine(pageData) {
             }
         });
     }
+}
 
     // Cache DOM element references and state tracking for high-performance dotted-range updates
     const dottedRangeState = new Map();
@@ -1251,6 +1266,180 @@ except Exception as e:
     })();
 
     return _pyodidePromise;
+}
+
+let _pythonCalculationFunction = null;
+let _pythonCalculationScriptName = null;
+let _pythonEnginePromise = null;
+
+/**
+ * Fetch Python script source with candidate path resolution for topic pages and courses.
+ * @param {string} src
+ * @returns {Promise<{text: string, url: string}>}
+ */
+async function fetchPythonScript(src) {
+    if (!src || typeof src !== 'string') {
+        throw new Error('[renderer.js] Invalid pythonScript path: ' + src);
+    }
+    const candidates = [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const course = urlParams.get('course');
+    const cleanBase = src.split('/').pop().split('\\').pop();
+
+    if (course) {
+        const courseRel = `../${course}/${cleanBase}`;
+        if (!candidates.includes(courseRel)) candidates.push(courseRel);
+    }
+
+    if (!candidates.includes(src)) candidates.push(src);
+
+    const sameFolder = `./${cleanBase}`;
+    if (!candidates.includes(sameFolder)) candidates.push(sameFolder);
+
+    if (course) {
+        const directCourse = `${course}/${cleanBase}`;
+        if (!candidates.includes(directCourse)) candidates.push(directCourse);
+    }
+
+    if (!candidates.includes(cleanBase)) candidates.push(cleanBase);
+
+    for (const url of candidates) {
+        try {
+            const resp = await fetch(url);
+            if (resp.ok) {
+                const text = await resp.text();
+                return { text, url };
+            }
+        } catch (e) {
+            // Check next candidate
+        }
+    }
+    throw new Error(`[renderer.js] Failed to fetch Python script '${src}'. Tried candidate paths: [${candidates.join(', ')}]`);
+}
+
+/**
+ * Scan pageData.inputOutput for pythonScript, load Pyodide runtime and the script,
+ * and register the calculation function.
+ * Supports { "path": "...", "function": "..." } object or string path.
+ * @param {Object} pageData
+ * @returns {Promise<void>}
+ */
+async function ensurePythonEngine(pageData) {
+    if (!pageData || !pageData.inputOutput || !pageData.inputOutput.pythonScript) {
+        return;
+    }
+
+    const pyScriptCfg = pageData.inputOutput.pythonScript;
+    let scriptSrc = null;
+    let specifiedFunc = null;
+
+    if (typeof pyScriptCfg === 'object' && pyScriptCfg !== null) {
+        scriptSrc = pyScriptCfg.path || pyScriptCfg.src;
+        specifiedFunc = pyScriptCfg.function || pyScriptCfg.name;
+    } else if (typeof pyScriptCfg === 'string') {
+        scriptSrc = pyScriptCfg;
+        specifiedFunc = pageData.inputOutput.pythonFunction;
+    }
+
+    if (!scriptSrc) return;
+
+    const cacheKey = `${scriptSrc}::${specifiedFunc || ''}`;
+    if (_pythonEnginePromise && _pythonCalculationScriptName === cacheKey) {
+        return _pythonEnginePromise;
+    }
+
+    _pythonEnginePromise = (async () => {
+        try {
+            const pyodide = await getPyodideInstance();
+            const { text: pyCode } = await fetchPythonScript(scriptSrc);
+
+            // Execute script in Pyodide
+            await pyodide.runPythonAsync(pyCode);
+
+            // Determine calculation function: use specified function directly
+            let targetFunc = null;
+            if (specifiedFunc) {
+                targetFunc = pyodide.globals.get(specifiedFunc);
+                if (typeof targetFunc !== 'function') {
+                    console.error(`[renderer.js] Function '${specifiedFunc}' was not found in Python script '${scriptSrc}'.`);
+                    return;
+                }
+            } else {
+                const candidateNames = ['calculate', 'compute', 'main', 'run'];
+                for (const name of candidateNames) {
+                    const fn = pyodide.globals.get(name);
+                    if (typeof fn === 'function') {
+                        targetFunc = fn;
+                        break;
+                    }
+                }
+            }
+
+            if (typeof targetFunc !== 'function') {
+                console.error(`[renderer.js] No calculation function found in Python script '${scriptSrc}'. Expected { "path": "...", "function": "function_name" }.`);
+                return;
+            }
+
+            _pythonCalculationFunction = targetFunc;
+            _pythonCalculationScriptName = cacheKey;
+
+            // Trigger recompute if controls are already active
+            if (typeof window.forceCompute === 'function') {
+                window.forceCompute();
+            }
+        } catch (err) {
+            console.error(`[renderer.js] Failed to initialize Python calculation engine '${scriptSrc}':`, err);
+        }
+    })();
+
+    return _pythonEnginePromise;
+}
+
+/**
+ * Execute the registered Python calculation function with the current input state dictionary.
+ * @param {Object} state - Interactive state
+ * @returns {Object|null} Dictionary of calculated outputs or null on failure
+ */
+function runPythonCalculation(state) {
+    if (!_pythonCalculationFunction || !window._pyodideInstance) {
+        return null;
+    }
+
+    const pyodide = window._pyodideInstance;
+
+    // Filter out internal state keys and functions to provide a clean dictionary
+    const inputs = {};
+    for (const [key, val] of Object.entries(state || {})) {
+        if (!key.startsWith('_') && typeof val !== 'function') {
+            inputs[key] = val;
+        }
+    }
+
+    let pyInputs = null;
+    let rawResult = null;
+
+    try {
+        pyInputs = pyodide.toPy(inputs);
+        rawResult = _pythonCalculationFunction(pyInputs);
+
+        let jsResult = {};
+        if (rawResult && typeof rawResult.toJs === 'function') {
+            jsResult = rawResult.toJs({ dict_converter: Object.fromEntries });
+        } else if (rawResult && typeof rawResult === 'object') {
+            jsResult = rawResult;
+        }
+        return jsResult;
+    } catch (err) {
+        console.error('[renderer.js] Error executing Python calculation function:', err);
+        return null;
+    } finally {
+        if (pyInputs && typeof pyInputs.destroy === 'function') {
+            pyInputs.destroy();
+        }
+        if (rawResult && typeof rawResult.destroy === 'function') {
+            rawResult.destroy();
+        }
+    }
 }
 
 /**
@@ -1514,11 +1703,23 @@ function _calculateState(baseState, xVal, plotConfig, pageData) {
     const tempState = { ...baseState };
     tempState[plotConfig.x] = xVal;
 
-    pageData.inputOutput.outputs.forEach(output => {
-        if (output.type === 'calculation') {
-            tempState[output.id] = evaluateFormula(output.value, tempState);
+    let pyOutputs = null;
+    if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
+        pyOutputs = runPythonCalculation(tempState);
+        if (pyOutputs && typeof pyOutputs === 'object') {
+            Object.assign(tempState, pyOutputs);
         }
-    });
+    }
+
+    if (pageData.inputOutput && Array.isArray(pageData.inputOutput.outputs)) {
+        pageData.inputOutput.outputs.forEach(output => {
+            if (pyOutputs && output.id in pyOutputs) {
+                tempState[output.id] = pyOutputs[output.id];
+            } else if (output.type === 'calculation' && output.value) {
+                tempState[output.id] = evaluateFormula(output.value, tempState);
+            }
+        });
+    }
     return tempState;
 }
 
@@ -1718,6 +1919,7 @@ function injectPlots(state, pageData) {
     const scale = (renderedWidth > 0) ? W / renderedWidth : 1;
 
     let maxObservedBottom = 0;
+    let minObservedLeft = 0;
     let globalPlotIndex = 0;
 
     rowLayouts.forEach((layout, rowIndex) => {
@@ -1730,13 +1932,13 @@ function injectPlots(state, pageData) {
             const plot_x_offset = currentX;
             currentX += iw + gapX;
 
-            const isEmptySlot = !plotConfig || Object.keys(plotConfig).length === 0 || (!plotConfig.x && !plotConfig.y);
+            const isEmptySlot = !plotConfig || Object.keys(plotConfig).length === 0 || (!plotConfig.x && !plotConfig.y && !plotConfig.series && !plotConfig.points);
             if (isEmptySlot) return;
 
             const plotIndex = globalPlotIndex++;
 
             const preCustomFn = getCustomRenderFunction(plotConfig);
-            let preMode = (plotConfig.mode || (preCustomFn ? 'override' : 'standard')).toLowerCase();
+            let preMode = (plotConfig.mode || (preCustomFn || plotConfig.series || plotConfig.points ? 'override' : 'standard')).toLowerCase();
             if (preMode === 'standalone') preMode = 'override';
 
             let currentYVal = state[plotConfig.y];
@@ -1911,11 +2113,13 @@ function injectPlots(state, pageData) {
             }
 
             const yAxisBBox = yAxisG.node().getBBox();
+            const yLabelLeft = plot_x_offset - yAxisBBox.width - 40;
+            minObservedLeft = Math.min(minObservedLeft, yLabelLeft - 8 * scale);
 
             const yLabelFO = svg.append('foreignObject')
                 .attr('width', ih)
                 .attr('height', 50)
-                .attr('transform', `translate(${plot_x_offset - yAxisBBox.width - 40}, ${plot_y_offset + ih}) rotate(-90)`);
+                .attr('transform', `translate(${yLabelLeft}, ${plot_y_offset + ih}) rotate(-90)`);
 
             const yLabelDiv = yLabelFO.append('xhtml:div')
                 .style('display', 'flex').style('justify-content', 'center').style('align-items', 'center')
@@ -1986,7 +2190,7 @@ function injectPlots(state, pageData) {
             }
 
             const customRenderFn = getCustomRenderFunction(plotConfig);
-            let mode = (plotConfig.mode || (customRenderFn ? 'override' : 'standard')).toLowerCase();
+            let mode = (plotConfig.mode || (customRenderFn || plotConfig.series || plotConfig.points ? 'override' : 'standard')).toLowerCase();
             if (mode === 'standalone') mode = 'override';
 
             // Custom layer group clipped to plot boundaries
@@ -2198,6 +2402,8 @@ function injectPlots(state, pageData) {
 
             // Draw configured points, connecting segments, nondraggable point markers, and point labels
             drawPlotPoints(plotCtx);
+            // Series share axes and are painted in declaration order.
+            (plotConfig.series || []).forEach(series => drawPlotPoints({ ...plotCtx, plotConfig: series }));
 
             // Draw Draggable Point & Hit area (if x and y defined, not override mode, and showPoint is not false)
             const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
@@ -2329,6 +2535,11 @@ function injectPlots(state, pageData) {
         if (svgEl) {
             svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
         }
+    }
+
+    // Rotated y labels can extend beyond the fixed left margin at narrow widths.
+    if (svgEl && minObservedLeft < 0) {
+        svgEl.setAttribute('viewBox', `${minObservedLeft} 0 ${W - minObservedLeft} ${H}`);
     }
 
     const plotNote = document.getElementById("plot-note");
@@ -2683,13 +2894,20 @@ function drawActiveLabel(solidData, dottedData, plotCtx) {
 
 function drawPlotPoints(plotCtx) {
     const { svg, plotConfig, state, x, y, scale, clipId } = plotCtx;
-    if (!plotConfig || !plotConfig.points || !Array.isArray(plotConfig.points) || plotConfig.points.length === 0) {
+    if (!plotConfig || !plotConfig.points) {
+        return;
+    }
+
+    let rawPoints = plotConfig.points;
+    if (typeof rawPoints === 'string' && Array.isArray(state[rawPoints])) {
+        rawPoints = state[rawPoints];
+    }
+    if (!Array.isArray(rawPoints) || rawPoints.length === 0) {
         return;
     }
 
     const customScope = (plotConfig.customScript && _scriptFunctionsScope.get(plotConfig.customScript)) || null;
 
-    const rawPoints = plotConfig.points;
     const pointColors = Array.isArray(plotConfig.pointColors) ? plotConfig.pointColors : [];
     const pointLabels = Array.isArray(plotConfig.pointLabels) ? plotConfig.pointLabels : [];
 
@@ -2703,7 +2921,7 @@ function drawPlotPoints(plotCtx) {
         const valX = typeof rawX === 'string' ? evaluateFormula(rawX, state, customScope) : rawX;
         const valY = typeof rawY === 'string' ? evaluateFormula(rawY, state, customScope) : rawY;
 
-        if (valX === undefined || valY === undefined || isNaN(valX) || isNaN(valY)) return;
+        if (valX == null || valY == null || !Number.isFinite(Number(valX)) || !Number.isFinite(Number(valY))) return;
 
         const px = x(valX);
         const py = y(valY);
@@ -2721,7 +2939,7 @@ function drawPlotPoints(plotCtx) {
 
     if (evaluatedPoints.length === 0) return;
 
-    const defaultStrokeColor = '#0075ff';
+    const defaultStrokeColor = plotConfig.pointsColor || '#0075ff';
 
     const segmentColors = Array.isArray(plotConfig.pointSegmentColors) ? plotConfig.pointSegmentColors : [];
 
@@ -2730,13 +2948,14 @@ function drawPlotPoints(plotCtx) {
         const p1 = evaluatedPoints[i];
         const p2 = evaluatedPoints[i + 1];
 
+        if (plotConfig.showLines === false || p2.originalIndex !== p1.originalIndex + 1) continue;
         let segColor = defaultStrokeColor;
 
-        if (segmentColors[i] !== undefined && segmentColors[i] !== null && segmentColors[i] !== '') {
-            segColor = segmentColors[i];
-        } else if (pointColors[p1.originalIndex] !== undefined && pointColors[p1.originalIndex] !== null && pointColors[p1.originalIndex] !== '') {
+        if (segmentColors[p1.originalIndex] !== undefined && segmentColors[p1.originalIndex] !== null && segmentColors[p1.originalIndex] !== '') {
+            segColor = segmentColors[p1.originalIndex];
+        } else if (pointColors[p1.originalIndex] !== undefined && pointColors[p1.originalIndex] !== null && pointColors[p1.originalIndex] !== '' && pointColors[p1.originalIndex] !== 'none' && pointColors[p1.originalIndex] !== 'transparent') {
             segColor = pointColors[p1.originalIndex];
-        } else if (pointColors[p2.originalIndex] !== undefined && pointColors[p2.originalIndex] !== null && pointColors[p2.originalIndex] !== '') {
+        } else if (pointColors[p2.originalIndex] !== undefined && pointColors[p2.originalIndex] !== null && pointColors[p2.originalIndex] !== '' && pointColors[p2.originalIndex] !== 'none' && pointColors[p2.originalIndex] !== 'transparent') {
             segColor = pointColors[p2.originalIndex];
         }
 
@@ -2748,20 +2967,23 @@ function drawPlotPoints(plotCtx) {
             .attr('x2', p2.px)
             .attr('y2', p2.py)
             .style('stroke', segColor)
-            .style('stroke-width', `${2 * scale}px`)
+            .style('stroke-width', `${(plotConfig.lineWidth ?? 2) * scale}px`)
+            .style('stroke-dasharray', plotConfig.lineDash || (plotConfig.dashed ? `${4 * scale} ${4 * scale}` : null))
+            .style('opacity', plotConfig.opacity ?? 1)
             .style('stroke-linecap', 'round');
     }
 
     // 2. Draw nondraggable points
     evaluatedPoints.forEach(p => {
         const ptColor = pointColors[p.originalIndex] || defaultStrokeColor;
+        if (plotConfig.showPoints === false || ptColor === 'none' || ptColor === 'transparent') return;
 
         svg.append('circle')
             .attr('class', 'nondragpt')
             .attr('clip-path', `url(#${clipId})`)
             .attr('cx', p.px)
             .attr('cy', p.py)
-            .attr('r', 5 * scale)
+            .attr('r', (plotConfig.pointRadius ?? 5) * scale)
             .style('fill', ptColor)
             .style('stroke', '#ffffff')
             .style('stroke-width', `${1.5 * scale}px`)
@@ -2771,7 +2993,7 @@ function drawPlotPoints(plotCtx) {
     // 3. Draw point labels
     evaluatedPoints.forEach(p => {
         const labelDef = pointLabels[p.originalIndex];
-        if (labelDef === undefined || labelDef === null) return;
+        if (labelDef === undefined || labelDef === null || labelDef === '' || (typeof labelDef === 'object' && !labelDef.text)) return;
 
         let labelText = '';
         let location = 'top';
@@ -2866,6 +3088,14 @@ function drawPlotPoints(plotCtx) {
             finalDy = parseFloat(customOffsetY) * scale;
         }
 
+        // Exact label displacement in screen pixels (positive y points down).
+        if (Array.isArray(labelDef.offset)) {
+            const [dx, dy] = labelDef.offset;
+            finalDx = dx * scale;
+            finalDy = dy * scale;
+            textAnchor = labelDef.anchor || 'left';
+            align = labelDef.align || 'middle';
+        }
         const foWidth = 100 * scale;
         const foHeight = 26 * scale;
 
@@ -3048,6 +3278,9 @@ window.addEventListener('load', async () => {
 
         // Ensure external custom plot scripts are loaded before computation
         await ensureCustomPlotScripts(pageData);
+
+        // Ensure Python calculation engine is initialized if configured
+        await ensurePythonEngine(pageData);
 
         renderInputOutput(pageData.inputOutput);
         setupCalculationEngine(pageData);

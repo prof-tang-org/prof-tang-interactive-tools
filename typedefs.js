@@ -100,7 +100,15 @@
  */
 
 /**
+ * @typedef {Object} PythonScriptConfig
+ * @property {string} path - Relative path to the Python script file (e.g. "../test/refrigeration-cycle-calc.py")
+ * @property {string} function - Name of function in the Python script to call (e.g. "calculate_cycle")
+ */
+
+/**
  * @typedef {Object} InputOutputConfig
+ * @property {string | PythonScriptConfig} [pythonScript] - External Python calculation engine script config or relative path
+ * @property {string} [pythonFunction] - Name of function in pythonScript to call when pythonScript is a path string
  * @property {FixedInput[]} [fixedInputs] - Read-only constant values in calculations
  * @property {InputConfig[]} inputs - Interactive control parameters
  * @property {OutputConfig[]} outputs - Computed outcomes
@@ -139,6 +147,9 @@
 
 /**
  * @typedef {Object} PointLabelConfig
+ * @property {[number, number]} [offset] - Exact displacement [dx, dy]; screen pixels (positive y points down)
+ * @property {'left' | 'center' | 'right'} [anchor] - Manual offset horizontal alignment
+ * @property {'top' | 'middle' | 'bottom'} [align] - Manual offset vertical alignment
  * @property {string} [text] - Text content for the point label (supports MathJax, e.g. "$1$")
  * @property {'top' | 'bottom' | 'left' | 'right' | 'top left' | 'top right' | 'bottom left' | 'bottom right' | 'center'} [location] - Position relative to point
  * @property {number} [offsetX] - Custom X pixel offset overriding location
@@ -169,8 +180,17 @@
  * @property {string | ActiveLabelConfig} [activeLabel] - Optional text label rendered on the active curve (supports MathJax and `{input_id}` placeholders, e.g. "$n = {polytropic-n}$"), or an object adding manual placement
  * @property {ReferenceSetting[]} [reference] - Auxiliary static reference curves configurations
  * @property {boolean} [lockDragUnlessCustom] - If true, the plot's draggable point is only interactive when the x-variable's dropdown/slider-dropdown input is set to 'custom'
- * @property {Array<[number | string, number | string]>} [points] - List of 2D tuples representing point coordinates in plot scale
+ * @property {string | Array<[number | string | null, number | string | null]>} [points] - List of 2D tuples representing point coordinates in plot scale
  * @property {Array<string | PointLabelConfig>} [pointLabels] - List of label strings or PointLabelConfig objects for each point
+ * @property {PlotSetting[]} [series] - Layers drawn in order on shared axes
+ * @property {string} [pointsColor] - Uniform line, marker and label color
+ * @property {boolean} [showPoints] - False hides markers
+ * @property {boolean} [showLines] - False hides connecting lines
+ * @property {number} [lineWidth] - Line width in pixels
+ * @property {boolean} [dashed] - Dashed lines
+ * @property {string} [lineDash] - SVG dash pattern
+ * @property {number} [opacity] - Line opacity
+ * @property {number} [pointRadius] - Marker radius in pixels
  * @property {string[]} [pointColors] - List of colors for each point
  * @property {string[]} [segmentColors] - Optional list of colors for each connecting segment
  * @property {boolean} [showPoint] - Set to false to disable rendering the default interactive/draggable point

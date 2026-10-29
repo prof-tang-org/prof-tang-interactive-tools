@@ -45,6 +45,10 @@ const pageData = {
         "alt": "Thermophysical property evaluation using CoolProp database."
     },
     "inputOutput": {
+        "pythonScript": {
+            "path": "../test/coolprop-test-eq.py",
+            "function": "calculate"
+        },
         "inputs": [
             {
                 "type": "dropdown",
@@ -81,22 +85,16 @@ const pageData = {
             {
                 "id": "rho",
                 "text": "Density, $\\rho$ [kg/m³]",
-                "type": "calculation",
-                "value": "PropsSI('D', 'T', temp + 273.15, 'P', pressure * 1e5, fluid)",
                 "decimals": 3
             },
             {
                 "id": "enthalpy",
                 "text": "Specific Enthalpy, $h$ [kJ/kg]",
-                "type": "calculation",
-                "value": "PropsSI('H', 'T', temp + 273.15, 'P', pressure * 1e5, fluid) / 1000",
                 "decimals": 2
             },
             {
                 "id": "entropy",
                 "text": "Specific Entropy, $s$ [kJ/kg·K]",
-                "type": "calculation",
-                "value": "PropsSI('S', 'T', temp + 273.15, 'P', pressure * 1e5, fluid) / 1000",
                 "decimals": 4
             }
         ],
@@ -106,7 +104,7 @@ const pageData = {
         "aspectRatio": 1.5,
         "customScripts": [
             "../assets/js/plots/ts-diagram.js",
-            "../assets/py/ph-diagram.py"
+            "../assets/js/plots/ph-diagram.js"
         ],
         "customScriptFunctions": [
             ["tsDiagram"],
@@ -177,7 +175,7 @@ const pageData = {
             ],
             [
                 {
-                    "customScript": "../assets/py/ph-diagram.py",
+                    "customScript": "../assets/js/plots/ph-diagram.js",
                     "customRender": "phDiagram",
                     "customScriptFunctions": ["phDiagram"],
                     "mode": "points",
@@ -196,6 +194,6 @@ const pageData = {
                 }
             ]
         ],
-        "text": "Demonstration of CoolProp PropsSI(), custom T-s diagram script (`ts-diagram.js`), and Python-driven P-h diagram script (`ph-diagram.py`)."
+        "text": "Demonstration of CoolProp properties calculated via Python calculation engine (`coolprop-test-eq.py`), custom T-s diagram script (`ts-diagram.js`), and P-h diagram script (`ph-diagram.js`)."
     }
 };
