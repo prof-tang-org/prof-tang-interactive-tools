@@ -22,6 +22,7 @@ const pageData = {
                 "The solid surface temperature of REGCHX is 100 K.",
                 "The inlet acoustic power is 150 W.",
                 "The mean pressure is 3.0 MPa, while the pressure ratio and presssure phase angle are 1.2 and zero degrees, respectively, at the inlet.",
+                "The oscillation frequency is 40 Hz.",
                 "Only the inlet volumetric-flow phase angle varies."
             ]
         },
