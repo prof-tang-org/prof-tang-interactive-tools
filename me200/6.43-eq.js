@@ -103,6 +103,7 @@ const pageData = {
         "settings": [
             {
                 "showWhen": "spec == 'p2'",
+                "mode": "standard",
                 "x": "p2",
                 "y": "T2",
                 "xLabel": "$p_2$ [kPa]",
@@ -119,6 +120,7 @@ const pageData = {
             },
             {
                 "showWhen": "spec == 'T2'",
+                "mode": "standard",
                 "x": "T2",
                 "y": "p2",
                 "xLabel": "$T_2$ [K]",

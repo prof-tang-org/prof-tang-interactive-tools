@@ -103,6 +103,7 @@ const pageData = {
         "settings": [
             {
                 "showWhen": "spec == 'p2'",
+                "mode": "standard",
                 "x": "p2",
                 "y": "v2",
                 "xLabel": "$p_2$ [kPa]",
@@ -119,6 +120,7 @@ const pageData = {
             },
             {
                 "showWhen": "spec == 'v2'",
+                "mode": "standard",
                 "x": "v2",
                 "y": "p2",
                 "xLabel": "$v_2$ [m³/kg]",
