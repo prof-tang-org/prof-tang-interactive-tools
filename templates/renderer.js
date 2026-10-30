@@ -2587,6 +2587,35 @@ function injectPlots(state, pageData) {
 // Helper functions for Reference Lines and Labels Drawing
 // ---------------------------------------------------------
 
+// Keys on a reference setting that describe its label rather than the curve's variables
+const REFERENCE_LABEL_KEYS = ['text', 'labelPosition', 'offset', 'at'];
+
+function hasManualLabelPlacement(labelDef) {
+    return !!(labelDef && typeof labelDef === 'object' && (labelDef.at || labelDef.offset));
+}
+
+// Applies a label's optional manual placement to its default top-left foreignObject position.
+// `at`: { x, y } in axis units, placing the label's center at that point on the plot.
+// `offset`: { x, y } in on-screen pixels, nudging the label from its default spot (+y is down).
+function applyLabelPlacement(labelDef, foX, foY, foWidth, centerHeight, plotCtx) {
+    if (!labelDef || typeof labelDef !== 'object') return { foX, foY };
+    const { x, y, scale } = plotCtx;
+
+    if (labelDef.at && typeof labelDef.at.x === 'number' && typeof labelDef.at.y === 'number') {
+        return {
+            foX: x(labelDef.at.x) - foWidth / 2,
+            foY: y(labelDef.at.y) - centerHeight / 2
+        };
+    }
+    if (labelDef.offset) {
+        return {
+            foX: foX + (labelDef.offset.x || 0) * scale,
+            foY: foY + (labelDef.offset.y || 0) * scale
+        };
+    }
+    return { foX, foY };
+}
+
 function drawReferenceLines(plotCtx) {
     const { svg, plotConfig, state, accessibleVals, xVals, getPoint, clipId, pageData, ih, plot_y_offset } = plotCtx;
     const refSettings = plotConfig.reference;
@@ -2595,7 +2624,11 @@ function drawReferenceLines(plotCtx) {
     const labelsToDraw = [];
 
     refSettings.forEach(refSetting => {
-        const refState = { ...state, ...refSetting };
+        const refVars = {};
+        Object.keys(refSetting).forEach(key => {
+            if (!REFERENCE_LABEL_KEYS.includes(key)) refVars[key] = refSetting[key];
+        });
+        const refState = { ...state, ...refVars };
 
         // Cache the reference curve data to avoid recalculation on drag.
         // The curve only depends on page inputs that are NOT the independent variable (plotConfig.x)
@@ -2629,9 +2662,8 @@ function drawReferenceLines(plotCtx) {
             .style('fill', 'none')
             .attr('d', d3.line().defined(d => d && !isNaN(d[1]) && d[1] >= plot_y_offset && d[1] <= plot_y_offset + ih)(refData));
 
-        const isMatched = Object.keys(refSetting).every(key => {
-            if (key === 'text' || key === 'labelPosition') return true;
-            const refVal = refSetting[key];
+        const isMatched = Object.keys(refVars).every(key => {
+            const refVal = refVars[key];
             const stateVal = state[key];
             if (typeof refVal === 'number' && typeof stateVal === 'number') {
                 return Math.abs(refVal - stateVal) < 1e-4;
@@ -2680,13 +2712,15 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
                 ? anchorPoint[1] - verticalOffset
                 : anchorPoint[1] + verticalOffset;
 
-            const foX = anchorPoint[0] - foWidth / 2;
+            let foX = anchorPoint[0] - foWidth / 2;
             let foY = centerY - foHeight / 2;
 
             // Clamp within plot boundaries plus a small margin
             const minYBound = plot_y_offset;
             const maxYBound = plot_y_offset + ih - foHeight;
             foY = Math.max(minYBound, Math.min(maxYBound, foY));
+
+            ({ foX, foY } = applyLabelPlacement(refSetting, foX, foY, foWidth, foHeight, plotCtx));
 
             const fo = svg.append('foreignObject')
                 .attr('x', foX)
@@ -2733,16 +2767,19 @@ function positionReferenceLabel(refSetting, refData, labelsToDraw, plotCtx) {
 function resolveLabelOverlaps(labelsToDraw, plotCtx) {
     const { svg, m, ih, scale, plot_y_offset } = plotCtx;
 
+    // Only automatically placed labels are spread apart; manually placed labels stay where they were put
+    const autoLabels = labelsToDraw.filter(l => !hasManualLabelPlacement(l.refSetting));
+
     // Sort by y position ascending
-    labelsToDraw.sort((a, b) => a.y - b.y);
+    autoLabels.sort((a, b) => a.y - b.y);
 
     const minDist = 14 * scale;
     let iterations = 10;
     while (iterations-- > 0) {
         let changed = false;
-        for (let j = 0; j < labelsToDraw.length - 1; j++) {
-            const a = labelsToDraw[j];
-            const b = labelsToDraw[j + 1];
+        for (let j = 0; j < autoLabels.length - 1; j++) {
+            const a = autoLabels[j];
+            const b = autoLabels[j + 1];
             const overlap = minDist - (b.y - a.y);
             if (overlap > 0) {
                 a.y -= overlap / 2;
@@ -2750,7 +2787,7 @@ function resolveLabelOverlaps(labelsToDraw, plotCtx) {
                 changed = true;
             }
         }
-        labelsToDraw.forEach(l => {
+        autoLabels.forEach(l => {
             l.y = Math.max(plot_y_offset + 10, Math.min(plot_y_offset + ih + 10, l.y));
         });
         if (!changed) break;
@@ -2758,16 +2795,27 @@ function resolveLabelOverlaps(labelsToDraw, plotCtx) {
 
     // Render the labels at their adjusted positions
     labelsToDraw.forEach(l => {
+        const foWidth = 200 * scale; // Generous width
+        const { foX, foY } = applyLabelPlacement(
+            l.refSetting,
+            l.lastPoint[0] + 5,
+            l.y - 14 * scale, // Vertically center based on font size
+            foWidth,
+            20 * scale,
+            plotCtx
+        );
+
         const fo = svg.append('foreignObject')
-            .attr('x', l.lastPoint[0] + 5)
-            .attr('y', l.y - 14 * scale) // Vertically center based on font size
-            .attr('width', 200 * scale) // Generous width
+            .attr('x', foX)
+            .attr('y', foY)
+            .attr('width', foWidth)
             .attr('height', 30 * scale)
             .style('overflow', 'visible');
 
         const refDiv = fo.append('xhtml:div')
             .style('font-size', `${.875 * scale}rem`)
-            .style('color', 'gray');
+            .style('color', 'gray')
+            .style('text-align', l.refSetting.at ? 'center' : null);
         const refText = l.refSetting.text;
         if (mathjaxCache.has(refText)) {
             refDiv.html(mathjaxCache.get(refText));
@@ -2783,7 +2831,11 @@ function drawActiveLabel(solidData, dottedData, plotCtx) {
     const { svg, plotConfig, state, scale, ih, iw, plot_x_offset, plot_y_offset } = plotCtx;
     if (!plotConfig.activeLabel) return;
 
-    let activeText = plotConfig.activeLabel;
+    // activeLabel is either a text string or { text, offset, at }
+    const labelDef = typeof plotConfig.activeLabel === 'object' ? plotConfig.activeLabel : { text: plotConfig.activeLabel };
+    if (!labelDef.text) return;
+
+    let activeText = labelDef.text;
     activeText = activeText.replace(/\{([^}]+)\}/g, (_, key) => {
         const val = state[key];
         if (typeof val === 'number') {
@@ -2814,12 +2866,14 @@ function drawActiveLabel(solidData, dottedData, plotCtx) {
 
         const centerY = anchorPoint[1] - verticalOffset;
 
-        const foX = anchorPoint[0] - foWidth / 2;
+        let foX = anchorPoint[0] - foWidth / 2;
         let foY = centerY - foHeight / 2;
 
         const minYBound = plot_y_offset;
         const maxYBound = plot_y_offset + ih - foHeight;
         foY = Math.max(minYBound, Math.min(maxYBound, foY));
+
+        ({ foX, foY } = applyLabelPlacement(labelDef, foX, foY, foWidth, foHeight, plotCtx));
 
         const fo = svg.append('foreignObject')
             .attr('x', foX)

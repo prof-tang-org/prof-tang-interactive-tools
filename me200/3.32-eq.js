@@ -138,7 +138,10 @@ const pageData = {
                     "yMin": 0,
                     "yMax": 3,
                     "yTickInterval": 0.5,
-                    "activeLabel": "$T = {T}$ K",
+                    "activeLabel": {
+                        "text": "$T = {T}$ K",
+                        "offset": { "x": 0, "y": 8 }
+                    },
                     "reference": [
                         { "T": 300, "text": "$T = 300$ K" },
                         { "T": 1000, "text": "$T = 1000$ K" }

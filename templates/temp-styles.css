@@ -292,6 +292,10 @@ svg {
   margin: 0.5rem 0;
 }
 
+#controls .note {
+  font-size: 0.8125rem;
+}
+
 .note ul {
   margin-top: 0.25rem;
   padding-left: 1.25rem;
