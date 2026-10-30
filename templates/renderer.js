@@ -1321,6 +1321,7 @@ async function fetchPythonScript(src) {
  * Scan pageData.inputOutput for pythonScript, load Pyodide runtime and the script,
  * and register the calculation function.
  * Supports { "path": "...", "function": "..." } object or string path.
+ * The object form may also specify Pyodide package names in "packages".
  * @param {Object} pageData
  * @returns {Promise<void>}
  */
@@ -1343,7 +1344,10 @@ async function ensurePythonEngine(pageData) {
 
     if (!scriptSrc) return;
 
-    const cacheKey = `${scriptSrc}::${specifiedFunc || ''}`;
+    const packages = Array.isArray(pyScriptCfg.packages)
+        ? pyScriptCfg.packages.filter(pkg => typeof pkg === 'string' && pkg.length > 0)
+        : [];
+    const cacheKey = `${scriptSrc}::${specifiedFunc || ''}::${packages.join(',')}`;
     if (_pythonEnginePromise && _pythonCalculationScriptName === cacheKey) {
         return _pythonEnginePromise;
     }
@@ -1351,6 +1355,9 @@ async function ensurePythonEngine(pageData) {
     _pythonEnginePromise = (async () => {
         try {
             const pyodide = await getPyodideInstance();
+            if (packages.length > 0) {
+                await pyodide.loadPackage(packages);
+            }
             const { text: pyCode } = await fetchPythonScript(scriptSrc);
 
             // Execute script in Pyodide
