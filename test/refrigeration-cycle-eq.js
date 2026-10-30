@@ -83,8 +83,8 @@ const pageData = {
         // Only keys listed in outputs below get visible output cards; plot-only
         // lists such as ts_liquid and ts_cycle do not need output entries.
         "pythonScript": {
-            "path": "../test/refrigeration-cycle-calc.py",
-            // "path": "../test/refrigeration-cycle-calc-no-cache.py",
+            // "path": "../test/refrigeration-cycle-calc.py",
+            "path": "../test/refrigeration-cycle-calc-no-cache.py",
             "function": "calculate_cycle"
         },
         "inputs": [
@@ -197,6 +197,7 @@ const pageData = {
                     "yMin": -10,
                     "yMax": 70,
                     "yTickInterval": 20,
+                    // "aspectRatio": 2.2,
                     // Series are layers on these SAME axes, drawn in array order:
                     // liquid curve, vapor curve, then cycle on top of both.
                     // With series, coordinates come from points rather than an
@@ -376,7 +377,7 @@ const pageData = {
                     "yMin": -10,
                     "yMax": 70,
                     "yTickInterval": 20,
-                    "aspectRatio": 2.2,
+                    // "aspectRatio": 2.2,
                     "series": [
                         {
                             "points": "th_liquid",
