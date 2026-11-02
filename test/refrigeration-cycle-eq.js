@@ -17,56 +17,56 @@ const pageData = {
         {
             "type": "assumptions",
             "content": [
-                "Steady-state operation of an ideal vapor-compression refrigeration cycle",
-                "Isentropic compression in the compressor (1 → 2)",
-                "Constant pressure heat rejection in condenser and heat addition in evaporator",
-                "Isenthalpic throttling expansion across the expansion valve (3 → 4)",
-                "Saturated vapor exits the evaporator (state 1) and saturated liquid exits the condenser (state 3)"
+                "Steady-state operation of an ideal vapor-compression refrigeration cycle"
             ]
         },
         {
             "type": "equations",
             "content": [
-                "q_{\\text{in}} = h_1 - h_4",
-                "w_{\\text{in}} = h_2 - h_1",
-                "q_{\\text{out}} = h_2 - h_3",
-                "\\text{COP}_R = \\frac{q_{\\text{in}}}{w_{\\text{in}}} = \\frac{h_1 - h_4}{h_2 - h_1}"
+                "q_{\\text{in}} = \\frac{\\dot{Q}_{\\text{in}}}{\\dot{m}} = h_1 - h_4",
+                "q_{\\text{out}} = \\frac{\\dot{Q}_{\\text{out}}}{\\dot{m}} = h_2 - h_3",
+                "w_{\\text{in}} = \\frac{\\dot{W}_{\\text{in}}}{\\dot{m}} = h_2 - h_1",
+                "\\text{COP}_R = \\frac{\\dot{Q}_{\\text{in}}}{\\dot{W}_{\\text{in}}} = \\frac{\\dot{Q}_{\\text{in}}/\\dot{m}}{\\dot{W}_{\\text{in}}/\\dot{m}} = \\frac{h_1 - h_4}{h_2 - h_1}"
             ]
         },
         {
             "type": "symbols",
             "content": [
                 {
-                    "symbol": "$T$",
-                    "definition": "temperature"
-                },
-                {
-                    "symbol": "$P$",
-                    "definition": "pressure"
-                },
-                {
                     "symbol": "$h$",
                     "definition": "specific enthalpy"
                 },
                 {
-                    "symbol": "$s$",
-                    "definition": "specific entropy"
+                    "symbol": "$\\dot{m}$",
+                    "definition": "mass flow rate"
                 },
                 {
-                    "symbol": "$q_{\\text{in}}$",
+                    "symbol": "$\\dot{Q}_{\\text{in}}$",
                     "definition": "refrigeration cooling capacity"
                 },
                 {
-                    "symbol": "$w_{\\text{in}}$",
-                    "definition": "compressor work input"
+                    "symbol": "$q_{\\text{in}}$",
+                    "definition": "specific refrigeration cooling capacity"
                 },
                 {
-                    "symbol": "$q_{\\text{out}}$",
+                    "symbol": "$\\dot{Q}_{\\text{out}}$",
                     "definition": "condenser heat rejection"
                 },
                 {
+                    "symbol": "$q_{\\text{out}}$",
+                    "definition": "specific condenser heat rejection"
+                },
+                {
+                    "symbol": "$\\dot{W}_{\\text{in}}$",
+                    "definition": "compressor work input"
+                },
+                {
+                    "symbol": "$w_{\\text{in}}$",
+                    "definition": "specific compressor work input"
+                },
+                {
                     "symbol": "$\\text{COP}_R$",
-                    "definition": "coefficient of performance"
+                    "definition": "refrigeration coefficient of performance"
                 }
             ]
         }
@@ -104,14 +104,6 @@ const pageData = {
                     {
                         "text": "Propane (R290)",
                         "value": "Propane"
-                    },
-                    {
-                        "text": "Ammonia (R717)",
-                        "value": "Ammonia"
-                    },
-                    {
-                        "text": "Carbon Dioxide (R744)",
-                        "value": "CO2"
                     }
                 ],
                 "initialChoiceIndex": 0
@@ -123,37 +115,37 @@ const pageData = {
                 "min": -25,
                 "max": 20,
                 "initialValue": 10,
-                "step": 1
+                "step": 0.5
             },
             {
                 "type": "slider",
                 "id": "T_cond",
                 "text": "Condenser Temp, $T_3 = T_{\\text{cond}}$ [°C]",
-                "min": 25,
-                "max": 65,
-                "initialValue": 40,
-                "step": 1
+                "min": 30,
+                "max": 55,
+                "initialValue": 45,
+                "step": 0.5
             }
         ],
         "outputs": [
             {
-                "id": "cop",
-                "text": "COP, $\\text{COP}_R$ [-]",
+                "id": "q_in",
+                "text": "Specific Refrigeration Cooling Capacity, $q_{\\text{in}}$ [kJ/kg]",
                 "decimals": 2
             },
             {
-                "id": "q_in",
-                "text": "Cooling Capacity, $q_{\\text{in}}$ [kJ/kg]",
+                "id": "q_out",
+                "text": "Specific Condenser Heat Rejection, $q_{\\text{out}}$ [kJ/kg]",
                 "decimals": 2
             },
             {
                 "id": "w_in",
-                "text": "Compressor Work, $w_{\\text{in}}$ [kJ/kg]",
+                "text": "Specific Compressor Work, $w_{\\text{in}}$ [kJ/kg]",
                 "decimals": 2
             },
             {
-                "id": "p_ratio",
-                "text": "Pressure Ratio, $P_2 / P_1$ [-]",
+                "id": "cop",
+                "text": "Ref. Coefficient of Performance, $\\text{COP}_R$ [-]",
                 "decimals": 2
             },
             {
@@ -167,10 +159,15 @@ const pageData = {
                 "decimals": 1
             },
             {
-                "id": "T2",
-                "text": "Compressor Exit Temp, $T_2$ [°C]",
-                "decimals": 1
+                "id": "p_ratio",
+                "text": "Pressure Ratio, $P_2 / P_1$ [-]",
+                "decimals": 2
             },
+            // {
+            //     "id": "T2",
+            //     "text": "Compressor Exit Temp, $T_2$ [°C]",
+            //     "decimals": 1
+            // },
             {
                 "id": "x4",
                 "text": "Evaporator Inlet Quality, $x_4$ [-]",
