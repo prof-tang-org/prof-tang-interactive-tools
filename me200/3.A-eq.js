@@ -91,6 +91,7 @@ const pageData = {
         "settings": [
             {
                 "showWhen": "spec == 'p2'",
+                "mode": "standard",
                 "x": "p2",
                 "y": "V2",
                 "xLabel": "$p_2$ [kPa]",
@@ -100,10 +101,18 @@ const pageData = {
                 "xTickInterval": 100,
                 "yMin": 0,
                 "yMax": [1, 10],
-                "yTickInterval": [0.2, 2]
+                "yTickInterval": [0.2, 2],
+                "points": [["p1", "V1"], ["p2", "V2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top right", "color": "#111" },
+                    { "text": "State 2", "location": "top right", "color": "#0075ff" }
+                ]
             },
             {
                 "showWhen": "spec == 'V2'",
+                "mode": "standard",
                 "x": "V2",
                 "y": "p2",
                 "xLabel": "$V_2$ [m³]",
@@ -113,7 +122,14 @@ const pageData = {
                 "xTickInterval": 0.1,
                 "yMin": 0,
                 "yMax": [1000, 10000],
-                "yTickInterval": [200, 2000]
+                "yTickInterval": [200, 2000],
+                "points": [["V1", "p1"], ["V2", "p2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top right", "color": "#111" },
+                    { "text": "State 2", "location": "top right", "color": "#0075ff" }
+                ]
             }
         ],
         "text": "The curve shows the calculated final-state variable vs the specified one for the current initial state. **Drag the marked point** or use the sliders above to change the final state."

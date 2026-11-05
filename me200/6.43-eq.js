@@ -114,9 +114,13 @@ const pageData = {
                 "yMin": 0,
                 "yMax": "T1 * pow(1000 / p1, (k - 1) / k) < 500 ? 500 : (T1 * pow(1000 / p1, (k - 1) / k) < 1500 ? 1500 : 3000)",
                 "yTickInterval": "T1 * pow(1000 / p1, (k - 1) / k) < 500 ? 100 : 500",
-                "points": [["p1", "T1"]],
-                "pointColors": ["#111"],
-                "pointLabels": [{ "text": "State 1", "location": "top right", "color": "#111" }]
+                "points": [["p1", "T1"], ["p2", "T2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top right", "color": "#111" },
+                    { "text": "State 2", "location": "bottom right", "color": "#0075ff" }
+                ]
             },
             {
                 "showWhen": "spec == 'T2'",
@@ -131,9 +135,13 @@ const pageData = {
                 "yMin": 0,
                 "yMax": "p1 * pow(1000 / T1, k / (k - 1)) < 500 ? 500 : (p1 * pow(1000 / T1, k / (k - 1)) < 5000 ? 5000 : (p1 * pow(1000 / T1, k / (k - 1)) < 50000 ? 50000 : 150000))",
                 "yTickInterval": "p1 * pow(1000 / T1, k / (k - 1)) < 500 ? 100 : (p1 * pow(1000 / T1, k / (k - 1)) < 5000 ? 1000 : (p1 * pow(1000 / T1, k / (k - 1)) < 50000 ? 10000 : 30000))",
-                "points": [["T1", "p1"]],
-                "pointColors": ["#111"],
-                "pointLabels": [{ "text": "State 1", "location": "top right", "color": "#111" }]
+                "points": [["T1", "p1"], ["T2", "p2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top right", "color": "#111" },
+                    { "text": "State 2", "location": "bottom right", "color": "#0075ff" }
+                ]
             }
         ],
         "text": "The curve shows the calculated final-state variable vs the specified one for the current initial state and $k$; the black dot marks state 1. **Drag the marked point** or use the sliders above to change the final state."

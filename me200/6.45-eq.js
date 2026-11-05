@@ -114,9 +114,13 @@ const pageData = {
                 "yMin": 0,
                 "yMax": "v1 * pow(p1 / 100, 1 / k) < 0.8 ? 0.8 : 6",
                 "yTickInterval": "v1 * pow(p1 / 100, 1 / k) < 0.8 ? 0.2 : 1",
-                "points": [["p1", "v1"]],
-                "pointColors": ["#111"],
-                "pointLabels": [{ "text": "State 1", "location": "top right", "color": "#111" }]
+                "points": [["p1", "v1"], ["p2", "v2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top right", "color": "#111" },
+                    { "text": "State 2", "location": "top right", "color": "#0075ff" }
+                ]
             },
             {
                 "showWhen": "spec == 'v2'",
@@ -131,9 +135,13 @@ const pageData = {
                 "yMin": 0,
                 "yMax": "p1 * pow(v1 / 0.1, k) < 1000 ? 1000 : (p1 * pow(v1 / 0.1, k) < 10000 ? 10000 : 50000)",
                 "yTickInterval": "p1 * pow(v1 / 0.1, k) < 1000 ? 200 : (p1 * pow(v1 / 0.1, k) < 10000 ? 2000 : 10000)",
-                "points": [["v1", "p1"]],
-                "pointColors": ["#111"],
-                "pointLabels": [{ "text": "State 1", "location": "top right", "color": "#111" }]
+                "points": [["v1", "p1"], ["v2", "p2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top right", "color": "#111" },
+                    { "text": "State 2", "location": "top right", "color": "#0075ff" }
+                ]
             }
         ],
         "text": "The curve shows the calculated final-state variable vs the specified one for the current initial state and $k$; the black dot marks state 1. **Drag the marked point** or use the sliders above to change the final state."

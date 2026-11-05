@@ -91,6 +91,7 @@ const pageData = {
         "settings": [
             {
                 "showWhen": "spec == 'p2'",
+                "mode": "standard",
                 "x": "p2",
                 "y": "T2",
                 "xLabel": "$p_2$ [kPa]",
@@ -100,10 +101,18 @@ const pageData = {
                 "xTickInterval": 100,
                 "yMin": 0,
                 "yMax": "T1 * 1000 / p1 < 2000 ? 2000 : 10000",
-                "yTickInterval": "T1 * 1000 / p1 < 2000 ? 250 : 1000"
+                "yTickInterval": "T1 * 1000 / p1 < 2000 ? 250 : 1000",
+                "points": [["p1", "T1"], ["p2", "T2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top left", "color": "#111" },
+                    { "text": "State 2", "location": "bottom right", "color": "#0075ff" }
+                ]
             },
             {
                 "showWhen": "spec == 'T2'",
+                "mode": "standard",
                 "x": "T2",
                 "y": "p2",
                 "xLabel": "$T_2$ [K]",
@@ -113,7 +122,14 @@ const pageData = {
                 "xTickInterval": 100,
                 "yMin": 0,
                 "yMax": "p1 * 1000 / T1 < 500 ? 500 : 3500",
-                "yTickInterval": "p1 * 1000 / T1 < 500 ? 100 : 500"
+                "yTickInterval": "p1 * 1000 / T1 < 500 ? 100 : 500",
+                "points": [["T1", "p1"], ["T2", "p2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top left", "color": "#111" },
+                    { "text": "State 2", "location": "bottom right", "color": "#0075ff" }
+                ]
             }
         ],
         "text": "The line shows the calculated final-state variable vs the specified one for the current initial state. **Drag the marked point** or use the sliders above to change the final state."

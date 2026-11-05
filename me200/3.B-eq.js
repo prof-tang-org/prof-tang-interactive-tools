@@ -91,6 +91,7 @@ const pageData = {
         "settings": [
             {
                 "showWhen": "spec == 'V2'",
+                "mode": "standard",
                 "x": "V2",
                 "y": "T2",
                 "xLabel": "$V_2$ [m³]",
@@ -100,10 +101,18 @@ const pageData = {
                 "xTickInterval": 0.1,
                 "yMin": 0,
                 "yMax": "T1 * 1 / V1 < 2000 ? 2000 : 10000",
-                "yTickInterval": "T1 * 1 / V1 < 2000 ? 250 : 1000"
+                "yTickInterval": "T1 * 1 / V1 < 2000 ? 250 : 1000",
+                "points": [["V1", "T1"], ["V2", "T2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top left", "color": "#111" },
+                    { "text": "State 2", "location": "bottom right", "color": "#0075ff" }
+                ]
             },
             {
                 "showWhen": "spec == 'T2'",
+                "mode": "standard",
                 "x": "T2",
                 "y": "V2",
                 "xLabel": "$T_2$ [K]",
@@ -113,7 +122,14 @@ const pageData = {
                 "xTickInterval": 100,
                 "yMin": 0,
                 "yMax": "V1 * 1000 / T1 < 0.5 ? 0.5 : 3.5",
-                "yTickInterval": "V1 * 1000 / T1 < 0.5 ? 0.1 : 0.5"
+                "yTickInterval": "V1 * 1000 / T1 < 0.5 ? 0.1 : 0.5",
+                "points": [["T1", "V1"], ["T2", "V2"]],
+                "showLines": false,
+                "pointColors": ["#111", "transparent"],
+                "pointLabels": [
+                    { "text": "State 1", "location": "top left", "color": "#111" },
+                    { "text": "State 2", "location": "bottom right", "color": "#0075ff" }
+                ]
             }
         ],
         "text": "The line shows the calculated final-state variable vs the specified one for the current initial state. **Drag the marked point** or use the sliders above to change the final state."
