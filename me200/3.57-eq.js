@@ -191,7 +191,7 @@ const pageData = {
                     "yTickInterval": 50,
                     "activeLabel": {
                         "text": "$n = {n}$",
-                        "offset": { "x": 0, "y": -14 }
+                        "offset": { "x": 0, "y": -2 }
                     },
                     "reference": [
                         { "n": 0, "text": "$n = 0$" },
