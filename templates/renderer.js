@@ -2836,7 +2836,9 @@ function drawActiveLabel(solidData, dottedData, plotCtx) {
     if (!labelDef.text) return;
 
     let activeText = labelDef.text;
-    activeText = activeText.replace(/\{([^}]+)\}/g, (_, key) => {
+    activeText = activeText.replace(/\{([^}]+)\}/g, (match, key) => {
+        if (!Object.prototype.hasOwnProperty.call(state, key)) return match;
+
         const val = state[key];
         if (typeof val === 'number') {
             return Number.isInteger(val) ? val.toFixed(1) : parseFloat(val.toFixed(4)).toString();

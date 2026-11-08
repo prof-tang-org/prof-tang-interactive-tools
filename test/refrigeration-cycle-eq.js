@@ -83,8 +83,8 @@ const pageData = {
         // Only keys listed in outputs below get visible output cards; plot-only
         // lists such as ts_liquid and ts_cycle do not need output entries.
         "pythonScript": {
-            // "path": "../test/refrigeration-cycle-calc.py",
-            "path": "../test/refrigeration-cycle-calc-no-cache.py",
+            "path": "../test/refrigeration-cycle-calc.py",
+            // "path": "../test/refrigeration-cycle-calc-no-cache.py",
             "function": "calculate_cycle"
         },
         "inputs": [
@@ -102,7 +102,7 @@ const pageData = {
                         "value": "R1234yf"
                     },
                     {
-                        "text": "Propane (R290)",
+                        "text": "R290 (Propane)",
                         "value": "Propane"
                     }
                 ],
@@ -112,8 +112,8 @@ const pageData = {
                 "type": "slider",
                 "id": "T_evap",
                 "text": "Evaporator Temp, $T_1 = T_{\\text{evap}}$ [°C]",
-                "min": -25,
-                "max": 20,
+                "min": -20,
+                "max": 15,
                 "initialValue": 10,
                 "step": 0.5
             },
@@ -189,10 +189,10 @@ const pageData = {
                     "xLabel": "$s \\text{ [kJ/(kg·K)]}$",
                     "yLabel": "$T \\text{ [°C]}$",
                     "xMin": 0.8,
-                    "xMax": 2,
+                    "xMax": 2.6,
                     "xTickInterval": 0.2,
-                    "yMin": -10,
-                    "yMax": 70,
+                    "yMin": -40,
+                    "yMax": 80,
                     "yTickInterval": 20,
                     // "aspectRatio": 2.2,
                     // Series are layers on these SAME axes, drawn in array order:
@@ -258,29 +258,29 @@ const pageData = {
                                     "text": "$1$",
                                     "offset": [
                                         8,
-                                        6
+                                        0
                                     ]
                                 },
                                 {
                                     "text": "$2$",
                                     "offset": [
                                         8,
-                                        6
+                                        0
                                     ]
                                 },
                                 "",
                                 {
                                     "text": "$3$",
                                     "offset": [
-                                        -24,
-                                        6
+                                        -15,
+                                        0
                                     ]
                                 },
                                 {
                                     "text": "$4$",
                                     "offset": [
-                                        -24,
-                                        6
+                                        -15,
+                                        0
                                     ]
                                 },
                                 ""
@@ -293,9 +293,9 @@ const pageData = {
                     "y": "P",
                     "xLabel": "$h \\text{ [kJ/kg]}$",
                     "yLabel": "$p \\text{ [kPa]}$",
-                    "xMin": 150,
-                    "xMax": 500,
-                    "xTickInterval": 50,
+                    "xMin": 100,
+                    "xMax": 700,
+                    "xTickInterval": 100,
                     "yMin": 100,
                     "yMax": 3000,
                     "yLog": true,
@@ -331,29 +331,29 @@ const pageData = {
                                     "text": "$1$",
                                     "offset": [
                                         8,
-                                        6
+                                        0
                                     ]
                                 },
                                 {
                                     "text": "$2$",
                                     "offset": [
                                         8,
-                                        6
+                                        0
                                     ]
                                 },
                                 "",
                                 {
                                     "text": "$3$",
                                     "offset": [
-                                        -24,
-                                        6
+                                        -15,
+                                        0
                                     ]
                                 },
                                 {
                                     "text": "$4$",
                                     "offset": [
-                                        -24,
-                                        6
+                                        -15,
+                                        0
                                     ]
                                 },
                                 ""
@@ -368,11 +368,11 @@ const pageData = {
                     "y": "T",
                     "xLabel": "$h \\text{ [kJ/kg]}$",
                     "yLabel": "$T \\text{ [°C]}$",
-                    "xMin": 150,
-                    "xMax": 500,
-                    "xTickInterval": 50,
-                    "yMin": -10,
-                    "yMax": 70,
+                    "xMin": 100,
+                    "xMax": 700,
+                    "xTickInterval": 100,
+                    "yMin": -40,
+                    "yMax": 80,
                     "yTickInterval": 20,
                     // "aspectRatio": 2.2,
                     "series": [
@@ -407,29 +407,29 @@ const pageData = {
                                     "text": "$1$",
                                     "offset": [
                                         8,
-                                        6
+                                        0
                                     ]
                                 },
                                 {
                                     "text": "$2$",
                                     "offset": [
                                         8,
-                                        6
+                                        0
                                     ]
                                 },
                                 "",
                                 {
                                     "text": "$3$",
                                     "offset": [
-                                        -24,
-                                        6
+                                        -15,
+                                        0
                                     ]
                                 },
                                 {
                                     "text": "$4$",
                                     "offset": [
-                                        -24,
-                                        6
+                                        -15,
+                                        0
                                     ]
                                 },
                                 ""
@@ -437,9 +437,28 @@ const pageData = {
                         }
                     ]
                 },
-                {}
+                {
+                    "x": "T_evap",
+                    "y": "cop",
+                    "xLabel": "$T_{evap} \\text{ [°C]}$",
+                    "yLabel": "$COP_R \\text{ [-]}$",
+                    "xMin": -25,
+                    "xMax": 20,
+                    "xTickInterval": 5,
+                    "yMin": 0,
+                    "yMax": 20,
+                    "yTickInterval": 5,
+                    "activeLabel": 
+                        {"text": "$T_{cond} = {T_cond}$ °C",
+                        "offset": { "x": 40, "y": -5 },
+                        },
+                    "reference": [
+                        { "T_cond": 30, "text": "$T_{cond} = 30$ °C", "labelPosition": "below", "at": { "x": -10, "y": 8 } },
+                        { "T_cond": 55, "text": "$T_{cond} = 55$ °C", "labelPosition": "above", "at": { "x": -10, "y": 1.8 } }
+                    ]
+                }
             ],
         ],
-        "text": "Saturation curves and cycle states calculated in Python; each diagram composes styled series on shared axes."
+        "text": "All properties used in this simulation come from the CoolProp database."
     }
 };
