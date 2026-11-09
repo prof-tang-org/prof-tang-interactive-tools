@@ -345,7 +345,7 @@ Allows a topic configuration to delegate all or part of its mathematical/thermod
 * **`pythonScript`** (Object | String, optional): An object specifying the script path and target calculation function:
   ```json
   "pythonScript": {
-      "path": "../test/refrigeration-cycle-calc.py",
+      "path": "../test/IdealVCRC-calc.py",
       "function": "calculate_cycle"
   }
   ```

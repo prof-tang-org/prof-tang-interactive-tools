@@ -1,4 +1,4 @@
-"""Uncached reference version of refrigeration-cycle-calc.py.
+"""Uncached reference version of IdealVCRC-calc.py.
 
 Uses the same calculations and input/output interface, but recomputes saturation
 curves on every call. The interactive page continues to use the cached version.
@@ -122,7 +122,7 @@ def calculate_cycle(inputs):
 
     # ADAPTATION: everything below packages or adds outputs for the web page.
     # This replaces the reference's plt.plot/annotate/axis/label/show calls.
-    # Styling, labels, and axis settings now live in refrigeration-cycle-eq.js.
+    # Styling, labels, and axis settings now live in IdealVCRC.js.
     # Adapt the reference arrays to the renderer's list-of-points interface.
     # zip(s, T) pairs matching entries: (s[0], T[0]), (s[1], T[1]), etc.
     # map(list, ...) converts each pair from a tuple to a list, and the outer

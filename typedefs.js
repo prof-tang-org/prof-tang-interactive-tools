@@ -101,7 +101,7 @@
 
 /**
  * @typedef {Object} PythonScriptConfig
- * @property {string} path - Relative path to the Python script file (e.g. "../test/refrigeration-cycle-calc.py")
+ * @property {string} path - Relative path to the Python script file (e.g. "../test/IdealVCRC-calc.py")
  * @property {string} function - Name of function in the Python script to call (e.g. "calculate_cycle")
  */
 
