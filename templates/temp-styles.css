@@ -136,6 +136,22 @@ html {
   align-self: start;
 }
 
+/* Opt-in IO visibility. Keep the full page flow on smaller screens. */
+@media (min-width: 1024px) {
+  .keep-visible {
+    position: sticky;
+    top: 1rem;
+    z-index: 50;
+    align-self: start;
+  }
+
+  .keep-visible.card,
+  .keep-visible > .card {
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+  }
+}
+
 .card h1,
 .note h1 {
   margin: 0.625rem 0 0.375rem;

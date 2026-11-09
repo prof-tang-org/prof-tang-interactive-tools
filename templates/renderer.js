@@ -2416,13 +2416,13 @@ function injectPlots(state, pageData) {
             const ptGrayed = dottedMin < currentXVal && currentXVal < dottedMax;
             const shouldShowInteractivePoint = plotConfig.showPoint !== false && plotConfig.draggablePoint !== false && plotConfig.showDraggablePoint !== false && !plotConfig.hidePoint && !plotConfig.hideDraggablePoint;
 
-            if (shouldShowInteractivePoint && plotConfig.x && plotConfig.y && mode !== 'override' && currentXVal !== undefined && !isNaN(currentXVal) && currentYVal !== undefined && !isNaN(currentYVal)) {
+            if (shouldShowInteractivePoint && plotConfig.x && plotConfig.y && (mode !== 'override' || plotConfig.draggablePoint === true) && currentXVal !== undefined && !isNaN(currentXVal) && currentYVal !== undefined && !isNaN(currentYVal)) {
                 // Optional per-plot lock: when set, the point can't be dragged unless
                 // the x-variable's dropdown is on its 'custom' choice.
                 const dropdownElForLock = document.getElementById(`input_${plotConfig.x}_dropdown`);
                 const isLocked = !!plotConfig.lockDragUnlessCustom && dropdownElForLock && dropdownElForLock.value !== 'custom';
 
-                const dragpt = svg.append('circle').attr('class', 'dragpt')
+                if (plotConfig.showDragMarker !== false) svg.append('circle').attr('class', 'dragpt')
                     .attr('r', 6 * scale)
                     .attr('cx', x(currentXVal))
                     .attr('cy', y(currentYVal))
@@ -2439,16 +2439,21 @@ function injectPlots(state, pageData) {
                 const drag = d3.drag()
                     .filter(() => !isLocked)
                     .on('start drag', (event) => {
-                        const elPrimary = document.getElementById(`input_${plotConfig.x}`);
-                        const elNum = document.getElementById(`input_${plotConfig.x}_num`);
-                        const customEl = document.getElementById(`input_${plotConfig.x}_custom`);
-                        const elDropdown = document.getElementById(`input_${plotConfig.x}_dropdown`);
+                        const dragInput = plotConfig.dragInput || plotConfig.x;
+                        const elPrimary = document.getElementById(`input_${dragInput}`);
+                        const elNum = document.getElementById(`input_${dragInput}_num`);
+                        const customEl = document.getElementById(`input_${dragInput}_custom`);
+                        const elDropdown = document.getElementById(`input_${dragInput}_dropdown`);
 
                         let xMinValDrag = typeof plotConfig.xMin === 'string' ? evaluateFormula(plotConfig.xMin, state) : plotConfig.xMin;
                         let xMaxValDrag = typeof plotConfig.xMax === 'string' ? evaluateFormula(plotConfig.xMax, state) : plotConfig.xMax;
                         let newX = Math.max(xMinValDrag, Math.min(xMaxValDrag, x.invert(event.x)));
+                        if (plotConfig.dragValue) {
+                            newX = evaluateFormula(plotConfig.dragValue, { ...state, dragX: newX });
+                        }
+                        if (!Number.isFinite(newX)) return;
 
-                        const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === plotConfig.x);
+                        const inputDef = pageData.inputOutput.inputs.find(inp => inp.id === dragInput);
                         let dropdownChoiceVal = null;
 
                         if (inputDef && (inputDef.type === 'dropdown' || inputDef.type === 'slider-dropdown')) {
@@ -2491,8 +2496,8 @@ function injectPlots(state, pageData) {
                             }
                         }
 
-                        let absoluteMin = xMinValDrag;
-                        let absoluteMax = xMaxValDrag;
+                        let absoluteMin = plotConfig.dragValue ? -Infinity : xMinValDrag;
+                        let absoluteMax = plotConfig.dragValue ? Infinity : xMaxValDrag;
 
                         if (inputDef) {
                             const inpMinVal = typeof inputDef.min === 'string' ? evaluateFormula(inputDef.min, state) : inputDef.min;
@@ -2528,7 +2533,7 @@ function injectPlots(state, pageData) {
                         }
 
                         if (window.forceCompute) {
-                            window.forceCompute(plotConfig.x);
+                            window.forceCompute(dragInput);
                         }
                     });
 
@@ -2992,7 +2997,7 @@ function drawPlotPoints(plotCtx) {
             .attr('cy', p.py)
             .attr('r', (plotConfig.pointRadius ?? 5) * scale)
             .style('fill', ptColor)
-            .style('stroke', '#ffffff')
+            .style('stroke', plotConfig.pointStroke ?? '#ffffff')
             .style('stroke-width', `${1.5 * scale}px`)
             .style('cursor', 'default');
     });
@@ -3114,6 +3119,17 @@ function drawPlotPoints(plotCtx) {
         if (align === 'middle') foY -= foHeight / 2;
         else if (align === 'bottom') foY -= foHeight;
 
+        if (plotConfig.keepLabelsInside) {
+            const { plot_x_offset, plot_y_offset, iw, ih } = plotCtx;
+            const pad = 4 * scale;
+            // Align the text itself to the boundary, rather than leaving it
+            // centered in a fixed-width box that has been pushed inward.
+            if (foX < plot_x_offset + pad) textAnchor = 'left';
+            else if (foX > plot_x_offset + iw - foWidth - pad) textAnchor = 'right';
+            foX = Math.max(plot_x_offset + pad, Math.min(foX, plot_x_offset + iw - foWidth - pad));
+            foY = Math.max(plot_y_offset + pad, Math.min(foY, plot_y_offset + ih - foHeight - pad));
+        }
+
         const fo = svg.append('foreignObject')
             .attr('x', foX)
             .attr('y', foY)
@@ -3193,6 +3209,16 @@ function renderInputOutput(inputOutput) {
     renderGroup(inputOutput.fixedInputs, 'fixed-inputs', inputOutput.inputColumns);
     renderControls(inputOutput.inputs);
     renderGroup(inputOutput.outputs, 'outputs', inputOutput.outputColumns);
+
+    const ioCard = document.getElementById('controls')?.closest('.card');
+    if (ioCard) {
+        // Wide templates put IO in a section of its own. Stick that section so
+        // the card can remain visible throughout the following plots.
+        const parent = ioCard.parentElement;
+        const stickyHost = parent?.tagName === 'SECTION' && parent.children.length === 1
+            ? parent : ioCard;
+        stickyHost.classList.toggle('keep-visible', inputOutput.keepVisible === true);
+    }
 
     if (inputOutput.note) {
         const noteText = typeof inputOutput.note === 'string' ? inputOutput.note : inputOutput.note.text;

@@ -1,15 +1,66 @@
+// Sample formula-valued points; the renderer evaluates them against live inputs.
+function panelOffsetPlot(variable, label, min, max) {
+    const ratio = variable === 'd_over_b';
+    const points = (vertical) => Array.from({length: 101}, (_, i) => {
+        const fraction = i / 100;
+        const x = ratio ? `(min(d_over_b <= 6 ? 6 : 60, 12 / b) * ${fraction})` : min + (max - min) * fraction;
+        const depth = variable === 'D' ? x : 'D';
+        const angle = variable === 'theta' ? x : 'theta';
+        const apex = ratio ? `(${x} * b)` : 'd';
+        const yc = `(${depth} / sin(${angle} * PI / 180) - a / 3)`;
+        return [x, vertical ? `a * a / (18 * ${yc})` : `a * (b - 2 * ${apex}) / (36 * ${yc})`];
+    });
+    const curve = (vertical) => ({
+        points: points(vertical), showPoints: false,
+        pointsColor: vertical ? '#ef4444' : '#0075ff'
+    });
+    const marker = (vertical) => ({
+        points: [[variable, vertical ? 'dy' : 'dx']],
+        pointsColor: vertical ? '#ef4444' : '#0075ff',
+        pointRadius: 6,
+        pointStroke: 'none',
+        keepLabelsInside: true,
+        pointLabels: [{text: vertical ? '$y_R-y_c$' : '$x_R-x_c$', location: vertical ? 'top' : 'bottom'}]
+    });
+    return {
+        x: variable, y: 'dx', xLabel: label, yLabel: '$\\text{Offsets [m]}$',
+        draggablePoint: true,
+        showDragMarker: false,
+        ...(ratio ? {dragInput: 'd', dragValue: 'dragX * b'} : {}),
+        xMin: min, xMax: ratio ? 'd_over_b <= 6 ? 6 : 60' : max,
+        yMin: -1.2, yMax: 1.2, yTickInterval: 0.4,
+        series: [curve(false), curve(true), marker(false), marker(true)]
+    };
+}
+
 /** @type {PageData} */
 const pageData = {
     "title": "Hydrostatic Force on a Plane Triangular Surface",
     "layout": {
         "grid": [
             {
-                "desktop": "1.2fr 0.8fr",
+                "desktop": "1fr 1fr",
+                "mobile": "100%"
+            },
+            {
+                "desktop": "1fr 1fr",
                 "mobile": "100%"
             }
         ]
     },
     "equationElements": [
+        {
+            "type": "header",
+            "text": "Problem Statement"
+        },
+        {
+            "type": "note",
+            "text": "An open tank is filled with oil of density $\\rho$. A triangular panel on the inclined plane is submerged in the oil."
+        },
+        {
+            "type": "note",
+            "text": "Find (a) the magnitude of the hydrostatic force and (b) its point of action (center of pressure) on the triangular panel."
+        },
         {
             "type": "assumptions",
             "content": [
@@ -32,29 +83,75 @@ const pageData = {
         {
             "type": "symbols",
             "content": [
-                { "symbol": "$F_R$", "definition": "hydrostatic force magnitude" },
-                { "symbol": "$\\rho$", "definition": "fluid density" },
-                { "symbol": "$g$", "definition": "acceleration of gravity" },
-                { "symbol": "$D$", "definition": "liquid depth" },
-                { "symbol": "$\\theta$", "definition": "inclination angle" },
-                { "symbol": "$a$", "definition": "triangle height" },
-                { "symbol": "$b$", "definition": "base width" },
-                { "symbol": "$d$", "definition": "horizontal offset of apex" },
-                { "symbol": "$y_c$", "definition": "centroid position along inclined plane" },
-                { "symbol": "$h_c$", "definition": "vertical depth of centroid" },
-                { "symbol": "$A$", "definition": "panel surface area" },
-                { "symbol": "$x_c$", "definition": "horizontal centroid position" },
-                { "symbol": "$I_{x_c}$", "definition": "area moment of inertia about centroidal axis" },
-                { "symbol": "$I_{xy_c}$", "definition": "product of inertia about centroidal axes" },
-                { "symbol": "$x_R, y_R$", "definition": "center of pressure coordinates" }
+                {
+                    "symbol": "$F_R$",
+                    "definition": "hydrostatic force magnitude"
+                },
+                {
+                    "symbol": "$\\rho$",
+                    "definition": "fluid density"
+                },
+                {
+                    "symbol": "$g$",
+                    "definition": "acceleration of gravity"
+                },
+                {
+                    "symbol": "$D$",
+                    "definition": "liquid depth"
+                },
+                {
+                    "symbol": "$\\theta$",
+                    "definition": "inclination angle"
+                },
+                {
+                    "symbol": "$a$",
+                    "definition": "triangle height"
+                },
+                {
+                    "symbol": "$b$",
+                    "definition": "base width"
+                },
+                {
+                    "symbol": "$d$",
+                    "definition": "horizontal offset of apex"
+                },
+                {
+                    "symbol": "$y_c$",
+                    "definition": "centroid position along inclined plane"
+                },
+                {
+                    "symbol": "$h_c$",
+                    "definition": "vertical depth of centroid"
+                },
+                {
+                    "symbol": "$A$",
+                    "definition": "panel surface area"
+                },
+                {
+                    "symbol": "$x_c$",
+                    "definition": "horizontal centroid position"
+                },
+                {
+                    "symbol": "$I_{x_c}$",
+                    "definition": "area moment of inertia about centroidal axis"
+                },
+                {
+                    "symbol": "$I_{xy_c}$",
+                    "definition": "product of inertia about centroidal axes"
+                },
+                {
+                    "symbol": "$x_R, y_R$",
+                    "definition": "center of pressure coordinates"
+                }
             ]
         }
     ],
     "schematic": {
-        "src": "../assets/me310/2.7.png",
+        "src": "../assets/me310/2.7.1.png",
         "alt": "Schematic for triangular panel problem"
     },
     "inputOutput": {
+        "keepVisible": true,
         "inputs": [
             {
                 "type": "slider",
@@ -62,25 +159,25 @@ const pageData = {
                 "text": "Fluid Density, $\\rho$ [kg/m³]",
                 "min": 700,
                 "max": 1000,
-                "initialValue": 900.0,
+                "initialValue": 900,
                 "step": 0.1
             },
             {
                 "type": "slider",
                 "id": "D",
-                "text": "Depth, $D$ [m]",
+                "text": "$D$ [m]",
                 "min": 10.5,
-                "max": 20.0,
-                "initialValue": 15.0,
+                "max": 20,
+                "initialValue": 15,
                 "step": 0.1
             },
             {
                 "type": "slider",
                 "id": "theta",
-                "text": "Inclination Angle, $\\theta$ [deg]",
+                "text": "Inclination $\\theta$ [deg]",
                 "min": 30,
                 "max": 60,
-                "initialValue": 60.0,
+                "initialValue": 60,
                 "step": 0.1
             },
             {
@@ -88,8 +185,8 @@ const pageData = {
                 "id": "a",
                 "text": "Triangle Height, $a$ [m]",
                 "min": 0.2,
-                "max": 12.0,
-                "initialValue": 10.0,
+                "max": 12,
+                "initialValue": 10,
                 "step": 0.1
             },
             {
@@ -97,17 +194,17 @@ const pageData = {
                 "id": "b",
                 "text": "Base Width, $b$ [m]",
                 "min": 0.2,
-                "max": 12.0,
-                "initialValue": 12.0,
+                "max": 12,
+                "initialValue": 12,
                 "step": 0.1
             },
             {
                 "type": "slider",
                 "id": "d",
                 "text": "Apex Offset, $d$ [m]",
-                "min": 0.0,
-                "max": 12.0,
-                "initialValue": 8.0,
+                "min": 0,
+                "max": 12,
+                "initialValue": 8,
                 "step": 0.1
             }
         ],
@@ -135,7 +232,7 @@ const pageData = {
             },
             {
                 "id": "FR_kN",
-                "text": "Hydrostatic Force, $F_R$ [kN]",
+                "text": "Hydrostatic $F_R$ [kN]",
                 "type": "calculation",
                 "value": "(rho * 9.81 * hc * A) / 1000",
                 "decimals": 1
@@ -200,7 +297,7 @@ const pageData = {
         "outputColumns": 3
     },
     "plots": {
-        "aspectRatio": 1.8,
+        "aspectRatio": 2.75,
         "customScripts": [
             "../assets/js/plots/triangular-panel.js"
         ],
@@ -212,71 +309,89 @@ const pageData = {
                     "mode": "override",
                     "x": "d",
                     "y": "a",
-                    "xLabel": "",
-                    "yLabel": ""
-                },
-                {
-                    "x": "D",
-                    "y": "FR_kN",
-                    "xLabel": "Depth, $D \\text{ [m]}$",
-                    "yLabel": "Force, $F_R \\text{ [kN]}$",
-                    "xMin": 10.5,
-                    "xMax": 20.0,
-                    "yMin": 0
+                    "xLabel": "$x \\text{ [m]}$",
+                    "yLabel": "$y \\text{ [m]}$",
+                    "xMin": 0,
+                    "xMax": 14,
+                    "yMin": 0,
+                    "yMax": 14,
+                    "xTickInterval": 2,
+                    "yTickInterval": 2,
+                    "aspectRatio": 2.75
                 }
             ],
             [
                 {
-                    "customScript": "../assets/js/plots/triangular-panel.js",
-                    "customRender": "cpVsDepth",
-                    "mode": "override",
                     "x": "D",
-                    "y": "dx",
-                    "xLabel": "Depth, $D \\text{ [m]}$",
-                    "yLabel": "Offset \\text{ [m]}"
+                    "y": "FR_kN",
+                    "xLabel": "$D \\text{ [m]}$",
+                    "yLabel": "$F_R \\text{ [kN]}$",
+                    "xMin": 10.5,
+                    "xMax": 20,
+                    "yMin": 0,
+                    "yMax": "((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 5 ? 5 : (((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 50 ? 50 : (((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 500 ? 500 : (((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 5000 ? 5000 : 15000)))",
+                    "yTickInterval": "((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 5 ? 1 : (((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 50 ? 10 : (((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 500 ? 100 : (((rho * 9.81 * (20.0 - (a / 3) * sin(theta * PI / 180)) * (0.5 * a * b)) / 1000) <= 5000 ? 1000 : 3000)))"
                 },
+                panelOffsetPlot("D", "$D \\text{ [m]}$", 10.5, 20)
+            ],
+            [
                 {
                     "x": "theta",
                     "y": "FR_kN",
-                    "xLabel": "Angle, $\\theta \\text{ [deg]}$",
-                    "yLabel": "Force, $F_R \\text{ [kN]}$",
+                    "xLabel": "$\\theta \\text{ [deg]}$",
+                    "yLabel": "$F_R \\text{ [kN]}$",
                     "xMin": 30,
                     "xMax": 60,
-                    "yMin": 0
-                }
+                    "yMin": 0,
+                    "yMax": "((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 5 ? 5 : (((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 50 ? 50 : (((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 500 ? 500 : (((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 5000 ? 5000 : 15000)))",
+                    "yTickInterval": "((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 5 ? 1 : (((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 50 ? 10 : (((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 500 ? 100 : (((rho * 9.81 * (D - (a / 3) * sin(30 * PI / 180)) * (0.5 * a * b)) / 1000) <= 5000 ? 1000 : 3000)))"
+                },
+                panelOffsetPlot("theta", "$\\theta \\text{ [deg]}$", 30, 60)
             ],
             [
-                {
-                    "customScript": "../assets/js/plots/triangular-panel.js",
-                    "customRender": "cpVsTheta",
-                    "mode": "override",
-                    "x": "theta",
-                    "y": "dx",
-                    "xLabel": "Angle, $\\theta \\text{ [deg]}$",
-                    "yLabel": "Offset \\text{ [m]}"
-                },
                 {
                     "x": "d_over_b",
                     "y": "FR_kN",
-                    "xLabel": "Ratio, $d/b \\text{ [-]}$",
-                    "yLabel": "Force, $F_R \\text{ [kN]}$",
+                    "draggablePoint": true,
+                    "showDragMarker": false,
+                    "dragInput": "d",
+                    "dragValue": "dragX * b",
+                    "xLabel": "$d/b$",
+                    "yLabel": "$F_R \\text{ [kN]}$",
                     "xMin": 0,
-                    "xMax": 1.5,
-                    "yMin": 0
-                }
-            ],
-            [
-                {
-                    "customScript": "../assets/js/plots/triangular-panel.js",
-                    "customRender": "cpVsDoverB",
-                    "mode": "override",
-                    "x": "d_over_b",
-                    "y": "dx",
-                    "xLabel": "Ratio, $d/b \\text{ [-]}$",
-                    "yLabel": "Offset \\text{ [m]}"
-                }
+                    "xMax": "d_over_b <= 6 ? 6 : 60",
+                    "yMin": 0,
+                    "yMax": "FR_kN <= 5 ? 5 : (FR_kN <= 50 ? 50 : (FR_kN <= 500 ? 500 : (FR_kN <= 5000 ? 5000 : 15000)))",
+                    "yTickInterval": "FR_kN <= 5 ? 1 : (FR_kN <= 50 ? 10 : (FR_kN <= 500 ? 100 : (FR_kN <= 5000 ? 1000 : 3000)))",
+                    "series": [
+                        {
+                            "points": [
+                                [
+                                    0,
+                                    "FR_kN"
+                                ],
+                                [
+                                    "min(d_over_b <= 6 ? 6 : 60, 12 / b)",
+                                    "FR_kN"
+                                ]
+                            ],
+                            "showPoints": false
+                        },
+                        {
+                            "points": [
+                                [
+                                    "d_over_b",
+                                    "FR_kN"
+                                ]
+                            ],
+                            "pointRadius": 6,
+                            "pointStroke": "none"
+                        }
+                    ]
+                },
+                panelOffsetPlot("d_over_b", "$d/b$", 0, 60)
             ]
         ],
-        "text": "Interactive visualization of hydrostatic force $F_R$ and center of pressure offsets $(x_R - x_c)$ and $(y_R - y_c)$ for a submerged triangular panel."
+        "text": "Play with the inputs to visualize how the hydrostatic force $F_R$ (left column) and center of pressure offsets $(x_R - x_c)$ and $(y_R - y_c)$ (right column) change based on the geometry of a submerged triangular panel."
     }
 };
