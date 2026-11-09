@@ -1,6 +1,6 @@
 /** @type {PageData} */
 const pageData = {
-    "title": "Ideal Vapor-Compression Refrigeration Cycle",
+    "title": "Vapor-Compression Refrigeration Cycle with Superheat, Subcooling, and Compressor Efficiency",
     "layout": {
         "grid": [
             {
@@ -8,7 +8,7 @@ const pageData = {
                 "mobile": "100%"
             },
             {
-                "desktop": "0.8fr 1.2fr",
+                "desktop": "0.75fr 1.25fr",
                 "mobile": "100%"
             }
         ]
@@ -17,7 +17,7 @@ const pageData = {
         {
             "type": "assumptions",
             "content": [
-                "Steady-state operation of an ideal vapor-compression refrigeration cycle"
+                "Steady-state vapor-compression refrigeration cycle with evaporator superheat, condenser subcooling, and non-isentropic compression"
             ]
         },
         {
@@ -26,6 +26,7 @@ const pageData = {
                 "q_{\\text{in}} = \\frac{\\dot{Q}_{\\text{in}}}{\\dot{m}} = h_1 - h_4",
                 "q_{\\text{out}} = \\frac{\\dot{Q}_{\\text{out}}}{\\dot{m}} = h_2 - h_3",
                 "w_{\\text{in}} = \\frac{\\dot{W}_{\\text{in}}}{\\dot{m}} = h_2 - h_1",
+                "\\eta_{cp} = \\frac{h_{2s} - h_1}{h_2 - h_1}",
                 "\\text{COP}_R = \\frac{\\dot{Q}_{\\text{in}}}{\\dot{W}_{\\text{in}}} = \\frac{\\dot{Q}_{\\text{in}}/\\dot{m}}{\\dot{W}_{\\text{in}}/\\dot{m}} = \\frac{h_1 - h_4}{h_2 - h_1}"
             ]
         },
@@ -35,6 +36,10 @@ const pageData = {
                 {
                     "symbol": "$h$",
                     "definition": "specific enthalpy"
+                },
+                {
+                    "symbol": "$h_{2s}$",
+                    "definition": "compressor exit enthalpy for isentropic compression"
                 },
                 {
                     "symbol": "$\\dot{m}$",
@@ -67,7 +72,19 @@ const pageData = {
                 {
                     "symbol": "$\\text{COP}_R$",
                     "definition": "refrigeration coefficient of performance"
-                }
+                },
+                // {
+                //     "symbol": "$SH$",
+                //     "definition": "evaporator-exit superheat"
+                // },
+                // {
+                //     "symbol": "$SC$",
+                //     "definition": "condenser-exit subcooling"
+                // },
+                // {
+                //     "symbol": "$\\eta_{cp}$",
+                //     "definition": "compressor isentropic efficiency"
+                // }
             ]
         }
     ],
@@ -78,13 +95,13 @@ const pageData = {
     "inputOutput": {
         // Load this Python file through Pyodide and call calculate_cycle(inputs)
         // when inputs change. The dictionary includes values keyed by input IDs,
-        // e.g. inputs['fluid'], inputs['T_evap'], and inputs['T_cond'].
+        // e.g. inputs['fluid'], inputs['T_evap'], inputs['T_cond'], inputs['SH'],
+        // inputs['SC'], and inputs['eta_cp'].
         // Returned dictionary keys become renderer variables, including lists.
         // Only keys listed in outputs below get visible output cards; plot-only
         // lists such as ts_liquid and ts_cycle do not need output entries.
         "pythonScript": {
-            "path": "../test/refrigeration-cycle-calc.py",
-            // "path": "../test/refrigeration-cycle-calc-no-cache.py",
+            "path": "../me200/VCRC-SH-SC-ETA_cp-calc.py",
             "function": "calculate_cycle"
         },
         "inputs": [
@@ -94,6 +111,10 @@ const pageData = {
                 "text": "Refrigerant",
                 "choices": [
                     {
+                        "text": "R290 (Propane)",
+                        "value": "Propane"
+                    },
+                    {
                         "text": "R134a (1,1,1,2-Tetrafluoroethane)",
                         "value": "R134a"
                     },
@@ -101,17 +122,13 @@ const pageData = {
                         "text": "R1234yf (HFO Refrigerant)",
                         "value": "R1234yf"
                     },
-                    {
-                        "text": "R290 (Propane)",
-                        "value": "Propane"
-                    }
                 ],
                 "initialChoiceIndex": 0
             },
             {
                 "type": "slider",
                 "id": "T_evap",
-                "text": "Evaporator Temp, $T_1 = T_{\\text{evap}}$ [°C]",
+                "text": "Evaporator Saturation Temp, $T_{\\text{evap}}$ [°C]",
                 "min": -20,
                 "max": 15,
                 "initialValue": 10,
@@ -120,11 +137,38 @@ const pageData = {
             {
                 "type": "slider",
                 "id": "T_cond",
-                "text": "Condenser Temp, $T_3 = T_{\\text{cond}}$ [°C]",
+                "text": "Condenser Saturation Temp, $T_{\\text{cond}}$ [°C]",
                 "min": 30,
                 "max": 55,
                 "initialValue": 45,
                 "step": 0.5
+            },
+            {
+                "type": "slider",
+                "id": "SH",
+                "text": "Evaporator-Exit Superheat, $SH$ [°C]",
+                "min": 0,
+                "max": 10,
+                "initialValue": 7,
+                "step": 0.5
+            },
+            {
+                "type": "slider",
+                "id": "SC",
+                "text": "Condenser-Exit Subcooling, $SC$ [°C]",
+                "min": 0,
+                "max": 10,
+                "initialValue": 5,
+                "step": 0.5
+            },
+            {
+                "type": "slider",
+                "id": "eta_cp",
+                "text": "Compressor Isentropic Efficiency, $\\eta_{cp}$ [-]",
+                "min": 0.6,
+                "max": 1,
+                "initialValue": 0.7,
+                "step": 0.01
             }
         ],
         "outputs": [
@@ -179,7 +223,7 @@ const pageData = {
     "plots": {
         "aspectRatio": 1.5,
         // Each inner array is a row; each object in that row is a separate plot.
-        // This page has T-s and p-h side by side, then T-h on the next row.
+        // This page has T-s and p-h side by side, followed by T-h and COP plots.
         // Axis labels, bounds, ticks, and log scaling belong to the plot object.
         "settings": [
             [
@@ -188,11 +232,11 @@ const pageData = {
                     "y": "T",
                     "xLabel": "$s \\text{ [kJ/(kg·K)]}$",
                     "yLabel": "$T \\text{ [°C]}$",
-                    "xMin": 0.8,
-                    "xMax": 2.6,
-                    "xTickInterval": 0.2,
+                    "xMin": 0.5,
+                    "xMax": 3,
+                    "xTickInterval": 0.5,
                     "yMin": -40,
-                    "yMax": 80,
+                    "yMax": 100,
                     "yTickInterval": 20,
                     // "aspectRatio": 2.2,
                     // Series are layers on these SAME axes, drawn in array order:
@@ -231,21 +275,25 @@ const pageData = {
                                 ["s1", "T1"],
                                 ["s2", "T2"],
                                 ["sa", "Ta"],
+                                ["sb", "Tb"],
                                 ["s3", "T3"],
                                 ["s4", "T4"],
+                                ["sc", "Tc"],
                                 ["s1", "T1"]
                             ],
                             "pointsColor": "#2563eb",
                             "pointRadius": 4,
-                            // Entries follow Python's point order: 1, 2, a, 3, 4, 1.
+                            // Entries follow Python's point order: 1, 2, a, b, 3, 4, 1.
                             // 'none' hides a marker while keeping connecting lines.
                             // pointSegmentColors can separately color each segment.
                             "pointColors": [
                                 "#2563eb",
                                 "#2563eb",
                                 "none",
+                                "none",
                                 "#2563eb",
                                 "#2563eb",
+                                "none",
                                 "none"
                             ],
                             // Labels use the same point order; '' omits a label.
@@ -269,6 +317,7 @@ const pageData = {
                                     ]
                                 },
                                 "",
+                                "",
                                 {
                                     "text": "$3$",
                                     "offset": [
@@ -283,6 +332,7 @@ const pageData = {
                                         0
                                     ]
                                 },
+                                "",
                                 ""
                             ]
                         }
@@ -294,7 +344,7 @@ const pageData = {
                     "xLabel": "$h \\text{ [kJ/kg]}$",
                     "yLabel": "$p \\text{ [kPa]}$",
                     "xMin": 100,
-                    "xMax": 700,
+                    "xMax": 800,
                     "xTickInterval": 100,
                     "yMin": 100,
                     "yMax": 3000,
@@ -322,8 +372,10 @@ const pageData = {
                                 "#2563eb",
                                 "#2563eb",
                                 "none",
+                                "none",
                                 "#2563eb",
                                 "#2563eb",
+                                "none",
                                 "none"
                             ],
                             "pointLabels": [
@@ -342,6 +394,7 @@ const pageData = {
                                     ]
                                 },
                                 "",
+                                "",
                                 {
                                     "text": "$3$",
                                     "offset": [
@@ -356,6 +409,7 @@ const pageData = {
                                         0
                                     ]
                                 },
+                                "",
                                 ""
                             ]
                         }
@@ -369,10 +423,10 @@ const pageData = {
                     "xLabel": "$h \\text{ [kJ/kg]}$",
                     "yLabel": "$T \\text{ [°C]}$",
                     "xMin": 100,
-                    "xMax": 700,
+                    "xMax": 800,
                     "xTickInterval": 100,
                     "yMin": -40,
-                    "yMax": 80,
+                    "yMax": 100,
                     "yTickInterval": 20,
                     // "aspectRatio": 2.2,
                     "series": [
@@ -398,8 +452,10 @@ const pageData = {
                                 "#2563eb",
                                 "#2563eb",
                                 "none",
+                                "none",
                                 "#2563eb",
                                 "#2563eb",
+                                "none",
                                 "none"
                             ],
                             "pointLabels": [
@@ -418,6 +474,7 @@ const pageData = {
                                     ]
                                 },
                                 "",
+                                "",
                                 {
                                     "text": "$3$",
                                     "offset": [
@@ -432,6 +489,7 @@ const pageData = {
                                         0
                                     ]
                                 },
+                                "",
                                 ""
                             ]
                         }
@@ -448,7 +506,7 @@ const pageData = {
                     "yMin": 0,
                     "yMax": 20,
                     "yTickInterval": 5,
-                    "activeLabel": 
+                    "activeLabel":
                         {"text": "$T_{cond} = {T_cond}$ °C",
                         "offset": { "x": 40, "y": -5 },
                         },
