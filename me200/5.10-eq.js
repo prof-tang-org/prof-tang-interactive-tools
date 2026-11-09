@@ -82,7 +82,7 @@ const pageData = {
             {
                 "x": "TC",
                 "y": "beta",
-                "xLabel": "$T_C$ [K]",
+                "xLabel": "$T_C \\text{ [K]}$",
                 "yLabel": "$\\beta$",
                 "xMin": 0,
                 "xMax": 300,

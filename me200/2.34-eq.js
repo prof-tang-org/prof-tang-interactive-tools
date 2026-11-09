@@ -8,7 +8,7 @@ const pageData = {
                 "mobile": "100%"
             },
             {
-                "desktop": "0.8fr 1.3fr",
+                "desktop": "0.7fr 1.4fr",
                 "mobile": "100%"
             }
 
@@ -100,8 +100,8 @@ const pageData = {
                     "x": "h",
                     "y": "Q",
                     "width": "33.33%",
-                    "xLabel": "$h$ [W/(m²·K)]",
-                    "yLabel": "$\\dot{Q}$ [kW]",
+                    "xLabel": "$h \\text{ [W/(m²·K)]}$",
+                    "yLabel": "$\\dot{Q} \\text{ [kW]}$",
                     "xMin": 0,
                     "xMax": 1000,
                     "xTickInterval": 200,
@@ -113,8 +113,8 @@ const pageData = {
                     "x": "A",
                     "y": "Q",
                     "width": "33.33%",
-                    "xLabel": "$A$ [m²]",
-                    "yLabel": "$\\dot{Q}$ [kW]",
+                    "xLabel": "$A \\text{ [m²]}$",
+                    "yLabel": "$\\dot{Q} \\text{ [kW]}$",
                     "xMin": 0,
                     "xMax": 0.5,
                     "xTickInterval": 0.1,
@@ -126,8 +126,8 @@ const pageData = {
                     "x": "Ts",
                     "y": "Q",
                     "width": "33.33%",
-                    "xLabel": "$T_s$ [K]",
-                    "yLabel": "$\\dot{Q}$ [kW]",
+                    "xLabel": "$T_s \\text{ [K]}$",
+                    "yLabel": "$\\dot{Q} \\text{ [kW]}$",
                     "xMin": 300,
                     "xMax": 350,
                     "xTickInterval": 10,

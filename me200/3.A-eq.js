@@ -94,8 +94,8 @@ const pageData = {
                 "mode": "standard",
                 "x": "p2",
                 "y": "V2",
-                "xLabel": "$p_2$ [kPa]",
-                "yLabel": "$V_2$ [m³]",
+                "xLabel": "$p_2 \\text{ [kPa]}$",
+                "yLabel": "$V_2 \\text{ [m³]}$",
                 "xMin": 0,
                 "xMax": 1000,
                 "xTickInterval": 100,
@@ -106,8 +106,8 @@ const pageData = {
                 "showLines": false,
                 "pointColors": ["#111", "transparent"],
                 "pointLabels": [
-                    { "text": "State 1", "location": "top right", "color": "#111" },
-                    { "text": "State 2", "location": "top right", "color": "#0075ff" }
+                    { "text": "State 1", "location": "top", "color": "#111" },
+                    { "text": "State 2", "location": "top", "color": "#0075ff" }
                 ]
             },
             {
@@ -115,8 +115,8 @@ const pageData = {
                 "mode": "standard",
                 "x": "V2",
                 "y": "p2",
-                "xLabel": "$V_2$ [m³]",
-                "yLabel": "$p_2$ [kPa]",
+                "xLabel": "$V_2 \\text{ [m³]}$",
+                "yLabel": "$p_2 \\text{ [kPa]}$",
                 "xMin": 0,
                 "xMax": 1,
                 "xTickInterval": 0.1,
@@ -127,8 +127,8 @@ const pageData = {
                 "showLines": false,
                 "pointColors": ["#111", "transparent"],
                 "pointLabels": [
-                    { "text": "State 1", "location": "top right", "color": "#111" },
-                    { "text": "State 2", "location": "top right", "color": "#0075ff" }
+                    { "text": "State 1", "location": "top", "color": "#111" },
+                    { "text": "State 2", "location": "top", "color": "#0075ff" }
                 ]
             }
         ],
