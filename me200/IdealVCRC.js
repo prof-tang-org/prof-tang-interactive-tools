@@ -17,7 +17,9 @@ const pageData = {
         {
             "type": "assumptions",
             "content": [
-                "Steady-state operation of an ideal vapor-compression refrigeration cycle"
+                "Steady-state operation of an ideal vapor-compression refrigeration cycle",
+                "Saturted vapor exits the evaporator and saturated liquid exits the condenser",
+                "Isentropic compression process in the compressor"
             ]
         },
         {
@@ -98,11 +100,11 @@ const pageData = {
                         "value": "Propane"
                     },
                     {
-                        "text": "R134a (1,1,1,2-Tetrafluoroethane)",
+                        "text": "R134a",
                         "value": "R134a"
                     },
                     {
-                        "text": "R1234yf (HFO Refrigerant)",
+                        "text": "R1234yf",
                         "value": "R1234yf"
                     }
                 ],
@@ -151,12 +153,12 @@ const pageData = {
             {
                 "id": "P1_kPa",
                 "text": "Evaporator Pressure, $P_1$ [kPa]",
-                "decimals": 1
+                "decimals": 2
             },
             {
                 "id": "P2_kPa",
                 "text": "Condenser Pressure, $P_2$ [kPa]",
-                "decimals": 1
+                "decimals": 3
             },
             {
                 "id": "p_ratio",
@@ -453,8 +455,8 @@ const pageData = {
                         "offset": { "x": 40, "y": -5 },
                         },
                     "reference": [
-                        { "T_cond": 30, "text": "$T_{cond} = 30$ °C", "labelPosition": "below", "at": { "x": -10, "y": 8 } },
-                        { "T_cond": 55, "text": "$T_{cond} = 55$ °C", "labelPosition": "above", "at": { "x": -10, "y": 1.8 } }
+                        { "T_cond": 30, "text": "$T_{cond} = 30$ °C", "labelPosition": "above", "at": { "x": -10, "y": 8 } },
+                        { "T_cond": 55, "text": "$T_{cond} = 55$ °C", "labelPosition": "below", "at": { "x": -10, "y": 1.8 } }
                     ]
                 }
             ],

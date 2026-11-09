@@ -70,6 +70,10 @@ const pageData = {
                     "definition": "specific compressor work input"
                 },
                 {
+                    "symbol": "$\\eta_{cp}$",
+                    "definition": "compressor isentropic efficiency"
+                },
+                {
                     "symbol": "$\\text{COP}_R$",
                     "definition": "refrigeration coefficient of performance"
                 },
@@ -81,10 +85,6 @@ const pageData = {
                 //     "symbol": "$SC$",
                 //     "definition": "condenser-exit subcooling"
                 // },
-                // {
-                //     "symbol": "$\\eta_{cp}$",
-                //     "definition": "compressor isentropic efficiency"
-                // }
             ]
         }
     ],
@@ -115,11 +115,11 @@ const pageData = {
                         "value": "Propane"
                     },
                     {
-                        "text": "R134a (1,1,1,2-Tetrafluoroethane)",
+                        "text": "R134a",
                         "value": "R134a"
                     },
                     {
-                        "text": "R1234yf (HFO Refrigerant)",
+                        "text": "R1234yf",
                         "value": "R1234yf"
                     },
                 ],
@@ -195,12 +195,12 @@ const pageData = {
             {
                 "id": "P1_kPa",
                 "text": "Evaporator Pressure, $P_1$ [kPa]",
-                "decimals": 1
+                "decimals": 2
             },
             {
                 "id": "P2_kPa",
                 "text": "Condenser Pressure, $P_2$ [kPa]",
-                "decimals": 1
+                "decimals": 3
             },
             {
                 "id": "p_ratio",
@@ -511,8 +511,8 @@ const pageData = {
                         "offset": { "x": 40, "y": -5 },
                         },
                     "reference": [
-                        { "T_cond": 30, "text": "$T_{cond} = 30$ °C", "labelPosition": "below", "at": { "x": -10, "y": 8 } },
-                        { "T_cond": 55, "text": "$T_{cond} = 55$ °C", "labelPosition": "above", "at": { "x": -10, "y": 1.8 } }
+                        { "T_cond": 30, "text": "$T_{cond} = 30$ °C", "labelPosition": "above", "offset": { "x": -50, "y": 18 } },
+                        { "T_cond": 55, "text": "$T_{cond} = 55$ °C", "labelPosition": "below", "offset": { "x": -50, "y": 0 } }
                     ]
                 }
             ],

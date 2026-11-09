@@ -76,15 +76,25 @@ def calculate_cycle(inputs):
 
     # State 1: superheated vapor at evaporator pressure.
     P_1 = CP.PropsSI('P','T',T_evap+273.15,'Q',1,fld)/1000 # pressure, [kPa]
-    T_1 = T_evap + SH # temperature, [C]
-    h_1 = CP.PropsSI('H','T',T_1+273.15,'P',P_1*1000,fld)/1000 # specific enthalpy, [kJ/kg]
-    s_1 = CP.PropsSI('S','T',T_1+273.15,'P',P_1*1000,fld)/1000 # specific entropy, [kJ/(kg-K)]
+    if SH > 0:
+        T_1 = T_evap + SH # temperature, [C]
+        h_1 = CP.PropsSI('H','T',T_1+273.15,'P',P_1*1000,fld)/1000 # specific enthalpy, [kJ/kg]
+        s_1 = CP.PropsSI('S','T',T_1+273.15,'P',P_1*1000,fld)/1000 # specific entropy, [kJ/(kg-K)]
+    else:
+        T_1 = T_evap # temperature, [C]
+        h_1 = CP.PropsSI('H','T',T_1+273.15,'Q',1,fld)/1000 # specific enthalpy, [kJ/kg]
+        s_1 = CP.PropsSI('S','T',T_1+273.15,'Q',1,fld)/1000 # specific entropy, [kJ/(kg-K)]
 
     # State 3: subcooled liquid at condenser pressure.
     P_3 = CP.PropsSI('P','T',T_cond+273.15,'Q',0,fld)/1000 # pressure, [kPa]
-    T_3 = T_cond - SC # temperature, [C]
-    h_3 = CP.PropsSI('H','T',T_3+273.15,'P',P_3*1000,fld)/1000 # specific enthalpy, [kJ/kg]
-    s_3 = CP.PropsSI('S','T',T_3+273.15,'P',P_3*1000,fld)/1000 # specific entropy, [kJ/(kg-K)]
+    if SC > 0:
+        T_3 = T_cond - SC # temperature, [C]
+        h_3 = CP.PropsSI('H','T',T_3+273.15,'P',P_3*1000,fld)/1000 # specific enthalpy, [kJ/kg]
+        s_3 = CP.PropsSI('S','T',T_3+273.15,'P',P_3*1000,fld)/1000 # specific entropy, [kJ/(kg-K)]
+    else:
+        T_3 = T_cond # temperature, [C]
+        h_3 = CP.PropsSI('H','T',T_3+273.15,'Q',0,fld)/1000 # specific enthalpy, [kJ/kg]
+        s_3 = CP.PropsSI('S','T',T_3+273.15,'Q',0,fld)/1000 # specific entropy, [kJ/(kg-K)]
 
     # State 2: actual compressor outlet from isentropic efficiency.
     P_2 = P_3 # pressure, [kPa]
