@@ -64,15 +64,15 @@ const pageData = {
                 "For ideal gases,",
                 "$$\\displaystyle pV = mRT \\qquad (3)$$",
                 "For polytropic processes,",
-                "$$\\displaystyle p_1 V_1^n = p_2 V_2^n \\quad \\text{and} \\quad \\frac{p_2}{p_1} = \\left(\\frac{V_1}{V_2}\\right)^n$$",
-                "Thus, for ideal gas polytropic processes,",
-                "$$\\displaystyle \\frac{T_2}{T_1} = \\frac{p_2 V_2 / (mR)}{p_1 V_1 / (mR)} = \\frac{p_2}{p_1} \\frac{V_2}{V_1} = \\left(\\frac{V_1}{V_2}\\right)^n \\frac{V_2}{V_1} = \\left(\\frac{V_1}{V_2}\\right)^{n-1} \\qquad (4)$$"
+                "$$\\displaystyle p_1 V_1^n = p_2 V_2^n \\quad \\text{and} \\quad \\frac{p_2}{p_1} = \\left(\\frac{V_1}{V_2}\\right)^n \\qquad (4)$$",
+                "Thus, combining Eqs. (3) and (4) to get the expression for ideal gas polytropic processes,",
+                "$$\\displaystyle \\frac{T_2}{T_1} = \\frac{p_2 V_2 / (mR)}{p_1 V_1 / (mR)} = \\frac{p_2}{p_1} \\frac{V_2}{V_1} = \\left(\\frac{V_1}{V_2}\\right)^n \\frac{V_2}{V_1} = \\left(\\frac{V_1}{V_2}\\right)^{n-1} \\qquad (5)$$"
             ]
         },
         {
             "type": "note",
             "text": [
-                "Substitution of Eqs. (3) and (4) into Eqs. (1) and (2) gives",
+                "Substitution of Eqs. (3) and (5) into Eqs. (1) and (2) gives",
                 "$$\\displaystyle \\begin{aligned} W = \\int_1^2 p \\, dV &= \\frac{p_2 V_2 - p_1 V_1}{1 - n} = \\frac{mRT_2 - mRT_1}{1 - n} \\\\ &= \\frac{mR(T_2 - T_1)}{1 - n} = \\frac{mRT_1\\left(\\frac{T_2}{T_1} - 1\\right)}{1 - n} \\\\ &= \\frac{mRT_1\\left[\\left(\\frac{V_1}{V_2}\\right)^{n-1} - 1\\right]}{1 - n} \\quad \\text{for } n \\neq 1 \\end{aligned}$$",
                 "$$\\displaystyle W = \\int_1^2 p \\, dV = p_1 V_1 \\ln\\frac{V_2}{V_1} = mRT \\ln\\frac{V_2}{V_1} \\quad \\text{for } n = 1$$",
                 "($n = 1$ for ideal gases $\\rightarrow mRT_1 = p_1 V_1 = p_2 V_2 = mRT_2 \\rightarrow T_1 = T_2 = T$), making the process isothermal."
@@ -85,6 +85,11 @@ const pageData = {
     },
     "inputOutput": {
         "fixedInputs": [
+            {
+                "id": "fluid",
+                "text": "Working fluid",
+                "value": "Ideal-gas air in a piston-cylinder assembly"
+            },
             {
                 "id": "p1",
                 "text": "Initial pressure, $p_1$ [kPa]",
@@ -99,16 +104,6 @@ const pageData = {
                 "id": "T1",
                 "text": "Initial temperature, $T_1$ [K]",
                 "value": 300
-            },
-            {
-                "id": "M",
-                "text": "Molar mass, $M$ [kg/kmol]",
-                "value": 28.97
-            },
-            {
-                "id": "R",
-                "text": "Gas constant, $R$ [J/(kg·K)]",
-                "value": 287
             }
         ],
         "inputColumns": 3,
@@ -134,6 +129,24 @@ const pageData = {
         ],
         "outputs": [
             {
+                "id": "M",
+                "text": "Molar mass, $M$ [kg/kmol]",
+                "type": "calculation",
+                "value": "28.97"
+            },
+            {
+                "id": "R",
+                "text": "Gas constant, $R$ [J/(kg·K)]",
+                "type": "calculation",
+                "value": "287"
+            },
+            {
+                "id": "m",
+                "text": "Mass, $m$ [kg]",
+                "type": "calculation",
+                "value": "p1 * 1000 * V1 / (R * T1)"
+            },
+            {
                 "id": "T2",
                 "text": "Final temperature, $T_2$ [K]",
                 "type": "calculation",
@@ -153,9 +166,7 @@ const pageData = {
             }
         ],
         "outputColumns": 3,
-        "note": {
-            "text": "0.12 kg of air acting as an ideal gas in a piston-cylinder assembly undergoes a polytropic process."
-        }
+    
     },
     "plots": {
         "aspectRatio": 1.1,
@@ -164,8 +175,8 @@ const pageData = {
                 {
                     "x": "V2",
                     "y": "T2",
-                    "xLabel": "$V_2$ [m³]",
-                    "yLabel": "$T_2$ [K]",
+                    "xLabel": "$V_2 \\text{ [m³]}$",
+                    "yLabel": "$T_2 \\text{ [K]}$",
                     "xMin": 0,
                     "xMax": 0.2,
                     "xTickInterval": 0.05,
@@ -181,8 +192,8 @@ const pageData = {
                 {
                     "x": "V2",
                     "y": "p2",
-                    "xLabel": "$V_2$ [m³]",
-                    "yLabel": "$p_2$ [kPa]",
+                    "xLabel": "$V_2 \\text{ [m³]}$",
+                    "yLabel": "$p_2 \\text{ [kPa]}$",
                     "xMin": 0,
                     "xMax": 0.2,
                     "xTickInterval": 0.05,
@@ -202,8 +213,8 @@ const pageData = {
                     "mode": "standard",
                     "x": "V2",
                     "y": "W",
-                    "xLabel": "$V_2$ [m³]",
-                    "yLabel": "$W$ [kJ]",
+                    "xLabel": "$V_2 \\text{ [m³]}$",
+                    "yLabel": "$W \\text{ [kJ]}$",
                     "xMin": 0,
                     "xMax": 0.2,
                     "xTickInterval": 0.05,
