@@ -19,7 +19,8 @@ const pageData = {
             "content": [
                 "Steady-state operation of an ideal vapor-compression refrigeration cycle",
                 "Saturted vapor exits the evaporator and saturated liquid exits the condenser",
-                "Isentropic compression process in the compressor"
+                "Negligible pressure drops in the evaporator and condenser",
+                "The compressor operates isentropically"
             ]
         },
         {

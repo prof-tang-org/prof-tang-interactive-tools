@@ -17,7 +17,8 @@ const pageData = {
         {
             "type": "assumptions",
             "content": [
-                "Steady-state vapor-compression refrigeration cycle with evaporator superheat, condenser subcooling, and non-isentropic compression"
+                "Steady-state vapor-compression refrigeration cycle with evaporator superheat, condenser subcooling, and non-isentropic compression",
+                "Negligible pressure drops in the evaporator and condenser"
             ]
         },
         {

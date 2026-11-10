@@ -18,8 +18,8 @@ const pageData = {
             "type": "assumptions",
             "content": [
                 "Steady-state Rankine cycle using water as the working fluid",
-                "Saturated vapor exits the boiler at state 1 and saturated liquid exits the condenser at state 3",
-                "No pressure drops occur in the boiler or condenser",
+                "Saturated vapor exits the boiler and saturated liquid exits the condenser",
+                "Negligible pressure drops in the boiler and condenser",
                 "The turbine and pump operate isentropically"
             ]
         },
