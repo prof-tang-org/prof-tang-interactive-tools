@@ -26,11 +26,11 @@ const pageData = {
         {
             "type": "equations",
             "content": [
-                "q_{\\text{in}} = h_1 - h_4",
-                "q_{\\text{out}} = h_2 - h_3",
-                "w_t = h_1 - h_2",
-                "w_p = h_4 - h_3",
-                "w_{\\text{net}} = w_t - w_p",
+                "q_{\\text{in}} = \\frac{\\dot{Q}_{\\text{in}}}{\\dot{m}} = h_1 - h_4",
+                "q_{\\text{out}} = \\frac{\\dot{Q}_{\\text{out}}}{\\dot{m}} = h_2 - h_3",
+                "w_t = \\frac{\\dot{W}_{\\text{t}}}{\\dot{m}} = h_1 - h_2",
+                "w_p = \\frac{\\dot{W}_{\\text{p}}}{\\dot{m}} = h_4 - h_3",
+                "w_{\\text{net}} = \\frac{\\dot{W}_{\\text{net}}}{\\dot{m}} = \\frac{\\dot{W}_{\\text{t}}-\\dot{W}_{\\text{p}}}{\\dot{m}} = w_t - w_p",
                 "\\eta = \\frac{w_{\\text{net}}}{q_{\\text{in}}}"
             ]
         },
@@ -39,10 +39,15 @@ const pageData = {
             "content": [
                 { "symbol": "$h$", "definition": "specific enthalpy" },
                 // { "symbol": "$s$", "definition": "specific entropy" },
+                { "symbol": "$\\dot{Q}_{\\text{in}}$", "definition": "boiler heat absorption" },
                 { "symbol": "$q_{\\text{in}}$", "definition": "specific heat added in the boiler" },
+                { "symbol": "$\\dot{Q}_{\\text{out}}$", "definition": "condenser heat rejection" },
                 { "symbol": "$q_{\\text{out}}$", "definition": "specific heat rejected in the condenser" },
+                { "symbol": "$\\dot{W}_{\\text{t}}$", "definition": "turbine work output" },
                 { "symbol": "$w_t$", "definition": "specific turbine work output" },
+                { "symbol": "$\\dot{W}_{\\text{p}}$", "definition": "pump work input" },
                 { "symbol": "$w_p$", "definition": "specific pump work input" },
+                { "symbol": "$\\dot{W}_{\\text{net}}$", "definition": "net work output" },
                 { "symbol": "$w_{\\text{net}}$", "definition": "specific net work output" },
                 { "symbol": "$\\eta$", "definition": "thermal efficiency" },
                 // { "symbol": "$x_2$", "definition": "vapor quality at the turbine exit" }
@@ -110,7 +115,7 @@ const pageData = {
             {
                 "id": "eta",
                 "text": "Thermal Efficiency, $\\eta$ [-]",
-                "decimals": 3
+                "decimals": 2
             },
             {
                 "id": "p_1",
@@ -122,18 +127,18 @@ const pageData = {
                 "text": "Condenser Pressure, $p_2$ [kPa]",
                 "decimals": 3
             },
-            {
-                "id": "p_ratio",
-                "text": "Pressure Ratio, $p_1/p_2$ [-]",
-                "decimals": 3
-            },
+            // {
+            //     "id": "p_ratio",
+            //     "text": "Pressure Ratio, $p_1/p_2$ [-]",
+            //     "decimals": 3
+            // },
             {
                 "id": "x_2",
                 "text": "Turbine Exit Quality, $x_2$ [-]",
-                "decimals": 3
+                "decimals": 2
             }
         ],
-        "outputColumns": 3
+        "outputColumns": 4
     },
     "plots": {
         "aspectRatio": 1.5,
@@ -186,11 +191,11 @@ const pageData = {
                     "y": "p_1",
                     "xLabel": "$h \\text{ [kJ/kg]}$",
                     "yLabel": "$p \\text{ [kPa]}$",
-                    "xMin": -500,
-                    "xMax": 3500,
+                    "xMin": -1000,
+                    "xMax": 4000,
                     "xTickInterval": 1000,
                     "yMin": 1,
-                    "yMax": 30000,
+                    "yMax": 50000,
                     "yLog": true,
                     "series": [
                         {
@@ -230,8 +235,8 @@ const pageData = {
                     "y": "T1",
                     "xLabel": "$h \\text{ [kJ/kg]}$",
                     "yLabel": "$T \\text{ [°C]}$",
-                    "xMin": -500,
-                    "xMax": 3500,
+                    "xMin": -1000,
+                    "xMax": 4000,
                     "xTickInterval": 1000,
                     "yMin": 0,
                     "yMax": 400,
