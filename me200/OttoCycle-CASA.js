@@ -60,8 +60,8 @@ const pageData = {
         }
     ],
     "schematic": {
-        "src": "../assets/me200/OttoCycle-CASA.svg",
-        "alt": "Pressure-specific-volume diagram showing the four processes of the Otto cycle."
+        "src": "../assets/me200/3.1-eq.png",
+        "alt": "Air-Standard Otto cycle diagram."
     },
     "inputOutput": {
         "pythonScript": {
@@ -196,42 +196,54 @@ const pageData = {
                 }
             ],
             [
+                // {
+                //     "x": "gama",
+                //     "y": "eta",
+                //     "mode": "override",
+                //     "xLabel": "$\\gamma \\text{ [-]}$",
+                //     "yLabel": "$\\eta \\text{ [-]}$",
+                //     "xMin": 5,
+                //     "xMax": 20,
+                //     "xTickInterval": 5,
+                //     "yMin": 0,
+                //     "yMax": 1,
+                //     "yTickInterval": 0.2,
+                //     "showPoint": false,
+                //     "series": [
+                //         {
+                //             "points": "eta_vs_gama",
+                //             "pointsColor": "#2563eb",
+                //             "showPoints": false,
+                //             "lineWidth": 2
+                //         },
+                //         {
+                //             "points": [["gama", "eta"]],
+                //             "pointsColor": "#2563eb",
+                //             "pointRadius": 6.5,
+                //             "showLines": false
+                //         }
+                //     ]
+                // },
                 {
                     "x": "gama",
                     "y": "eta",
-                    "mode": "override",
                     "xLabel": "$\\gamma \\text{ [-]}$",
                     "yLabel": "$\\eta \\text{ [-]}$",
-                    "xMin": 5,
-                    "xMax": 20,
-                    "xTickInterval": 5,
+                    "xMin": 2,
+                    "xMax": 22,
+                    "xTickInterval": 2,
                     "yMin": 0,
                     "yMax": 1,
                     "yTickInterval": 0.2,
-                    "showPoint": false,
-                    "series": [
-                        {
-                            "points": "eta_vs_gama",
-                            "pointsColor": "#2563eb",
-                            "showPoints": false,
-                            "lineWidth": 2
-                        },
-                        {
-                            "points": [["gama", "eta"]],
-                            "pointsColor": "#2563eb",
-                            "pointRadius": 6.5,
-                            "showLines": false
-                        }
-                    ]
                 },
                 {
                     "x": "gama",
                     "y": "w_net",
                     "xLabel": "$\\gamma \\text{ [-]}$",
                     "yLabel": "$w_{\\text{net}} \\text{ [kJ/kg]}$",
-                    "xMin": 5,
-                    "xMax": 20,
-                    "xTickInterval": 2.5,
+                    "xMin": 2,
+                    "xMax": 22,
+                    "xTickInterval": 2,
                     "yMin": 0,
                     "yMax": 1000,
                     "yTickInterval": 200,
@@ -262,9 +274,9 @@ const pageData = {
                     "y": "mep",
                     "xLabel": "$\\gamma \\text{ [-]}$",
                     "yLabel": "$\\text{mep} \\text{ [kPa]}$",
-                    "xMin": 5,
-                    "xMax": 20,
-                    "xTickInterval": 2.5,
+                    "xMin": 2,
+                    "xMax": 22,
+                    "xTickInterval": 2,
                     "yMin": 0,
                     "yMax": 1200,
                     "yTickInterval": 200,

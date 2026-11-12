@@ -121,22 +121,13 @@ def calculate_cycle(inputs):
     """Return Otto-cycle performance and plot coordinates for the page."""
     gama = float(inputs.get("gama", 10.0))
     T_3 = float(inputs.get("T_3", 2000.0))
-    if not 5.0 <= gama <= 20.0:
-        raise ValueError("gama must be between 5 and 20.")
+    if not 2.0 <= gama <= 22.0:
+        raise ValueError("gama must be between 2 and 22.")
     if not 1500.0 <= T_3 <= 2500.0:
         raise ValueError("T_3 must be between 1500 and 2500 K.")
 
     cycle = _cycle_at_compression_ratio(gama, T_3)
     ts_cycle, ts_states, pv_cycle, pv_states = _cycle_diagram_points(cycle)
-
-    gama_values = [
-        5.0 + 15.0 * index / (_SWEEP_COUNT - 1)
-        for index in range(_SWEEP_COUNT)
-    ]
-    eta_vs_gama = []
-    for compression_ratio in gama_values:
-        swept_cycle = _cycle_at_compression_ratio(compression_ratio, T_3)
-        eta_vs_gama.append([compression_ratio, swept_cycle["eta"]])
 
     result = {
         "gama": gama,
@@ -145,7 +136,7 @@ def calculate_cycle(inputs):
         "ts_states": ts_states,
         "pv_cycle": pv_cycle,
         "pv_states": pv_states,
-        "eta_vs_gama": eta_vs_gama,
+        "eta": cycle["eta"],
     }
     result.update(cycle)
     return result
