@@ -1,6 +1,6 @@
 /** @type {PageData} */
 const pageData = {
-    "title": "Vapor Power Cycle with Superheat and Reheat",
+    "title": "Ideal Rankine Cycle",
     "layout": {
         "grid": [
             {
@@ -17,32 +17,30 @@ const pageData = {
         {
             "type": "assumptions",
             "content": [
-                "Steady-state vapor power cycle using water as the working fluid",
-                "Saturated liquid exits the condenser",
-                "Negligible pressure drops in the steam generator, superheater, reheater, and condenser",
-                "The two turbine stages have the same isentropic efficiency"
+                "Steady-state Rankine cycle using water as the working fluid",
+                "Saturated vapor exits the boiler and saturated liquid exits the condenser",
+                "Negligible pressure drops in the boiler and condenser",
+                "The turbine and pump operate isentropically"
             ]
         },
         {
             "type": "equations",
             "content": [
-                "q_{\\text{in}} = \\frac{\\dot{Q}_{\\text{in}}}{\\dot{m}} = (h_1 - h_6) + (h_3 - h_2)",
-                "q_{\\text{out}} = \\frac{\\dot{Q}_{\\text{out}}}{\\dot{m}} = h_4 - h_5",
-                "w_t = \\frac{\\dot{W}_{\\text{t}}}{\\dot{m}} = (h_1 - h_2) + (h_3 - h_4)",
-                "w_p = \\frac{\\dot{W}_{\\text{p}}}{\\dot{m}} = h_6 - h_5",
+                "q_{\\text{in}} = \\frac{\\dot{Q}_{\\text{in}}}{\\dot{m}} = h_1 - h_4",
+                "q_{\\text{out}} = \\frac{\\dot{Q}_{\\text{out}}}{\\dot{m}} = h_2 - h_3",
+                "w_t = \\frac{\\dot{W}_{\\text{t}}}{\\dot{m}} = h_1 - h_2",
+                "w_p = \\frac{\\dot{W}_{\\text{p}}}{\\dot{m}} = h_4 - h_3",
                 "w_{\\text{net}} = \\frac{\\dot{W}_{\\text{net}}}{\\dot{m}} = \\frac{\\dot{W}_{\\text{t}}-\\dot{W}_{\\text{p}}}{\\dot{m}} = w_t - w_p",
-                "\\eta_t = \\frac{h_1-h_2}{h_1-h_{2s}} = \\frac{h_3-h_4}{h_3-h_{4s}}",
-                "\\eta_p = \\frac{h_{6s}-h_5}{h_6-h_5}",
-                "\\eta = \\frac{w_{\\text{net}}}{q_{\\text{in}}}",
+                "\\eta = \\frac{w_{\\text{net}}}{q_{\\text{in}}}"
             ]
         },
         {
             "type": "symbols",
             "content": [
                 { "symbol": "$h$", "definition": "specific enthalpy" },
-                { "symbol": "$h_{2s}, h_{4s}, h_{6s}$", "definition": "specific enthalpy at the corresponding isentropic state" },
-                { "symbol": "$\\dot{Q}_{\\text{in}}$", "definition": "heat added in the steam generator and reheater" },
-                { "symbol": "$q_{\\text{in}}$", "definition": "specific heat added in the steam generator and reheater" },
+                // { "symbol": "$s$", "definition": "specific entropy" },
+                { "symbol": "$\\dot{Q}_{\\text{in}}$", "definition": "boiler heat absorption" },
+                { "symbol": "$q_{\\text{in}}$", "definition": "specific heat added in the boiler" },
                 { "symbol": "$\\dot{Q}_{\\text{out}}$", "definition": "condenser heat rejection" },
                 { "symbol": "$q_{\\text{out}}$", "definition": "specific heat rejected in the condenser" },
                 { "symbol": "$\\dot{W}_{\\text{t}}$", "definition": "turbine work output" },
@@ -51,19 +49,18 @@ const pageData = {
                 { "symbol": "$w_p$", "definition": "specific pump work input" },
                 { "symbol": "$\\dot{W}_{\\text{net}}$", "definition": "net work output" },
                 { "symbol": "$w_{\\text{net}}$", "definition": "specific net work output" },
-                { "symbol": "$\\eta_t$", "definition": "turbine isentropic efficiency" },
-                { "symbol": "$\\eta_p$", "definition": "pump isentropic efficiency" },
-                { "symbol": "$\\eta$", "definition": "thermal efficiency" }
+                { "symbol": "$\\eta$", "definition": "thermal efficiency" },
+                // { "symbol": "$x_2$", "definition": "vapor quality at the turbine exit" }
             ]
         }
     ],
     "schematic": {
         "src": "../assets/me200/3.1-eq.png",
-        "alt": "Vapor power cycle with superheat and reheat."
-    },
+        "alt": "Ideal vapor-compression refrigeration cycle diagram."
+    },    
     "inputOutput": {
-        "pythonScript": {
-            "path": "../me200/VPC-SH-RH-calc.py",
+        "javascriptScript": {
+            "path": "../me200/RankineCycle-calc1.js",
             "function": "calculate_cycle"
         },
         "inputs": [
@@ -87,51 +84,6 @@ const pageData = {
                 "max": 100,
                 "initialValue": 50,
                 "step": 1
-            },
-            {
-                "type": "slider",
-                "id": "T1",
-                "text": "State 1 Temperature, $T_1$ [°C]",
-                "min": 400,
-                "max": 500,
-                "initialValue": 450,
-                "step": 1
-            },
-            {
-                "type": "slider",
-                "id": "T3",
-                "text": "State 3 Temperature, $T_3$ [°C]",
-                "min": 400,
-                "max": 500,
-                "initialValue": 420,
-                "step": 1
-            },
-            {
-                "type": "slider",
-                "id": "p_reheat",
-                "text": "Reheat Pressure, $p_{\\text{reheat}}$ [kPa]",
-                "min": 120,
-                "max": 1500,
-                "initialValue": 800,
-                "step": 10
-            },
-            {
-                "type": "slider",
-                "id": "eta_t",
-                "text": "Turbine Isentropic Efficiency, $\\eta_t$ [-]",
-                "min": 0.6,
-                "max": 1,
-                "initialValue": 0.85,
-                "step": 0.01
-            },
-            {
-                "type": "slider",
-                "id": "eta_p",
-                "text": "Pump Isentropic Efficiency, $\\eta_p$ [-]",
-                "min": 0.6,
-                "max": 1,
-                "initialValue": 0.8,
-                "step": 0.01
             }
         ],
         "outputs": [
@@ -153,7 +105,7 @@ const pageData = {
             {
                 "id": "w_p",
                 "text": "Specific Pump Work, $w_p$ [kJ/kg]",
-                "decimals": 3
+                "decimals": 2
             },
             {
                 "id": "w_net",
@@ -171,28 +123,18 @@ const pageData = {
                 "decimals": 3
             },
             {
-                "id": "p_reheat",
-                "text": "Reheat Pressure, $p_{\\text{reheat}}$ [kPa]",
-                "decimals": 3
-            },
-            {
-                "id": "p_5",
-                "text": "Condenser Pressure, $p_5$ [kPa]",
+                "id": "p_2",
+                "text": "Condenser Pressure, $p_2$ [kPa]",
                 "decimals": 3
             },
             // {
             //     "id": "p_ratio",
-            //     "text": "Boiler-to-Condenser Pressure Ratio, $p_1/p_5$ [-]",
-            //     "decimals": 2
+            //     "text": "Pressure Ratio, $p_1/p_2$ [-]",
+            //     "decimals": 3
             // },
             {
-                "id": "T_2",
-                "text": "State 2 Temperature, $T_2$ [°C]",
-                "decimals": 2
-            },
-            {
-                "id": "T_4",
-                "text": "State 4 Temperature, $T_4$ [°C]",
+                "id": "x_2",
+                "text": "Turbine Exit Quality, $x_2$ [-]",
                 "decimals": 2
             }
         ],
@@ -208,11 +150,11 @@ const pageData = {
                     "xLabel": "$s \\text{ [kJ/(kg·K)]}$",
                     "yLabel": "$T \\text{ [°C]}$",
                     "xMin": -1,
-                    "xMax": 11,
+                    "xMax": 9,
                     "xTickInterval": 1,
                     "yMin": 0,
-                    "yMax": 500,
-                    "yTickInterval": 100,
+                    "yMax": 400,
+                    "yTickInterval": 50,
                     "series": [
                         {
                             "points": "ts_liquid",
@@ -232,29 +174,12 @@ const pageData = {
                             "points": "ts_cycle",
                             "pointsColor": "#2563eb",
                             "pointRadius": 4,
-                            "pointColors": [
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "none",
-                                "none"
-                            ],
+                            "pointColors": ["#2563eb", "#2563eb", "#2563eb", "#2563eb", "none", "#2563eb"],
                             "pointLabels": [
-                                { "text": "$1$", "offset": [-15, 0] },
-                                { "text": "$2$", "offset": [-15, 0] },
-                                "",
-                                { "text": "$3$", "offset": [8, 0] },
-                                { "text": "$4$", "offset": [8, 0] },
-                                "",
-                                { "text": "$5$", "offset": [5, 8] },
-                                { "text": "$6$", "offset": [-15, -5] },
-                                "",
+                                { "text": "$1$", "offset": [8, 0] },
+                                { "text": "$2$", "offset": [8, 0] },
+                                { "text": "$3$", "offset": [5, 8] },
+                                { "text": "$4$", "offset": [-15, -5] },
                                 "",
                                 ""
                             ]
@@ -291,29 +216,12 @@ const pageData = {
                             "points": "ph_cycle",
                             "pointsColor": "#2563eb",
                             "pointRadius": 4,
-                            "pointColors": [
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "none",
-                                "none"
-                            ],
+                            "pointColors": ["#2563eb", "#2563eb", "#2563eb", "#2563eb", "none", "#2563eb"],
                             "pointLabels": [
                                 { "text": "$1$", "offset": [8, 0] },
-                                { "text": "$2$", "offset": [-15, 0] },
-                                "",
-                                { "text": "$3$", "offset": [8, 0] },
-                                { "text": "$4$", "offset": [8, 0] },
-                                "",
-                                { "text": "$5$", "offset": [-15, 0] },
-                                { "text": "$6$", "offset": [-15, 0] },
-                                "",
+                                { "text": "$2$", "offset": [8, 0] },
+                                { "text": "$3$", "offset": [-15, 0] },
+                                { "text": "$4$", "offset": [-15, 0] },
                                 "",
                                 ""
                             ]
@@ -331,8 +239,8 @@ const pageData = {
                     "xMax": 4000,
                     "xTickInterval": 1000,
                     "yMin": 0,
-                    "yMax": 500,
-                    "yTickInterval": 100,
+                    "yMax": 400,
+                    "yTickInterval": 50,
                     "series": [
                         {
                             "points": "th_liquid",
@@ -352,29 +260,12 @@ const pageData = {
                             "points": "th_cycle",
                             "pointsColor": "#2563eb",
                             "pointRadius": 4,
-                            "pointColors": [
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "#2563eb",
-                                "#2563eb",
-                                "none",
-                                "none",
-                                "none"
-                            ],
+                            "pointColors": ["#2563eb", "#2563eb", "#2563eb", "#2563eb", "none", "#2563eb"],
                             "pointLabels": [
-                                { "text": "$1$", "offset": [-15, 0] },
-                                { "text": "$2$", "offset": [-15, 0] },
-                                "",
-                                { "text": "$3$", "offset": [8, 0] },
-                                { "text": "$4$", "offset": [8, 0] },
-                                "",
-                                { "text": "$5$", "offset": [5, 8] },
-                                { "text": "$6$", "offset": [-15, -5] },
-                                "",
+                                { "text": "$1$", "offset": [8, 0] },
+                                { "text": "$2$", "offset": [8, 0] },
+                                { "text": "$3$", "offset": [5, 8] },
+                                { "text": "$4$", "offset": [-15, -5] },
                                 "",
                                 ""
                             ]

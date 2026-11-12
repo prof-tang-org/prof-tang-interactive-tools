@@ -106,9 +106,17 @@
  */
 
 /**
+ * @typedef {Object} JavaScriptScriptConfig
+ * @property {string} path - Relative path to the JavaScript module (e.g. "../me200/IdealVCRC-calc1.js")
+ * @property {string} function - Name of the exported calculation function (e.g. "calculate_cycle")
+ */
+
+/**
  * @typedef {Object} InputOutputConfig
  * @property {string | PythonScriptConfig} [pythonScript] - External Python calculation engine script config or relative path
  * @property {string} [pythonFunction] - Name of function in pythonScript to call when pythonScript is a path string
+ * @property {string | JavaScriptScriptConfig} [javascriptScript] - External JavaScript calculation module config or relative path
+ * @property {string} [javascriptFunction] - Name of exported function in javascriptScript when it is a path string
  * @property {FixedInput[]} [fixedInputs] - Read-only constant values in calculations
  * @property {InputConfig[]} inputs - Interactive control parameters
  * @property {OutputConfig[]} outputs - Computed outcomes

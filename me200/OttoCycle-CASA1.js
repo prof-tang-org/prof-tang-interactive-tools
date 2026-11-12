@@ -64,8 +64,8 @@ const pageData = {
         "alt": "Air-Standard Otto cycle diagram."
     },
     "inputOutput": {
-        "pythonScript": {
-            "path": "../me200/OttoCycle-CASA-calc.py",
+        "javascriptScript": {
+            "path": "../me200/OttoCycle-CASA-calc1.js",
             "function": "calculate_cycle"
         },
         "inputs": [

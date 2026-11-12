@@ -971,13 +971,15 @@ function setupCalculationEngine(pageData) {
             });
         }
 
-        // Execute Python calculation engine if configured on inputOutput
-        let pyOutputs = null;
-        if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
-            pyOutputs = runPythonCalculation(state);
-            if (pyOutputs && typeof pyOutputs === 'object') {
-                Object.assign(state, pyOutputs);
-            }
+        // Execute the configured calculation engine if present.
+        let calculationOutputs = null;
+        if (pageData.inputOutput && pageData.inputOutput.javascriptScript) {
+            calculationOutputs = runJavaScriptCalculation(state);
+        } else if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
+            calculationOutputs = runPythonCalculation(state);
+        }
+        if (calculationOutputs && typeof calculationOutputs === 'object') {
+            Object.assign(state, calculationOutputs);
         }
 
         if (Array.isArray(pageData.inputOutput.outputs)) {
@@ -997,8 +999,8 @@ function setupCalculationEngine(pageData) {
                 }
 
                 let val;
-                if (pyOutputs && output.id in pyOutputs) {
-                    val = pyOutputs[output.id];
+                if (calculationOutputs && output.id in calculationOutputs) {
+                    val = calculationOutputs[output.id];
                 } else if (output.type === 'map') {
                     val = getMappedValue(output.key, output.value, state);
                 } else if (output.type === 'calculation' || (typeof output.value === 'string' && output.value.length > 0)) {
@@ -1449,6 +1451,84 @@ function runPythonCalculation(state) {
     }
 }
 
+let _javascriptCalculationFunction = null;
+let _javascriptCalculationScriptName = null;
+let _javascriptEnginePromise = null;
+
+async function ensureJavaScriptEngine(pageData) {
+    if (!pageData || !pageData.inputOutput || !pageData.inputOutput.javascriptScript) {
+        return;
+    }
+
+    const scriptConfig = pageData.inputOutput.javascriptScript;
+    const scriptSrc = typeof scriptConfig === 'string'
+        ? scriptConfig
+        : scriptConfig.path || scriptConfig.src;
+    const functionName = typeof scriptConfig === 'object' && scriptConfig !== null
+        ? scriptConfig.function || scriptConfig.name || 'calculate_cycle'
+        : pageData.inputOutput.javascriptFunction || 'calculate_cycle';
+
+    if (!scriptSrc) {
+        throw new Error('[renderer.js] javascriptScript must specify a module path.');
+    }
+
+    const cacheKey = `${scriptSrc}::${functionName}`;
+    if (_javascriptEnginePromise && _javascriptCalculationScriptName === cacheKey) {
+        return _javascriptEnginePromise;
+    }
+
+    _javascriptCalculationScriptName = cacheKey;
+    _javascriptEnginePromise = (async () => {
+        try {
+            await initCoolProp();
+            const moduleUrl = new URL(scriptSrc, document.baseURI).href;
+            const calculationModule = await import(moduleUrl);
+            const targetFunc = calculationModule[functionName];
+            if (typeof targetFunc !== 'function') {
+                throw new Error(`Function '${functionName}' was not found in JavaScript module '${scriptSrc}'.`);
+            }
+
+            _javascriptCalculationFunction = targetFunc;
+            if (typeof window.forceCompute === 'function') {
+                window.forceCompute();
+            }
+        } catch (err) {
+            _javascriptEnginePromise = null;
+            _javascriptCalculationScriptName = null;
+            console.error(`[renderer.js] Failed to initialize JavaScript calculation engine '${scriptSrc}':`, err);
+        }
+    })();
+
+    return _javascriptEnginePromise;
+}
+
+function runJavaScriptCalculation(state) {
+    if (!_javascriptCalculationFunction) {
+        return null;
+    }
+
+    const inputs = {};
+    for (const [key, val] of Object.entries(state || {})) {
+        if (!key.startsWith('_') && typeof val !== 'function') {
+            inputs[key] = val;
+        }
+    }
+
+    try {
+        const result = _javascriptCalculationFunction(inputs);
+        if (result && typeof result.then === 'function') {
+            throw new Error('JavaScript calculation functions must return results synchronously.');
+        }
+        if (!result || typeof result !== 'object' || Array.isArray(result)) {
+            throw new Error('JavaScript calculation function must return an object.');
+        }
+        return result;
+    } catch (err) {
+        console.error('[renderer.js] Error executing JavaScript calculation function:', err);
+        return null;
+    }
+}
+
 /**
  * Fetch and execute a Python plot script via Pyodide, wrapping exported functions.
  * @param {string} src
@@ -1710,18 +1790,20 @@ function _calculateState(baseState, xVal, plotConfig, pageData) {
     const tempState = { ...baseState };
     tempState[plotConfig.x] = xVal;
 
-    let pyOutputs = null;
-    if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
-        pyOutputs = runPythonCalculation(tempState);
-        if (pyOutputs && typeof pyOutputs === 'object') {
-            Object.assign(tempState, pyOutputs);
-        }
+    let calculationOutputs = null;
+    if (pageData.inputOutput && pageData.inputOutput.javascriptScript) {
+        calculationOutputs = runJavaScriptCalculation(tempState);
+    } else if (pageData.inputOutput && pageData.inputOutput.pythonScript) {
+        calculationOutputs = runPythonCalculation(tempState);
+    }
+    if (calculationOutputs && typeof calculationOutputs === 'object') {
+        Object.assign(tempState, calculationOutputs);
     }
 
     if (pageData.inputOutput && Array.isArray(pageData.inputOutput.outputs)) {
         pageData.inputOutput.outputs.forEach(output => {
-            if (pyOutputs && output.id in pyOutputs) {
-                tempState[output.id] = pyOutputs[output.id];
+            if (calculationOutputs && output.id in calculationOutputs) {
+                tempState[output.id] = calculationOutputs[output.id];
             } else if (output.type === 'calculation' && output.value) {
                 tempState[output.id] = evaluateFormula(output.value, tempState);
             }
@@ -2957,12 +3039,40 @@ function drawPlotPoints(plotCtx) {
 
     const segmentColors = Array.isArray(plotConfig.pointSegmentColors) ? plotConfig.pointSegmentColors : [];
 
-    // 1. Draw solid line segments connecting adjacent points
+    // Draw connected segments as paths so dash patterns continue across points.
+    const lineDash = plotConfig.lineDash || (plotConfig.dashed ? `${4 * scale} ${4 * scale}` : null);
+    const lineGenerator = d3.line()
+        .x(point => point.px)
+        .y(point => point.py);
+    let pathPoints = [];
+    let pathColor = null;
+
+    const flushPath = () => {
+        if (pathPoints.length < 2) return;
+        svg.append('path')
+            .attr('class', 'point-segment')
+            .attr('clip-path', `url(#${clipId})`)
+            .attr('d', lineGenerator(pathPoints))
+            .style('fill', 'none')
+            .style('stroke', pathColor)
+            .style('stroke-width', `${(plotConfig.lineWidth ?? 2) * scale}px`)
+            .style('stroke-dasharray', lineDash)
+            .style('opacity', plotConfig.opacity ?? 1)
+            .style('stroke-linecap', 'round')
+            .style('stroke-linejoin', 'round');
+    };
+
     for (let i = 0; i < evaluatedPoints.length - 1; i++) {
         const p1 = evaluatedPoints[i];
         const p2 = evaluatedPoints[i + 1];
 
-        if (plotConfig.showLines === false || p2.originalIndex !== p1.originalIndex + 1) continue;
+        if (plotConfig.showLines === false) continue;
+        if (p2.originalIndex !== p1.originalIndex + 1) {
+            flushPath();
+            pathPoints = [];
+            pathColor = null;
+            continue;
+        }
         let segColor = defaultStrokeColor;
 
         if (segmentColors[p1.originalIndex] !== undefined && segmentColors[p1.originalIndex] !== null && segmentColors[p1.originalIndex] !== '') {
@@ -2973,19 +3083,17 @@ function drawPlotPoints(plotCtx) {
             segColor = pointColors[p2.originalIndex];
         }
 
-        svg.append('line')
-            .attr('class', 'point-segment')
-            .attr('clip-path', `url(#${clipId})`)
-            .attr('x1', p1.px)
-            .attr('y1', p1.py)
-            .attr('x2', p2.px)
-            .attr('y2', p2.py)
-            .style('stroke', segColor)
-            .style('stroke-width', `${(plotConfig.lineWidth ?? 2) * scale}px`)
-            .style('stroke-dasharray', plotConfig.lineDash || (plotConfig.dashed ? `${4 * scale} ${4 * scale}` : null))
-            .style('opacity', plotConfig.opacity ?? 1)
-            .style('stroke-linecap', 'round');
+        if (pathPoints.length > 0 && segColor !== pathColor) {
+            flushPath();
+            pathPoints = [];
+        }
+        if (pathPoints.length === 0) {
+            pathPoints.push(p1);
+            pathColor = segColor;
+        }
+        pathPoints.push(p2);
     }
+    flushPath();
 
     // 2. Draw nondraggable points
     evaluatedPoints.forEach(p => {
@@ -3314,8 +3422,12 @@ window.addEventListener('load', async () => {
         // Ensure external custom plot scripts are loaded before computation
         await ensureCustomPlotScripts(pageData);
 
-        // Ensure Python calculation engine is initialized if configured
-        await ensurePythonEngine(pageData);
+        // Initialize the configured calculation engine before the first compute.
+        if (pageData.inputOutput && pageData.inputOutput.javascriptScript) {
+            await ensureJavaScriptEngine(pageData);
+        } else {
+            await ensurePythonEngine(pageData);
+        }
 
         renderInputOutput(pageData.inputOutput);
         setupCalculationEngine(pageData);

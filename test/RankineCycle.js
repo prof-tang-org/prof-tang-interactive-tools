@@ -60,7 +60,7 @@ const pageData = {
     },    
     "inputOutput": {
         "pythonScript": {
-            "path": "../me200/RankineCycle-calc.py",
+            "path": "../test/RankineCycle-calc.py",
             "function": "calculate_cycle"
         },
         "inputs": [
