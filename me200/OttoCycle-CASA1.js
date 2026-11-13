@@ -60,7 +60,7 @@ const pageData = {
         }
     ],
     "schematic": {
-        "src": "../assets/me200/3.1-eq.png",
+        "src": "../assets/me200/InternalCombustionEngine.png",
         "alt": "Air-Standard Otto cycle diagram."
     },
     "inputOutput": {

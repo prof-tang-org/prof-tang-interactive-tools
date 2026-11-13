@@ -58,7 +58,7 @@ const pageData = {
         }
     ],
     "schematic": {
-        "src": "../assets/me200/3.1-eq.png",
+        "src": "../assets/me200/VPC-SH-RH-Cycle-System.png",
         "alt": "Vapor power cycle with superheat and reheat."
     },
     "inputOutput": {

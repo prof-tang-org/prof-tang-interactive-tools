@@ -75,7 +75,7 @@ const pageData = {
         }
     ],
     "schematic": {
-        "src": "../assets/me200/3.1-eq.png",
+        "src": "../assets/me200/IdealVCRC-System.png",
         "alt": "Ideal vapor-compression refrigeration cycle diagram."
     },
     "inputOutput": {
