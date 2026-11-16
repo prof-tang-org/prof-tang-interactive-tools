@@ -383,6 +383,7 @@ function renderControls(inputs) {
     inputs.forEach(input => {
         const wrapper = document.createElement('div');
         wrapper.id = `wrapper_input_${input.id}`;
+        if (input.order !== undefined) wrapper.style.order = input.order; // position within the #controls grid
 
         const label = document.createElement('label');
         label.id = `label_input_${input.id}`;
@@ -1096,36 +1097,43 @@ function setupCalculationEngine(pageData) {
     const swaps = pageData.inputOutput._swaps || [];
     let lastState = null;
 
-    // When a swap selector changes, start the newly selected slider at the value it had as an output
+    // When a swap selector changes, start the newly selected sliders at the values they had as outputs
     function carryOverSwapValue(targetId) {
         if (!lastState) return;
         const swap = swaps.find(s => `input_${s.id}` === targetId);
-        if (!swap) return;
+        if (!swap || swap.carryOver === false) return;
 
         const activeId = document.getElementById(targetId).value;
-        const val = lastState[activeId];
-        const range = document.getElementById(`input_${activeId}`);
-        const num = document.getElementById(`input_${activeId}_num`);
-        if (!range || typeof val !== 'number' || !Number.isFinite(val)) return;
+        const activeOption = swap.options.find(opt => opt.id === activeId);
+        if (!activeOption) return;
 
-        range.value = val; // range inputs clamp and snap to their own min/max/step
-        if (num) {
-            const inputDef = pageData.inputOutput.inputs.find(i => i.id === activeId);
-            const snapped = parseFloat(range.value);
-            num.value = inputDef && inputDef.notation === 'scientific' ? formatScientific(snapped, inputDef) : snapped;
-        }
+        activeOption.varIds.forEach(varId => {
+            const val = lastState[varId];
+            const range = document.getElementById(`input_${varId}`);
+            const num = document.getElementById(`input_${varId}_num`);
+            if (!range || typeof val !== 'number' || !Number.isFinite(val)) return;
+
+            range.value = val; // range inputs clamp and snap to their own min/max/step
+            if (num) {
+                const inputDef = pageData.inputOutput.inputs.find(i => i.id === varId);
+                const snapped = parseFloat(range.value);
+                num.value = inputDef && inputDef.notation === 'scientific' ? formatScientific(snapped, inputDef) : snapped;
+            }
+        });
     }
 
-    // Show only the selected option's slider, and only the unselected options' outputs
+    // Show only the selected option's sliders, and only the unselected options' outputs
     function updateSwapVisibility(state) {
         swaps.forEach(swap => {
             const activeId = state[swap.id];
-            swap.optionIds.forEach(id => {
-                const isActive = id === activeId;
-                const wrapper = document.getElementById(`wrapper_input_${id}`);
-                if (wrapper) wrapper.classList.toggle('hidden', !isActive);
-                const valueEl = document.getElementById(`value_${id}`);
-                if (valueEl && valueEl.parentElement) valueEl.parentElement.classList.toggle('hidden', isActive);
+            swap.options.forEach(opt => {
+                const isActive = opt.id === activeId;
+                opt.varIds.forEach(varId => {
+                    const wrapper = document.getElementById(`wrapper_input_${varId}`);
+                    if (wrapper) wrapper.classList.toggle('hidden', !isActive);
+                    const valueEl = document.getElementById(`value_${varId}`);
+                    if (valueEl && valueEl.parentElement) valueEl.parentElement.classList.toggle('hidden', isActive);
+                });
             });
         });
     }
@@ -3268,9 +3276,10 @@ function drawPlotPoints(plotCtx) {
     });
 }
 
-// Expands each "swap" input into a selector dropdown, one slider per option, and one output per option.
-// The selected option is an input (its output passes the slider value through); the others are
-// calculated from their `formula`. Swap outputs are prepended so later outputs can reference them.
+// Expands each "swap" input into a selector dropdown, plus one slider and one output per variable.
+// An option is either a single variable (its own id/slider fields/formula) or lists several in `variables`.
+// The selected option's variables are inputs (their outputs pass the slider values through); the others
+// are calculated from their `formula`. Swap outputs are prepended so later outputs can reference them.
 function expandSwapInputs(inputOutput) {
     if (!inputOutput || !Array.isArray(inputOutput.inputs)) return;
     if (!inputOutput.inputs.some(input => input && input.type === 'swap')) return;
@@ -3292,22 +3301,28 @@ function expandSwapInputs(inputOutput) {
             text: input.text,
             choices: options.map(opt => ({ text: opt.choiceText || opt.text, value: opt.id })),
             initialChoiceIndex: input.initialChoiceIndex,
-            notes: input.notes
+            notes: input.notes,
+            order: input.order
         });
 
+        const swapOptions = [];
         options.forEach(opt => {
-            const { choiceText, formula, decimals, ...sliderDef } = opt;
-            expandedInputs.push({ type: 'slider', ...sliderDef });
-            swapOutputs.push({
-                id: opt.id,
-                text: opt.text,
-                type: 'calculation',
-                value: `${input.id} == '${opt.id}' ? ${opt.id} : (${formula})`,
-                decimals: decimals
+            const variables = Array.isArray(opt.variables) ? opt.variables : [opt];
+            variables.forEach(variable => {
+                const { choiceText, formula, decimals, variables: _unused, ...sliderDef } = variable;
+                expandedInputs.push({ type: 'slider', ...sliderDef });
+                swapOutputs.push({
+                    id: variable.id,
+                    text: variable.text,
+                    type: 'calculation',
+                    value: `${input.id} == '${opt.id}' ? ${variable.id} : (${formula})`,
+                    decimals: decimals
+                });
             });
+            swapOptions.push({ id: opt.id, varIds: variables.map(v => v.id) });
         });
 
-        inputOutput._swaps.push({ id: input.id, optionIds: options.map(opt => opt.id) });
+        inputOutput._swaps.push({ id: input.id, options: swapOptions, carryOver: input.carryOver });
     });
 
     inputOutput.inputs = expandedInputs;

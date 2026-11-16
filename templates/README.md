@@ -309,6 +309,7 @@ Interactive controls rendered inside the `#controls` container.
 * `initialChoiceIndex` (Number, optional): Default selected index for `choices` (defaults to 0).
 * `notes` (String, optional): Explanatory note displayed directly beneath the dropdown control.
 * `notation` (String, optional): `"standard"` | `"scientific"`. Determines how numeric values are formatted and rendered. Defaults to `"standard"`.
+* `order` (Number, optional): Position of the control in the inputs grid, which fills row by row (CSS `order`). Swap variables accept it too, so options that replace each other can share a number. Inputs without `order` count as 0, so give every input an `order` when using it.
 
 ##### Swap inputs (`"type": "swap"`)
 Lets the user choose which of several variables is the input; the others become outputs. The swap renders a selector dropdown (its `id` holds the selected option's `id`) and one slider per option. Only the selected option's slider is shown, and each unselected option is shown as an output calculated from its `formula`. Swap outputs are placed before the regular `outputs`, so later outputs can reference them. When the selection changes, the newly selected slider starts at the value it had as an output.
@@ -327,6 +328,16 @@ Lets the user choose which of several variables is the input; the others become 
 }
 ```
 Plots must use the selected variable as `x`, so pair a swap with one plot per option using `showWhen` (e.g. `"showWhen": "spec == 'p2'"`). See `me200/3.A-eq.js`.
+
+By default a newly selected slider starts at the value it had as an output. Set `"carryOver": false` on the swap to turn this off: each slider then starts at its `initialValue` and keeps its own last value when the selection changes.
+
+To have one choice control several variables at once, give the option a `variables` array. Each variable has its own `id`, `text`, slider fields and `formula`; the option itself needs only `id` and `choiceText`. Selecting the option shows all of its sliders and turns the other options' variables into outputs. See `me200/6.21-eq.js`.
+```json
+{ "id": "v", "choiceText": "Specific volume, v", "variables": [
+    { "id": "v1", "text": "Initial specific volume, $v_1$ [m³/kg]", "min": 0.1, "max": 3, "step": 0.01, "initialValue": 0.8, "formula": "R * T1 / (p1 * 1000)" },
+    { "id": "v2", "text": "Final specific volume, $v_2$ [m³/kg]", "min": 0.1, "max": 3, "step": 0.01, "initialValue": 0.5, "formula": "R * T2 / (p2 * 1000)" }
+] }
+```
 
 #### 3. `outputs` (Array of Objects)
 Dynamically updated outputs rendered under `#outputs`.
@@ -435,8 +446,7 @@ The `plots` object governs one or more interactive curves rendered in D3.js. Plo
 
 ```javascript
 "plots": {
-    "aspectRatio": 1.2,              // Width-to-height ratio (W / H) per individual plot (or array of numbers per row: [1.2, 2.0])
-    "settings": [
+    "aspectRatio": 1.2,              // Width-to-height ratio (W / H) per individual plot (or array of numbers per row: [1.2, 2.0])    "settings": [
         [                            // Row 1: Two side-by-side plots (50% width each)
             {
                 "x": "velocity",                 // Input ID mapped to X-Axis

@@ -66,19 +66,23 @@
  * @property {number} [initialChoiceIndex] - Index of the initial selected choice (for dropdown and slider-dropdown)
  * @property {string} [notes] - Small descriptive notes rendered under the control (for dropdown and slider-dropdown)
  * @property {SwapOption[]} [options] - Variables the user chooses between (for swap); the selected one is an input, the rest are outputs
+ * @property {number} [order] - Position in the controls grid (CSS order); inputs without it count as 0
+ * @property {boolean} [carryOver] - For swap: false keeps each slider's own value when the selection changes, instead of starting it at its current output value
  */
 
 /**
  * @typedef {Object} SwapOption
- * @property {string} id - Variable ID, used as both the slider ID and the output ID
- * @property {string} text - Slider and output label (supports MathJax)
- * @property {string} formula - Value of this variable when it is not the selected input (e.g. "p1 * V1 / V2")
+ * @property {string} id - Variable ID, used as both the slider ID and the output ID (with `variables`, only the option ID)
+ * @property {string} [text] - Slider and output label (supports MathJax)
+ * @property {string} [formula] - Value of this variable when it is not the selected input (e.g. "p1 * V1 / V2")
+ * @property {SwapOption[]} [variables] - Several variables selected together by this option; each needs its own id, text, slider fields and formula
  * @property {string} [choiceText] - Plain-text label for the selector dropdown (defaults to text)
  * @property {number | string} [min] - Slider minimum
  * @property {number | string} [max] - Slider maximum
  * @property {number | string} [step] - Slider step
  * @property {number} [initialValue] - Slider starting value
  * @property {number | string} [decimals] - Output decimal places
+ * @property {number} [order] - Position of this variable's slider in the controls grid
  */
 
 /**
@@ -212,8 +216,7 @@
 /**
  * @typedef {Object} PlotsConfig
  * @property {number} [aspectRatio] - Width-to-height ratio of each individual plot (defaults to 1.5)
- * @property {number} [plotColumns] - Number of plot columns per row (e.g. 2)
- * @property {string[]} [customScripts] - List of external custom plot scripts to load
+ * @property {number} [plotColumns] - Number of plot columns per row (e.g. 2) * @property {string[]} [customScripts] - List of external custom plot scripts to load
  * @property {Array<string | string[]>} [customScriptFunctions] - List of expected function names exported by custom scripts (validated on load)
  * @property {PlotSetting[]} settings - List of active interactive charts to plot side-by-side
  * @property {string} text - Instructive annotation text shown below the chart container
