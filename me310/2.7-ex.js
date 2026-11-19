@@ -147,7 +147,7 @@ const pageData = {
         }
     ],
     "schematic": {
-        "src": "../assets/me310/2.7.1.png",
+        "src": "../assets/me310/2.7-combined.png",
         "alt": "Schematic for triangular panel problem"
     },
     "inputOutput": {
@@ -299,12 +299,12 @@ const pageData = {
     "plots": {
         "aspectRatio": 2.75,
         "customScripts": [
-            "../assets/js/plots/triangular-panel.js"
+            "../me310/2.7-ex-triangular-panel.js"
         ],
         "settings": [
             [
                 {
-                    "customScript": "../assets/js/plots/triangular-panel.js",
+                    "customScript": "../me310/2.7-ex-triangular-panel.js",
                     "customRender": "triangularPanel",
                     "mode": "override",
                     "x": "d",

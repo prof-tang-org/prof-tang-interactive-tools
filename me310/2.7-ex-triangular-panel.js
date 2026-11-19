@@ -100,6 +100,16 @@
         const xScale = x || d3.scaleLinear().domain([0, 14]).range([plot_x_offset, plot_x_offset + iw]);
         const yScale = y || d3.scaleLinear().domain([0, 14]).range([plot_y_offset + ih, plot_y_offset]);
 
+        // Keep centered dimension labels inside the clipped plot at small offsets.
+        const keepLabelInside = (label) => {
+            const bounds = label.node().getBBox();
+            const [left, right] = d3.extent(xScale.range());
+            const padding = 4;
+            const shift = Math.max(left + padding - bounds.x,
+                Math.min(0, right - padding - bounds.x - bounds.width));
+            label.attr('x', Number(label.attr('x')) + shift);
+        };
+
         // Helper to draw dimension arrow with smaller markers
         const drawDimArrow = (x1, y1, x2, y2, doubleEnded = true) => {
             const px1 = xScale(x1);
@@ -184,6 +194,7 @@
             .style('font-family', LATEX_FONT);
         dText.append('tspan').style('font-style', 'italic').text('d');
         dText.append('tspan').style('font-style', 'normal').text(` = ${calc.d.toFixed(1)} m`);
+        keepLabelInside(dText);
 
         // Dimension 'a' (height of apex)
         const dimAX = (calc.d <= 11) ? (calc.d + 0.6) : (calc.d - 0.6);
@@ -236,6 +247,7 @@
             .style('font-family', LATEX_FONT);
         bText.append('tspan').style('font-style', 'italic').text('b');
         bText.append('tspan').style('font-style', 'normal').text(` = ${calc.b.toFixed(1)} m`);
+        keepLabelInside(bText);
 
         // Centroid Point (c)
         const cxPx = xScale(calc.xc);
@@ -250,7 +262,7 @@
             .attr('fill', '#047857')
             .attr('font-size', '12px')
             .style('font-family', LATEX_FONT);
-        cText.append('tspan').style('font-style', 'italic').style('font-weight', 'bold').text('c');
+        cText.append('tspan').style('font-style', 'italic').style('font-weight', 'bold').text('C');
         cText.append('tspan').style('font-style', 'normal').text(' (Centroid)');
 
         // Center of Pressure Point (CP)
