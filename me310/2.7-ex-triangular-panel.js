@@ -100,13 +100,12 @@
         const xScale = x || d3.scaleLinear().domain([0, 14]).range([plot_x_offset, plot_x_offset + iw]);
         const yScale = y || d3.scaleLinear().domain([0, 14]).range([plot_y_offset + ih, plot_y_offset]);
 
-        // Keep centered dimension labels inside the clipped plot at small offsets.
+        // Follow the dimension midpoint until the visible text reaches an edge.
         const keepLabelInside = (label) => {
             const bounds = label.node().getBBox();
             const [left, right] = d3.extent(xScale.range());
-            const padding = 4;
-            const shift = Math.max(left + padding - bounds.x,
-                Math.min(0, right - padding - bounds.x - bounds.width));
+            const shift = Math.max(left - bounds.x,
+                Math.min(0, right - bounds.x - bounds.width));
             label.attr('x', Number(label.attr('x')) + shift);
         };
 
@@ -186,7 +185,7 @@
             drawDimArrow(0, dOffset, calc.d, dOffset, true);
         }
         const dText = containerG.append('text')
-            .attr('x', xScale(Math.max(calc.d / 2, 0.4)))
+            .attr('x', xScale(calc.d / 2))
             .attr('y', yScale(dOffset) - 4)
             .attr('fill', '#0f766e')
             .attr('font-size', '12px')

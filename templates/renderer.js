@@ -2672,6 +2672,7 @@ function injectPlots(state, pageData) {
                         mathjaxCache.set(rawText, el.innerHTML);
                     }
                     el.classList.remove('needs-typeset');
+                    el._keepInsidePlot?.();
                 });
             })
             .catch(err => console.error("MathJax typesetting error on plot:", err));
@@ -3240,11 +3241,6 @@ function drawPlotPoints(plotCtx) {
         if (plotConfig.keepLabelsInside) {
             const { plot_x_offset, plot_y_offset, iw, ih } = plotCtx;
             const pad = 4 * scale;
-            // Align the text itself to the boundary, rather than leaving it
-            // centered in a fixed-width box that has been pushed inward.
-            if (foX < plot_x_offset + pad) textAnchor = 'left';
-            else if (foX > plot_x_offset + iw - foWidth - pad) textAnchor = 'right';
-            foX = Math.max(plot_x_offset + pad, Math.min(foX, plot_x_offset + iw - foWidth - pad));
             foY = Math.max(plot_y_offset + pad, Math.min(foY, plot_y_offset + ih - foHeight - pad));
         }
 
@@ -3272,6 +3268,27 @@ function drawPlotPoints(plotCtx) {
             div.html(parseText(labelText))
                 .classed('needs-typeset', true)
                 .attr('data-raw-text', labelText);
+        }
+        if (plotConfig.keepLabelsInside) {
+            // Measure the text, not the generous foreignObject box. Preserve its
+            // anchor so reaching the boundary never changes alignment abruptly.
+            div.style('width', 'max-content').style('white-space', 'nowrap');
+            const placeLabel = () => {
+                const node = div.node();
+                if (!node.isConnected) return;
+                const matrix = fo.node().getScreenCTM();
+                if (!matrix) return;
+                const width = node.getBoundingClientRect().width / Math.hypot(matrix.a, matrix.b);
+                let naturalX = p.px + finalDx;
+                if (textAnchor === 'center') naturalX -= width / 2;
+                else if (textAnchor === 'right') naturalX -= width;
+                const { plot_x_offset, iw } = plotCtx;
+                const pad = 4 * scale;
+                fo.attr('width', width)
+                    .attr('x', Math.max(plot_x_offset + pad, Math.min(naturalX, plot_x_offset + iw - width - pad)));
+            };
+            div.node()._keepInsidePlot = placeLabel;
+            placeLabel();
         }
     });
 }
