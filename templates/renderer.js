@@ -3329,6 +3329,48 @@ function expandSwapInputs(inputOutput) {
     inputOutput.outputs = [...swapOutputs, ...(inputOutput.outputs || [])];
 }
 
+// Only the wide template offers output folding, and only while its IO section sticks.
+function setupStickyOutputs(section) {
+    const button = section.querySelector('.outputs-toggle');
+    if (!button || section.dataset.stickyOutputsReady) return;
+    section.dataset.stickyOutputsReady = 'true';
+
+    const marker = document.createElement('div');
+    marker.setAttribute('aria-hidden', 'true');
+    section.before(marker);
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    let collapsed = false;
+    let pending = false;
+
+    const update = () => {
+        pending = false;
+        const style = getComputedStyle(section);
+        const top = parseFloat(style.top) || 0;
+        const stuck = desktop.matches && style.position === 'sticky'
+            && marker.getBoundingClientRect().top < top
+            && section.getBoundingClientRect().top >= top - 1;
+        section.classList.toggle('is-stuck', stuck);
+        section.classList.toggle('outputs-collapsed', stuck && collapsed);
+        button.hidden = !stuck;
+        button.setAttribute('aria-expanded', String(!stuck || !collapsed));
+        button.textContent = collapsed && stuck ? 'Show outputs' : 'Hide outputs';
+    };
+    const scheduleUpdate = () => {
+        if (!pending) {
+            pending = true;
+            requestAnimationFrame(update);
+        }
+    };
+    button.addEventListener('click', () => {
+        collapsed = !collapsed;
+        update();
+    });
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    new ResizeObserver(scheduleUpdate).observe(section);
+    update();
+}
+
 function renderInputOutput(inputOutput) {
     expandSwapInputs(inputOutput);
     renderGroup(inputOutput.fixedInputs, 'fixed-inputs', inputOutput.inputColumns);
@@ -3343,6 +3385,7 @@ function renderInputOutput(inputOutput) {
         const stickyHost = parent?.tagName === 'SECTION' && parent.children.length === 1
             ? parent : ioCard;
         stickyHost.classList.toggle('keep-visible', inputOutput.keepVisible === true);
+        if (stickyHost.classList.contains('io-wide')) setupStickyOutputs(stickyHost);
     }
 
     if (inputOutput.note) {

@@ -54,7 +54,7 @@
     </section>
 
     <!-- Inputs and outputs -->
-    <section>
+    <section class="io-wide">
       <div class="card">
         <div class="grid">
           <div>
@@ -64,8 +64,10 @@
             <div id="controls">
             </div>
           </div>
-          <div>
-            <h3>Outputs</h3>
+          <div class="io-outputs">
+            <h3 id="outputs-heading">Outputs</h3>
+            <button class="outputs-toggle" type="button" aria-expanded="true"
+              aria-controls="outputs" hidden>Hide outputs</button>
             <div class="value-group" id="outputs">
             </div>
           </div>
