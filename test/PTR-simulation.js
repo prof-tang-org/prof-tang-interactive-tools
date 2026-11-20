@@ -4,7 +4,7 @@ const pageData = {
     "layout": {
         "grid": [
             {
-                "desktop": "0.39fr 0.61fr",
+                "desktop": "0.3fr 0.7fr",
                 "mobile": "100%"
             },
             {
@@ -20,8 +20,7 @@ const pageData = {
                 "Helium is the working fluid.",
                 "The solid surface temperatures of REGAHX and PTAHX are 300 K.",
                 "The mean pressure is 3.0 MPa, while the pressure ratio and presssure phase angle are 1.2 and zero degrees, respectively, at the inlet.",
-                "The oscillation frequency is 40 Hz.",
-                "Only the inlet volumetric-flow phase angle varies."
+                "The oscillation frequency is 40 Hz."
             ]
         },
     //     {
