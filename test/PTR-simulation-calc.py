@@ -5,8 +5,8 @@ from scipy.special import jv
 
 
 def calculate_ptr(inputs):
-    """Calculate PTR outputs and plot coordinates from the inlet flow phase angle."""
-    Powerptr = 150 # accoutic power at the inlet of ptr, [W]
+    """Calculate PTR outputs and plot coordinates from the inlet inputs."""
+    Powerptr = float(inputs.get("Powerptr1", 150)) # accoutic power at the inlet of ptr, [W]
     pm = 3000000.0 # mean pressure, [Pa]
     pratioptr = 1.2 # pressure ratio (p_max/p_min) at the inlet of ptr, [-]
     pptr = pm*(pratioptr-1)/(pratioptr+1) # pressure amplitude p_1 at the inlet of ptr, [Pa], assuming zero for its phase angle
@@ -21,7 +21,7 @@ def calculate_ptr(inputs):
     UptrA = np.abs(Uptr) # magnituge of Uptr, [m^3/s]
     # Powerptr = 0.5*np.real(pptr*np.conj(Uptr)) 
     Tregahxsolid = 300 # temperature, [K]
-    Tregchxsolid = 100 # temperature, [K]
+    Tregchxsolid = float(inputs.get("Tregchxsolid", 100)) # temperature, [K]
     Tptahxsolid = 300 # temperature, [K]
     f = 40.0 # frequecy of oscillation, [Hz]
     omega = 2.0 * np.pi * f # angular frequency, [rad/s]

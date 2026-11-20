@@ -19,8 +19,6 @@ const pageData = {
             "content": [
                 "Helium is the working fluid.",
                 "The solid surface temperatures of REGAHX and PTAHX are 300 K.",
-                "The solid surface temperature of REGCHX is 100 K.",
-                "The inlet acoustic power is 150 W.",
                 "The mean pressure is 3.0 MPa, while the pressure ratio and presssure phase angle are 1.2 and zero degrees, respectively, at the inlet.",
                 "The oscillation frequency is 40 Hz.",
                 "Only the inlet volumetric-flow phase angle varies."
@@ -55,13 +53,31 @@ const pageData = {
         "inputs": [
             {
                 "type": "number",
+                "id": "Powerptr1",
+                "text": "Acoustic Power Input at Section 1, $P_1$ [W], 100 W to 180 W",
+                "min": 100,
+                "max": 180,
+                "initialValue": 150,
+                "step": 1
+            },
+            {
+                "type": "number",
+                "id": "Tregchxsolid",
+                "text": "Solid Surface Temperature of REGCHX, $T_{\\text{REGCHX}}$ [K], 80 to 120 [K]",
+                "min": 80,
+                "max": 120,
+                "initialValue": 100,
+                "step": 1
+            },
+            {
+                "type": "number",
                 "id": "AngleUptr",
                 "text": "Inlet Flow Phase Angle, $\\alpha_U$ [deg], -25 to 50 [deg]",
                 "min": -25,
                 "max": 50,
                 "initialValue": 15,
                 "step": 1
-            }
+            },
         ],
         "outputs": [
             { "id": "Anglepptr1", "text": "Pressure phase, $\\angle p_1$ [deg]", "decimals": 2 },
@@ -370,6 +386,12 @@ const pageData = {
         const controls = document.getElementById('controls');
         if (!plot || !controls || document.getElementById('calculation-status')) return;
 
+        const inputIds = ['input_Powerptr1', 'input_Tregchxsolid', 'input_AngleUptr'];
+        const lastComputedValues = new Map(inputIds.map(id => {
+            const input = document.getElementById(id);
+            return [id, input ? Number(input.value) : NaN];
+        }));
+
         const style = document.createElement('style');
         style.textContent = `
             .calculation-status {
@@ -422,8 +444,20 @@ const pageData = {
         initialRenderObserver.observe(plot, { childList: true });
 
         let computeScheduled = false;
-        const scheduleCompute = () => {
+        let inputDebounceTimer = null;
+        const scheduleCompute = (delay = 0) => {
             setBusy(true);
+            if (inputDebounceTimer !== null) {
+                clearTimeout(inputDebounceTimer);
+                inputDebounceTimer = null;
+            }
+            if (delay > 0) {
+                inputDebounceTimer = setTimeout(() => {
+                    inputDebounceTimer = null;
+                    scheduleCompute(0);
+                }, delay);
+                return;
+            }
             if (computeScheduled) return;
             computeScheduled = true;
 
@@ -432,6 +466,10 @@ const pageData = {
                     computeScheduled = false;
                     try {
                         window.forceCompute();
+                        inputIds.forEach(id => {
+                            const input = document.getElementById(id);
+                            if (input) lastComputedValues.set(id, Number(input.value));
+                        });
                     } finally {
                         setBusy(false);
                     }
@@ -440,24 +478,32 @@ const pageData = {
         };
 
         document.addEventListener('input', (event) => {
-            if (!controls.contains(event.target) || event.target.id !== 'input_AngleUptr') return;
+            if (!controls.contains(event.target) || !inputIds.includes(event.target.id)) return;
 
             event.stopImmediatePropagation();
             if (event.target.value === '' || !Number.isFinite(Number(event.target.value))) return;
-            scheduleCompute();
+            const shouldWaitForTyping = ['input_Powerptr1', 'input_Tregchxsolid'].includes(event.target.id);
+            scheduleCompute(shouldWaitForTyping ? 400 : 0);
         }, true);
 
         document.addEventListener('change', (event) => {
-            if (!controls.contains(event.target) || event.target.id !== 'input_AngleUptr') return;
+            const ranges = {
+                input_Powerptr1: [100, 180],
+                input_Tregchxsolid: [80, 120],
+                input_AngleUptr: [-25, 50]
+            };
+            if (!controls.contains(event.target) || !ranges[event.target.id]) return;
 
             event.stopImmediatePropagation();
             const value = Number.parseFloat(event.target.value);
             if (Number.isFinite(value)) {
-                const clampedValue = Math.max(-25, Math.min(50, value));
+                const [minimum, maximum] = ranges[event.target.id];
+                const clampedValue = Math.max(minimum, Math.min(maximum, value));
                 if (clampedValue !== value) {
                     event.target.value = clampedValue;
-                    scheduleCompute();
                 }
+                if (Number(event.target.value) === lastComputedValues.get(event.target.id)) return;
+                scheduleCompute(0);
             }
         }, true);
     };
